@@ -5,6 +5,7 @@ import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 import 'package:meetsu_solutions/utils/extra/html_parsers.dart';
+import 'package:share_plus/share_plus.dart';
 
 class AdItem {
   final int id;
@@ -151,17 +152,16 @@ class DashboardController {
 
   // Share ad function
   void shareAd(BuildContext context, AdItem ad) {
-    // Use shareText from ad if available
-    final textToShare = ad.shareDescription.isNotEmpty ? ad.shareDescription : "Check out this ad: ${ad.subjectLine}";
+    // Create the text content to share
+    final String shareText = ad.shareDescription.isNotEmpty
+        ? ad.shareDescription
+        : "Check out this ad: ${ad.subjectLine}\n\nhttps://meetsusolutions.com/franciso/web/site/ads?id=${ad.id}";
 
-    // In a real app, this would use a sharing plugin
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Sharing ad: ${ad.subjectLine}'),
-        backgroundColor: Colors.green,
-      ),
+    // Use the share_plus package to show the share dialog
+    Share.share(
+      shareText,
+      subject: ad.subjectLine,
     );
-    debugPrint("Sharing ad: ${ad.subjectLine} with text: $textToShare");
   }
 
   // Download app function

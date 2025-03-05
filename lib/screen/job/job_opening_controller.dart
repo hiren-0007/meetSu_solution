@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
+import 'package:share_plus/share_plus.dart';
 
 class JobOpening {
   final int id;
@@ -142,17 +143,17 @@ class JobOpeningController {
 
   // Share job
   void shareJob(BuildContext context, JobOpening job) {
-    // In a real app, this would use a sharing plugin
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Sharing job: ${job.title}'),
-        backgroundColor: Colors.green,
-      ),
-    );
-    debugPrint("Sharing job: ${job.title}");
-    // Here you might want to use the job.shareDescription for sharing
-  }
+    // Create the text content to share
+    final String shareText = job.shareDescription.isNotEmpty
+        ? job.shareDescription
+        : "Check out this job opening: ${job.title}\n\nLocation: ${job.location}\nSalary: ${job.salary}\n\nhttps://meetsusolutions.com/franciso/web/site/jobs?id=${job.id}";
 
+    // Use the share_plus package to show the share dialog
+    Share.share(
+      shareText,
+      subject: job.title,
+    );
+  }
 
   // Retry fetching data
   void retryFetch() {

@@ -10,20 +10,16 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  // Use the controller
   final DashboardController _controller = DashboardController();
 
-  // PageController for ads swipe view
   final PageController _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
-    // Listen to controller's current index changes to update page view
     _controller.currentIndex.addListener(_handleIndexChange);
   }
 
-  // Handle index changes from the controller
   void _handleIndexChange() {
     if (_pageController.hasClients) {
       _pageController.animateToPage(
@@ -36,9 +32,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   void dispose() {
-    // Remove listener
     _controller.currentIndex.removeListener(_handleIndexChange);
-    // Dispose controller resources
     _controller.dispose();
     _pageController.dispose();
     super.dispose();
@@ -56,7 +50,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Weather and quote card
                 Container(
                   width: double.infinity,
                   margin: const EdgeInsets.fromLTRB(16, 24, 16, 0),
@@ -170,7 +163,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
 
-                // Ads display with PageView
                 ValueListenableBuilder<bool>(
                   valueListenable: _controller.isLoading,
                   builder: (context, isLoading, _) {
@@ -194,9 +186,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           return _buildAppDownloadCard();
                         }
 
-                        // Use PageView for ads like in JobOpeningScreen
                         return SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.7, // Responsive height
+                          height: MediaQuery.of(context).size.height * 0.7,
                           child: PageView.builder(
                             controller: _pageController,
                             itemCount: adItems.length,
@@ -204,7 +195,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               _controller.setCurrentIndex(index);
                             },
                             itemBuilder: (context, index) {
-                              return SingleChildScrollView(  // Make each card scrollable
+                              return SingleChildScrollView(
                                 child: _buildAdCard(adItems[index]),
                               );
                             },
@@ -239,37 +230,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min, // Use minimal space
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Ad image if available
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(15),
-              topRight: Radius.circular(15),
+          // Ad image if available - UPDATED IMAGE CONTAINER
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
             ),
-            child: ad.imageUrl.isNotEmpty
-                ? Image.network(
-              ad.imageUrl,
-              height: 200,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 200,
-                  width: double.infinity,
-                  color: Colors.grey.shade200,
-                  alignment: Alignment.center,
-                  child: const Icon(Icons.campaign, size: 50, color: Colors.grey),
-                );
-              },
-            )
-                : Container(
-              height: 200,
-              width: double.infinity,
-              color: Colors.grey.shade200,
-              alignment: Alignment.center,
-              child: const Icon(Icons.campaign, size: 50, color: Colors.grey),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: ad.imageUrl.isNotEmpty
+                  ? Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(
+                  minHeight: 200,
+                  maxHeight: 300,
+                ),
+                child: Image.network(
+                  ad.imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 200,
+                      width: double.infinity,
+                      color: Colors.grey.shade200,
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.campaign, size: 50, color: Colors.grey),
+                    );
+                  },
+                ),
+              )
+                  : Container(
+                height: 200,
+                width: double.infinity,
+                color: Colors.grey.shade200,
+                alignment: Alignment.center,
+                child: const Icon(Icons.campaign, size: 50, color: Colors.grey),
+              ),
             ),
           ),
 
@@ -286,7 +285,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
 
-          // Ad details (date and place)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -337,7 +335,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
 
-          // Status and amount
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: Row(
@@ -372,7 +369,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                     Text(
-                      ad.amount,
+                      "\$${ad.amount}",
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primaryColor,
@@ -381,19 +378,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ],
                 ),
+
               ],
             ),
           ),
 
           const Divider(),
 
-          // Description with Share button next to it
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Description label and Share button in a row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -438,9 +434,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                // Display plain text (already converted from HTML)
                 SizedBox(
-                  height: 100, // Limit height to prevent overflow
+                  height: 100,
                   child: SingleChildScrollView(
                     child: Text(
                       ad.description,
@@ -504,14 +499,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
 
-          // Added some bottom padding for better appearance
           const SizedBox(height: 16),
         ],
       ),
     );
   }
 
-  // Default app download card
   Widget _buildAppDownloadCard() {
     return Container(
       margin: const EdgeInsets.all(16),
@@ -528,7 +521,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                // Google Play button
                 GestureDetector(
                   onTap: () => _controller.downloadFromPlayStore(context),
                   child: Container(
@@ -582,7 +574,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
 
-          // App download title
           const Center(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 8.0),
@@ -596,7 +587,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
 
-          // App details
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
@@ -619,7 +609,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
 
-          // Status and amount
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
@@ -650,7 +639,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           const Divider(height: 1),
 
-          // Description with share button next to it
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Column(
@@ -668,7 +656,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     // Share button
                     GestureDetector(
-                      onTap: () {}, // Empty onTap or use a share method for app
+                      onTap: () {},
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(

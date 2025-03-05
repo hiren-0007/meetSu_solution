@@ -163,23 +163,31 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Job image header
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(15),
-              topRight: Radius.circular(15),
+          // Job image header - UPDATED IMAGE CONTAINER
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
             ),
-            child: job.imageUrl.isNotEmpty
-                ? Image.network(
-              job.imageUrl,
-              height: 200,
-              width: double.infinity,
-              fit: BoxFit.fill,
-              errorBuilder: (context, error, stackTrace) {
-                return _buildFallbackImage();
-              },
-            )
-                : _buildFallbackImage(),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: job.imageUrl.isNotEmpty
+                  ? Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(
+                  minHeight: 150,
+                  maxHeight: 250,
+                ),
+                child: Image.network(
+                  job.imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return _buildFallbackImage();
+                  },
+                ),
+              )
+                  : _buildFallbackImage(),
+            ),
           ),
 
           // Job title
@@ -302,13 +310,48 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Description:",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: AppTheme.textPrimaryColor,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Description:",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: AppTheme.textPrimaryColor,
+                      ),
+                    ),
+                    // Share button
+                    GestureDetector(
+                      onTap: () => _controller.shareJob(context, job),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.share,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              "Share",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -371,44 +414,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
             ),
           ),
 
-          // Action buttons
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
 
-                // Share button
-                GestureDetector(
-                  onTap: () => _controller.shareJob(context, job),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(
-                          Icons.share,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          "Share",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
