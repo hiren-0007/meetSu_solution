@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -128,6 +129,67 @@ class ApiClient {
         client.close();
       }
     } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  // Add this method to your ApiClient class
+  Future<Map<String, dynamic>> postMultipart(String endpoint, {
+    Map<String, dynamic>? body,
+    File? file,
+    String? fileField,
+  }) async {
+    try {
+      debugPrint('Making POST multipart request to: ${baseUrlNew + endpoint}');
+
+      final uri = Uri.parse(baseUrlNew + endpoint);
+      final request = http.MultipartRequest('POST', uri);
+
+      // Add headers (except content-type which will be set automatically for multipart)
+      Map<String, String> headers = Map.from(_headers);
+      headers.remove('Content-Type'); // Let MultipartRequest set this
+      request.headers.addAll(headers);
+
+      // Add text fields
+      if (body != null) {
+        body.forEach((key, value) {
+          request.fields[key] = value.toString();
+        });
+      }
+
+      // Add file if provided
+      if (file != null && fileField != null) {
+        final fileStream = http.ByteStream(file.openRead());
+        final fileLength = await file.length();
+
+        final multipartFile = http.MultipartFile(
+          fileField,
+          fileStream,
+          fileLength,
+          filename: file.path.split('/').last,
+        );
+
+        request.files.add(multipartFile);
+      }
+
+      // Send the request
+      final client = http.Client();
+      try {
+        final streamedResponse = await client.send(request)
+            .timeout(_connectionTimeout);
+
+        final response = await http.Response.fromStream(streamedResponse)
+            .timeout(_receiveTimeout);
+
+        debugPrint('Response status: ${response.statusCode}');
+        debugPrint('Response body: ${response.body}');
+
+        return _handleResponse(response);
+      } finally {
+        client.close();
+      }
+    } catch (e) {
+      debugPrint('POST multipart request error: $e');
       throw _handleError(e);
     }
   }

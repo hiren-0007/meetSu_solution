@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:meetsu_solutions/screen/more/request/send_request_controller.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
+import 'package:meetsu_solutions/services/api/api_client.dart';
+import 'package:meetsu_solutions/services/api/api_service.dart';
 
 class SendRequestScreen extends StatefulWidget {
   const SendRequestScreen({super.key});
@@ -10,18 +12,19 @@ class SendRequestScreen extends StatefulWidget {
 }
 
 class _SendRequestScreenState extends State<SendRequestScreen> {
-  // Use the controller
-  final SendRequestController _controller = SendRequestController();
+  late final SendRequestController _controller;
 
   @override
   void initState() {
     super.initState();
+    final apiClient = ApiClient();
+    final apiService = ApiService(apiClient);
+    _controller = SendRequestController(apiService);
     _controller.initialize();
   }
 
   @override
   void dispose() {
-    // Dispose controller resources
     _controller.dispose();
     super.dispose();
   }
@@ -48,7 +51,6 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // App bar with back button and title
                 Padding(
                   padding: EdgeInsets.all(AppTheme.screenPadding),
                   child: Row(
@@ -76,7 +78,7 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 40), // Balance for back button
+                      const SizedBox(width: 40),
                     ],
                   ),
                 ),
@@ -149,7 +151,6 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                                 ),
                                 SizedBox(height: AppTheme.contentSpacing),
 
-                                // Removed the deduction amount field as requested
                                 SizedBox(height: AppTheme.largeSpacing),
 
                                 // Records section

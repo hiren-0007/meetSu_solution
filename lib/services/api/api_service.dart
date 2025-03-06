@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_endpoints.dart';
 
@@ -37,5 +39,19 @@ class ApiService {
   // Contact related APIs
   Future<Map<String, dynamic>> submitContactForm(Map<String, String> data) async {
     return await client.post(ApiEndpoints.contactUs, body: data);
+  }
+
+  // Add Request related APIs
+  Future<Map<String, dynamic>> addDeductionWithSignature(
+      Map<String, dynamic> deductionData,
+      File signatureFile,
+      String fileFieldName
+      ) async {
+    return await _client.postMultipart(
+        ApiEndpoints.addDeduction,
+        body: deductionData,
+        file: signatureFile,
+        fileField: fileFieldName
+    );
   }
 }

@@ -1,13 +1,12 @@
+import 'dart:io';
 import 'dart:ui';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:meetsu_solutions/services/api/api_service.dart';
 
 class SendRequestController {
   // Text editing controllers for form fields
@@ -16,25 +15,26 @@ class SendRequestController {
   final TextEditingController nameController = TextEditingController();
 
   // Signature-related controllers
-  final ValueNotifier<List<Offset?>> signaturePoints =
-      ValueNotifier<List<Offset?>>([]);
+  final ValueNotifier<List<Offset?>> signaturePoints = ValueNotifier<List<Offset?>>([]);
   final ValueNotifier<bool> isTypedSignature = ValueNotifier<bool>(true);
   final TextEditingController signatureController = TextEditingController();
 
   // ValueNotifiers for reactive state management
-  final ValueNotifier<DateTime> selectedDate =
-      ValueNotifier<DateTime>(DateTime.now());
+  final ValueNotifier<DateTime> selectedDate = ValueNotifier<DateTime>(DateTime.now());
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
-  final ValueNotifier<List<RequestRecord>> records =
-      ValueNotifier<List<RequestRecord>>([]);
+  final ValueNotifier<List<RequestRecord>> records = ValueNotifier<List<RequestRecord>>([]);
 
   // Date formatter
   final DateFormat _dateFormat = DateFormat('MMM-dd-yyyy');
 
-  // Initialize the controller
+  // API Service
+  final ApiService _apiService;
+
+  // Constructor with API service injection
+  SendRequestController(this._apiService);
+
   void initialize() {
-    // Fetch initial records
     refreshRecords();
   }
 
@@ -59,8 +59,7 @@ class SendRequestController {
 
   // Refresh records list
   void refreshRecords() {
-    // Simulate fetching records from API or database
-    // In a real app, this would be an async call to your service layer
+    // In a real implementation, you would fetch records from the API
     isLoading.value = true;
 
     // Simulate network delay
@@ -81,13 +80,7 @@ class SendRequestController {
 
   // Download record (placeholder function)
   void downloadRecord(RequestRecord record) {
-    // In a real app, this would initiate a download or generate a PDF
     debugPrint("Downloading record: ${record.id}");
-
-    // Could show a snackbar or toast notification
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(content: Text("Downloading record #${record.id}")),
-    // );
   }
 
   // Show the request dialog
@@ -201,12 +194,12 @@ class SendRequestController {
                           onTap: () {
                             // Optional: Scroll the dialog when the field is tapped
                             Future.delayed(const Duration(milliseconds: 300),
-                                () {
-                              if (MediaQuery.of(context).viewInsets.bottom >
-                                  0) {
-                                // This helps with scrolling when keyboard appears
-                              }
-                            });
+                                    () {
+                                  if (MediaQuery.of(context).viewInsets.bottom >
+                                      0) {
+                                    // This helps with scrolling when keyboard appears
+                                  }
+                                });
                           },
                           decoration: InputDecoration(
                             hintText: "Type Your Name Here",
@@ -262,18 +255,18 @@ class SendRequestController {
                                       RenderBox renderBox = context
                                           .findRenderObject() as RenderBox;
                                       Offset localPosition =
-                                          renderBox.globalToLocal(
-                                              details.globalPosition);
+                                      renderBox.globalToLocal(
+                                          details.globalPosition);
                                       signaturePoints.value =
-                                          List.from(signaturePoints.value)
-                                            ..add(localPosition);
+                                      List.from(signaturePoints.value)
+                                        ..add(localPosition);
                                     });
                                   },
                                   onPanEnd: (details) {
                                     setState(() {
                                       signaturePoints.value =
-                                          List.from(signaturePoints.value)
-                                            ..add(null);
+                                      List.from(signaturePoints.value)
+                                        ..add(null);
                                     });
                                   },
                                   child: CustomPaint(
@@ -302,7 +295,7 @@ class SendRequestController {
                             ),
                             child: Padding(
                               padding:
-                                  const EdgeInsets.symmetric(vertical: 4.0),
+                              const EdgeInsets.symmetric(vertical: 4.0),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
@@ -323,7 +316,7 @@ class SendRequestController {
                                               controller: signatureController,
                                               decoration: const InputDecoration(
                                                 hintText:
-                                                    "Enter your signature",
+                                                "Enter your signature",
                                               ),
                                             ),
                                             actions: [
@@ -346,7 +339,7 @@ class SendRequestController {
                                     child: const Text(
                                       "Type",
                                       style:
-                                          TextStyle(color: Color(0xFF1565C0)),
+                                      TextStyle(color: Color(0xFF1565C0)),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -369,7 +362,7 @@ class SendRequestController {
                                     child: const Text(
                                       "Draw",
                                       style:
-                                          TextStyle(color: Color(0xFF1565C0)),
+                                      TextStyle(color: Color(0xFF1565C0)),
                                     ),
                                   ),
                                 ],
@@ -460,7 +453,7 @@ class SendRequestController {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                           content:
-                                              Text("Please enter an amount")),
+                                          Text("Please enter an amount")),
                                     );
                                     return;
                                   }
@@ -469,7 +462,7 @@ class SendRequestController {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                           content:
-                                              Text("Please enter your name")),
+                                          Text("Please enter your name")),
                                     );
                                     return;
                                   }
@@ -530,8 +523,81 @@ class SendRequestController {
     );
   }
 
-  // Submit the request with signature data
-  void submitRequestWithSignature(BuildContext context) {
+  // Convert signature to file
+  Future<File?> getSignatureAsFile() async {
+    try {
+      final recorder = PictureRecorder();
+      final canvas = Canvas(recorder);
+      final size = const Size(300, 150); // Adjust size as needed
+
+      if (isTypedSignature.value) {
+        // For typed signatures, render text to canvas
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: signatureController.text,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 24,
+              fontFamily: 'Signature',
+            ),
+          ),
+          textDirection: ui.TextDirection.ltr,
+        );
+        textPainter.layout(maxWidth: size.width);
+
+        // Paint white background
+        final bgPaint = Paint()..color = Colors.white;
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
+
+        // Draw text centered
+        textPainter.paint(
+            canvas,
+            Offset(
+                (size.width - textPainter.width) / 2,
+                (size.height - textPainter.height) / 2
+            )
+        );
+      } else {
+        // For drawn signatures
+        final paint = Paint()
+          ..color = Colors.black
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = 3.0;
+
+        // Paint white background
+        final bgPaint = Paint()..color = Colors.white;
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
+
+        // Draw the signature
+        for (int i = 0; i < signaturePoints.value.length - 1; i++) {
+          if (signaturePoints.value[i] != null && signaturePoints.value[i + 1] != null) {
+            canvas.drawLine(signaturePoints.value[i]!, signaturePoints.value[i + 1]!, paint);
+          } else if (signaturePoints.value[i] != null && signaturePoints.value[i + 1] == null) {
+            canvas.drawPoints(PointMode.points, [signaturePoints.value[i]!], paint);
+          }
+        }
+      }
+
+      // Convert to image
+      final picture = recorder.endRecording();
+      final img = await picture.toImage(size.width.toInt(), size.height.toInt());
+      final byteData = await img.toByteData(format: ImageByteFormat.png);
+
+      if (byteData == null) return null;
+
+      // Write to temporary file
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/signature.png');
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+      return file;
+    } catch (e) {
+      debugPrint("Error creating signature file: $e");
+      return null;
+    }
+  }
+
+  // Submit the request with signature data to the API
+  Future<void> submitRequestWithSignature(BuildContext context) async {
     // Parse amount
     double? amount;
     try {
@@ -548,46 +614,111 @@ class SendRequestController {
     // Show loading state
     isLoading.value = true;
 
-    // Create request data
-    final requestData = {
-      'reason': reasonController.text,
-      'date': _dateFormat.format(selectedDate.value),
-      'amount': amount,
-      'name': nameController.text,
-      'hasSignature': true,
-      'signatureType': isTypedSignature.value ? 'typed' : 'drawn',
-    };
+    try {
+      // Get user token from Shared Preferences
+      final token = SharedPrefsService.instance.getAccessToken();
+      if (token == null || token.isEmpty) {
+        errorMessage.value = "No authentication token found. Please log in again.";
+        isLoading.value = false;
+        return;
+      }
 
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 2), () {
-      // In a real app, this would be a call to your API service
-      debugPrint("Submitting request with signature: $requestData");
+      // Add Authorization Token to API Client
+      _apiService.client.addAuthToken(token);
 
-      // Reset form on success
-      reasonController.clear();
-      selectedDate.value = DateTime.now();
+      // Get signature as file
+      final signatureFile = await getSignatureAsFile();
+      if (signatureFile == null) {
+        errorMessage.value = "Failed to create signature file";
+        isLoading.value = false;
+        return;
+      }
 
-      // Add the new record to the list
-      final newRecord = RequestRecord(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        amount: amount!,
-        reason: requestData['reason'] as String,
-        date: selectedDate.value,
+      // Create form data for the API
+      final Map<String, dynamic> requestData = {
+        'amount': amount.toString(),
+        'reason': reasonController.text,
+      };
+
+      // Call the API service with the file
+      final response = await _apiService.addDeductionWithSignature(
+          requestData,
+          signatureFile,
+          'sign_name'
       );
 
-      records.value = [newRecord, ...records.value];
-
-      // Hide loading state
+      // Process the response
       isLoading.value = false;
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Request submitted successfully"),
-          backgroundColor: Colors.green,
-        ),
-      );
-    });
+      // Check for success (adjust based on your API response structure)
+      if (response['success'] == true || response['status'] == 'success') {
+        // Add the new record to the local list
+        final newRecord = RequestRecord(
+          id: response['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
+          amount: amount,
+          reason: reasonController.text,
+          date: selectedDate.value,
+        );
+
+        records.value = [newRecord, ...records.value];
+
+        // Reset form
+        reasonController.clear();
+        selectedDate.value = DateTime.now();
+
+        // Show success message
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Request submitted successfully"),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        // Handle API error
+        final message = response['message'] ?? response['Message'] ?? 'Unknown error occurred';
+        errorMessage.value = message;
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Error: $message"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Handle exceptions
+      isLoading.value = false;
+
+      // Provide user-friendly error message based on error type
+      String errorMsg;
+      if (e.toString().contains("Connection closed") ||
+          e.toString().contains("SocketException") ||
+          e.toString().contains("Connection refused") ||
+          e.toString().contains("Connection timeout")) {
+        errorMsg = "Network connection error. Please check your internet and try again.";
+      } else if (e.toString().contains("Unauthorized") || e.toString().contains("401")) {
+        errorMsg = "Your session has expired. Please log in again.";
+      } else {
+        errorMsg = "Failed to submit request: ${e.toString()}";
+      }
+
+      errorMessage.value = errorMsg;
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error: $errorMsg"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+
+      debugPrint("❌ Error submitting request: $e");
+    }
   }
 
   // Clean up resources

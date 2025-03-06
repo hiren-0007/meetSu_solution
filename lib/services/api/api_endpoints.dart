@@ -11,4 +11,6 @@ class ApiEndpoints {
   static const String compliance = 'flutter/compliance';
 
   static const String contactUs  = 'flutter/contact';
+
+  static const String addDeduction = 'flutter/add-deduction';
 }
