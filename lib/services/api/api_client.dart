@@ -24,7 +24,7 @@ class ApiClient {
   // Generic GET request
   Future<Map<String, dynamic>> get(String endpoint, {Map<String, dynamic>? queryParams}) async {
     try {
-      debugPrint('🔍 Making GET request to: ${baseUrlNew + endpoint}');
+      debugPrint('Making GET request to: ${baseUrlNew + endpoint}');
       final uri = Uri.parse(baseUrlNew + endpoint).replace(queryParameters: queryParams);
 
       final client = http.Client();
@@ -43,7 +43,7 @@ class ApiClient {
         client.close();
       }
     } catch (e) {
-      debugPrint('❌ GET request error: $e');
+      debugPrint('GET request error: $e');
       throw _handleError(e);
     }
   }
@@ -51,8 +51,8 @@ class ApiClient {
   // Generic POST request
   Future<Map<String, dynamic>> post(String endpoint, {dynamic body}) async {
     try {
-      debugPrint('🔍 Making POST request to: ${baseUrlNew + endpoint}');
-      debugPrint('📦 Request body: $body');
+      debugPrint('Making POST request to: ${baseUrlNew + endpoint}');
+      debugPrint('Request body: $body');
 
       final uri = Uri.parse(baseUrlNew + endpoint);
 
@@ -68,15 +68,15 @@ class ApiClient {
         final response = await http.Response.fromStream(streamedResponse)
             .timeout(_receiveTimeout);
 
-        debugPrint('✅ Response status: ${response.statusCode}');
-        debugPrint('📄 Response body: ${response.body}');
+        debugPrint('Response status: ${response.statusCode}');
+        debugPrint('Response body: ${response.body}');
 
         return _handleResponse(response);
       } finally {
         client.close();
       }
     } catch (e) {
-      debugPrint('❌ POST request error: $e');
+      debugPrint('POST request error: $e');
       throw _handleError(e);
     }
   }
@@ -141,7 +141,7 @@ class ApiClient {
         try {
           responseData = json.decode(response.body);
         } catch (e) {
-          debugPrint('❌ Error decoding JSON: $e');
+          debugPrint('Error decoding JSON: $e');
           responseData = {'body': response.body};
         }
       }

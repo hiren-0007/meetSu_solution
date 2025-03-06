@@ -10,12 +10,10 @@ class ScheduleScreen extends StatefulWidget {
 }
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
-  // Use the controller
   final ScheduleController _controller = ScheduleController();
 
   @override
   void dispose() {
-    // Dispose controller resources
     _controller.dispose();
     super.dispose();
   }
@@ -26,7 +24,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
-          // Date selector header
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -38,10 +35,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
             child: Column(
               children: [
-                // Date range selector
                 Row(
                   children: [
-                    // Using Expanded to prevent overflow
                     Expanded(
                       child: Center(
                         child: Text(
@@ -88,7 +83,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  // Using Expanded for the text to prevent overflow
                                   Expanded(
                                     child: Text(
                                       startDate,

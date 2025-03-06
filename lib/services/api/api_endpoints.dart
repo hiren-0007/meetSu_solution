@@ -1,8 +1,7 @@
 class ApiEndpoints {
-  // Auth endpoints
+
   static const String login = 'login/login';
 
-  // Profile endpoints
   static const String profile = 'flutter/profile';
 
   static const String schedule = 'flutter/schedule';

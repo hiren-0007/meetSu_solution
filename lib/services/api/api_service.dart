@@ -34,6 +34,7 @@ class ApiService {
     return await _client.get(ApiEndpoints.compliance);
   }
 
+  // Contact related APIs
   Future<Map<String, dynamic>> submitContactForm(Map<String, String> data) async {
     return await client.post(ApiEndpoints.contactUs, body: data);
   }

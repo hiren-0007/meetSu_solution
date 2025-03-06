@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class MoreController {
-  // ValueNotifiers for reactive state management
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
 

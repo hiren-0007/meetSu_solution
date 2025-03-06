@@ -7,10 +7,8 @@ import 'package:meetsu_solutions/screen/more/training/training_screen.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 
 void main() async {
-  // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize SharedPrefsService
   await SharedPrefsService.init();
 
   runApp(const JobPortalApp());

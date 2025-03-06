@@ -10,12 +10,10 @@ class MoreScreen extends StatefulWidget {
 }
 
 class _MoreScreenState extends State<MoreScreen> {
-  // Use the controller
   final MoreController _controller = MoreController();
 
   @override
   void dispose() {
-    // Dispose controller resources
     _controller.dispose();
     super.dispose();
   }
@@ -26,7 +24,6 @@ class _MoreScreenState extends State<MoreScreen> {
       backgroundColor: AppTheme.backgroundColor,
       body: Stack(
         children: [
-          // Top design
           Positioned(
             top: 8,
             left: 7,
@@ -37,7 +34,6 @@ class _MoreScreenState extends State<MoreScreen> {
             ),
           ),
 
-          // Main content
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -5,29 +5,22 @@ import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 import 'package:meetsu_solutions/model/schedule/schedule_response_model.dart';
 
 class ScheduleController {
-  // API Service
   final ApiService _apiService;
 
-  // Date range
   final ValueNotifier<String> startDate = ValueNotifier<String>("Feb-24-2025");
   final ValueNotifier<String> endDate = ValueNotifier<String>("Mar-09-2025");
 
-  // Loading state
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
 
-  // Data state
   final ValueNotifier<bool> hasData = ValueNotifier<bool>(false);
 
-  // Schedule data
   final ValueNotifier<List<Data>> scheduleItems = ValueNotifier<List<Data>>([]);
 
-  // Pay check data
   final ValueNotifier<String?> payCheck = ValueNotifier<String?>(null);
 
   // Constructor
   ScheduleController({ApiService? apiService})
       : _apiService = apiService ?? ApiService(ApiClient()) {
-    // Initialize data when created
     _fetchScheduleData();
   }
 
@@ -68,25 +61,18 @@ class ScheduleController {
     try {
       isLoading.value = true;
 
-      // Get user token from Shared Preferences
       final token = SharedPrefsService.instance.getAccessToken();
       if (token == null || token.isEmpty) {
         throw Exception("No authentication token found");
       }
 
-      // Add Authorization Token to API Client
       _apiService.client.addAuthToken(token);
 
-      // Make API Call with date parameters
       final response = await _apiService.getSchedule();
-
-      // Convert Response to ScheduleResponseModel
       final scheduleResponse = ScheduleResponseModel.fromJson(response);
 
-      // Update payCheck
       payCheck.value = scheduleResponse.payCheck;
 
-      // Check if data is available
       if (scheduleResponse.data != null && scheduleResponse.data!.isNotEmpty) {
         scheduleItems.value = scheduleResponse.data!;
         hasData.value = true;
@@ -95,7 +81,7 @@ class ScheduleController {
         hasData.value = false;
       }
     } catch (e) {
-      print("❌ Error fetching schedule data: $e");
+      print("Error fetching schedule data: $e");
       scheduleItems.value = [];
       hasData.value = false;
     } finally {
@@ -156,7 +142,6 @@ class ScheduleController {
     return months[monthNumber] ?? 'Jan';
   }
 
-  // Dispose resources
   void dispose() {
     startDate.dispose();
     endDate.dispose();

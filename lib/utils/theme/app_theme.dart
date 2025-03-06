@@ -8,7 +8,7 @@ class AppTheme {
   static const Color cardColor = Colors.white;
   static const Color cardColorRed = Colors.red;
   static const Color textPrimaryColor = Color(0xFF333333);
-  static const Color textSecondaryColor = Color(0xFF757575); // grey[600]
+  static const Color textSecondaryColor = Color(0xFF757575);
 
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(

@@ -14,7 +14,6 @@ class SharedPrefsService {
   SharedPrefsService._();
 
   /// Initializes the shared preferences service.
-  /// Should be called early in app startup (e.g., in main.dart)
   static Future<void> init() async {
     if (!_initialized) {
       _prefs = await SharedPreferences.getInstance();
@@ -23,7 +22,6 @@ class SharedPrefsService {
   }
 
   /// Gets the singleton instance of SharedPrefsService
-  /// Throws an exception if init() hasn't been called first
   static SharedPrefsService get instance {
     if (!_initialized) {
       throw StateError('SharedPrefsService not initialized. Call init() first.');
@@ -32,7 +30,6 @@ class SharedPrefsService {
     return _instance!;
   }
 
-  // Token management methods
 
   /// Saves the access token to shared preferences
   Future<bool> saveAccessToken(String token) async {
