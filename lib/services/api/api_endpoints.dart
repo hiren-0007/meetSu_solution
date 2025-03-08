@@ -13,4 +13,6 @@ class ApiEndpoints {
   static const String contactUs  = 'flutter/contact';
 
   static const String addDeduction = 'flutter/add-deduction';
+
+  static const String getWeather = 'flutter/weather';
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/screen/dashboard/dashboard_controller.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({super.key,});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -13,10 +14,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final DashboardController _controller = DashboardController();
 
   final PageController _pageController = PageController();
-
+  String formatDate(String isoDate) {
+    DateTime dateTime = DateTime.parse(isoDate);
+    return DateFormat("MMM dd, yyyy").format(dateTime);
+  }
   @override
   void initState() {
     super.initState();
+    print('hellloooo');
+    _controller.initialize();
     _controller.currentIndex.addListener(_handleIndexChange);
   }
 
@@ -40,6 +46,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // String? temperature = widget.weatherData?['temperature'];
+    // String time = formatDate(widget.weatherData?['time']);
+    // String iconUrl = widget.weatherData?['iconLink'];
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: RefreshIndicator(
@@ -90,7 +99,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               );
                             },
                           ),
-                        ],
+
+
+                  ],
                       ),
                       const SizedBox(height: 12),
 
