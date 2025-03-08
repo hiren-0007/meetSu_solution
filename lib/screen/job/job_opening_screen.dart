@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meetsu_solutions/screen/job/job_opening_controller.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
+import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 
 class JobOpeningScreen extends StatefulWidget {
   const JobOpeningScreen({super.key});
@@ -44,103 +45,105 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title and subtitle
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.fromLTRB(16, 24, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Job Openings",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimaryColor,
+    return ConnectivityWidget(
+      child: Scaffold(
+        backgroundColor: AppTheme.backgroundColor,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title and subtitle
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Job Openings",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimaryColor,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "Explore available positions",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppTheme.textSecondaryColor,
+                  const SizedBox(height: 8),
+                  Text(
+                    "Explore available positions",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppTheme.textSecondaryColor,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          // Job Listings
-          Expanded(
-            child: ValueListenableBuilder<bool>(
-              valueListenable: _controller.isLoading,
-              builder: (context, isLoading, _) {
-                if (isLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else {
-                  return ValueListenableBuilder<List<JobOpening>>(
-                    valueListenable: _controller.jobOpenings,
-                    builder: (context, jobOpenings, _) {
-                      if (jobOpenings.isEmpty) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+            // Job Listings
+            Expanded(
+              child: ValueListenableBuilder<bool>(
+                valueListenable: _controller.isLoading,
+                builder: (context, isLoading, _) {
+                  if (isLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else {
+                    return ValueListenableBuilder<List<JobOpening>>(
+                      valueListenable: _controller.jobOpenings,
+                      builder: (context, jobOpenings, _) {
+                        if (jobOpenings.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  "No job openings available",
+                                  style: TextStyle(
+                                    color: AppTheme.textSecondaryColor,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: () => _controller.retryFetch(),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.primaryColor,
+                                  ),
+                                  child: const Text(
+                                    "Retry",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        } else {
+                          return Column(
                             children: [
-                              const Text(
-                                "No job openings available",
-                                style: TextStyle(
-                                  color: AppTheme.textSecondaryColor,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              ElevatedButton(
-                                onPressed: () => _controller.retryFetch(),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.primaryColor,
-                                ),
-                                child: const Text(
-                                  "Retry",
-                                  style: TextStyle(color: Colors.white),
+                              // Page view (removed the page indicator dots)
+                              Expanded(
+                                child: PageView.builder(
+                                  controller: _pageController,
+                                  itemCount: jobOpenings.length,
+                                  onPageChanged: (index) {
+                                    _controller.setCurrentIndex(index);
+                                  },
+                                  itemBuilder: (context, index) {
+                                    return _buildJobCard(jobOpenings[index]);
+                                  },
                                 ),
                               ),
                             ],
-                          ),
-                        );
-                      } else {
-                        return Column(
-                          children: [
-                            // Page view (removed the page indicator dots)
-                            Expanded(
-                              child: PageView.builder(
-                                controller: _pageController,
-                                itemCount: jobOpenings.length,
-                                onPageChanged: (index) {
-                                  _controller.setCurrentIndex(index);
-                                },
-                                itemBuilder: (context, index) {
-                                  return _buildJobCard(jobOpenings[index]);
-                                },
-                              ),
-                            ),
-                          ],
-                        );
-                      }
-                    },
-                  );
-                }
-              },
+                          );
+                        }
+                      },
+                    );
+                  }
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

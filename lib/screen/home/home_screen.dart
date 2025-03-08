@@ -6,6 +6,7 @@ import 'package:meetsu_solutions/screen/more/more_screen.dart';
 import 'package:meetsu_solutions/screen/schedule/schedule_screen.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/screen/home/home_controller.dart';
+import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -28,88 +29,90 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: AppTheme.headerContainerDecoration,
+    return ConnectivityWidget(
+      child: Scaffold(
+        backgroundColor: AppTheme.backgroundColor,
+        appBar: AppBar(
+          flexibleSpace: Container(
+            decoration: AppTheme.headerContainerDecoration,
+          ),
+          elevation: 0,
+          title: const Text(
+            "MEETsu SOLUTIONS",
+            style: AppTheme.appNameStyle,
+          ),
+          centerTitle: true,
+          // leading: IconButton(
+          //   icon: const Icon(Icons.menu, color: Colors.white),
+          //   onPressed: () => _controller.openDrawer(context),
+          // ),
+          // actions: [
+          //   IconButton(
+          //     icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+          //     onPressed: () => _controller.openNotifications(context),
+          //   ),
+          // ],
         ),
-        elevation: 0,
-        title: const Text(
-          "MEETsu SOLUTIONS",
-          style: AppTheme.appNameStyle,
+        body: ValueListenableBuilder<int>(
+          valueListenable: _controller.selectedIndex,
+          builder: (context, selectedIndex, _) {
+            return _buildBody(selectedIndex);
+          },
         ),
-        centerTitle: true,
-        // leading: IconButton(
-        //   icon: const Icon(Icons.menu, color: Colors.white),
-        //   onPressed: () => _controller.openDrawer(context),
-        // ),
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-        //     onPressed: () => _controller.openNotifications(context),
-        //   ),
-        // ],
-      ),
-      body: ValueListenableBuilder<int>(
-        valueListenable: _controller.selectedIndex,
-        builder: (context, selectedIndex, _) {
-          return _buildBody(selectedIndex);
-        },
-      ),
-      bottomNavigationBar: ValueListenableBuilder<int>(
-        valueListenable: _controller.selectedIndex,
-        builder: (context, selectedIndex, _) {
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [AppTheme.primaryShadow],
-            ),
-            child: BottomNavigationBar(
-              currentIndex: selectedIndex,
-              onTap: _controller.changeTab,
-              type: BottomNavigationBarType.fixed,
-              backgroundColor: Colors.white,
-              selectedItemColor: AppTheme.primaryColor,
-              unselectedItemColor: AppTheme.textSecondaryColor,
-              selectedLabelStyle: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
+        bottomNavigationBar: ValueListenableBuilder<int>(
+          valueListenable: _controller.selectedIndex,
+          builder: (context, selectedIndex, _) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [AppTheme.primaryShadow],
               ),
-              unselectedLabelStyle: const TextStyle(
-                fontWeight: FontWeight.normal,
-                fontSize: 12,
+              child: BottomNavigationBar(
+                currentIndex: selectedIndex,
+                onTap: _controller.changeTab,
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: Colors.white,
+                selectedItemColor: AppTheme.primaryColor,
+                unselectedItemColor: AppTheme.textSecondaryColor,
+                selectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: 12,
+                ),
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.dashboard_outlined),
+                    activeIcon: Icon(Icons.dashboard),
+                    label: 'Dashboard',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.calendar_today_outlined),
+                    activeIcon: Icon(Icons.calendar_today),
+                    label: 'Schedule',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.work_outline),
+                    activeIcon: Icon(Icons.work),
+                    label: 'Job Opening',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.verified_outlined),
+                    activeIcon: Icon(Icons.verified),
+                    label: 'Compliance',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.more_horiz),
+                    activeIcon: Icon(Icons.more_horiz),
+                    label: 'More',
+                  ),
+                ],
               ),
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.dashboard_outlined),
-                  activeIcon: Icon(Icons.dashboard),
-                  label: 'Dashboard',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.calendar_today_outlined),
-                  activeIcon: Icon(Icons.calendar_today),
-                  label: 'Schedule',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.work_outline),
-                  activeIcon: Icon(Icons.work),
-                  label: 'Job Opening',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.verified_outlined),
-                  activeIcon: Icon(Icons.verified),
-                  label: 'Compliance',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.more_horiz),
-                  activeIcon: Icon(Icons.more_horiz),
-                  label: 'More',
-                ),
-              ],
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

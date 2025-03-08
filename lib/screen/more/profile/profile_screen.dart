@@ -4,6 +4,7 @@ import 'package:meetsu_solutions/screen/more/profile/profile_cantroller.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
+import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -53,210 +54,212 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF2196F3), // Match blue background
-      body: SafeArea(
-        child: ValueListenableBuilder<bool>(
-          valueListenable: _controller.isLoading,
-          builder: (context, isLoading, child) {
-            if (isLoading) {
-              return const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                ),
-              );
-            }
+    return ConnectivityWidget(
+      child: Scaffold(
+        backgroundColor: const Color(0xFF2196F3), // Match blue background
+        body: SafeArea(
+          child: ValueListenableBuilder<bool>(
+            valueListenable: _controller.isLoading,
+            builder: (context, isLoading, child) {
+              if (isLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                  ),
+                );
+              }
 
-            return ValueListenableBuilder<String?>(
-              valueListenable: _controller.errorMessage,
-              builder: (context, errorMessage, child) {
-                if (errorMessage != null && errorMessage.isNotEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            "Error loading profile",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            errorMessage,
-                            style: const TextStyle(color: Colors.white),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () => _controller.initialize(),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xFF2196F3),
-                            ),
-                            child: const Text("Retry"),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                return child!;
-              },
-              child: Column(
-                children: [
-                  // App bar with back button and title
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Colors.white30,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.arrow_back,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ),
-                        ),
-                        const Expanded(
-                          child: Center(
-                            child: Text(
-                              "Profile",
+              return ValueListenableBuilder<String?>(
+                valueListenable: _controller.errorMessage,
+                builder: (context, errorMessage, child) {
+                  if (errorMessage != null && errorMessage.isNotEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              "Error loading profile",
                               style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
                                 color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              errorMessage,
+                              style: const TextStyle(color: Colors.white),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () => _controller.initialize(),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: const Color(0xFF2196F3),
+                              ),
+                              child: const Text("Retry"),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  return child!;
+                },
+                child: Column(
+                  children: [
+                    // App bar with back button and title
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: const BoxDecoration(
+                                color: Colors.white30,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                                size: 24,
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 40),
-                      ],
-                    ),
-                  ),
-
-                  // Profile photo or avatar
-                  ValueListenableBuilder(
-                    valueListenable: _controller.profileData,
-                    builder: (context, profileData, _) {
-                      // Check if there's a photo URL in the profileData
-                      String? photoUrl = profileData?.photoUrl;
-
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 20),
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          image: photoUrl != null && photoUrl.isNotEmpty
-                              ? DecorationImage(
-                            image: NetworkImage(photoUrl),
-                            fit: BoxFit.cover,
-                          )
-                              : null,
-                        ),
-                        child: photoUrl == null || photoUrl.isEmpty
-                            ? const Icon(
-                          Icons.person,
-                          color: Color(0xFF2196F3),
-                          size: 30,
-                        )
-                            : null,
-                      );
-                    },
-                  ),
-
-                  // Main content in white card
-                  Expanded(
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Section title with dropdown
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // Title - with flexible to prevent overflow
-                              Flexible(
-                                child: Text(
-                                  _selectedTab == 5 ? "Work Experience" : _tabTitles[_selectedTab],
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF333333),
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                          const Expanded(
+                            child: Center(
+                              child: Text(
+                                "Profile",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
                                 ),
                               ),
-                              // Dropdown for tab selection
-                              DropdownButton<int>(
-                                value: _selectedTab,
-                                icon: const Icon(Icons.arrow_drop_down),
-                                elevation: 16,
-                                underline: Container(height: 0),
-                                onChanged: (int? newValue) {
-                                  if (newValue != null) {
-                                    setState(() {
-                                      _selectedTab = newValue;
-                                    });
-                                  }
-                                },
-                                items: List.generate(_tabTitles.length, (index) {
-                                  return DropdownMenuItem<int>(
-                                    value: index,
-                                    child: Text(_tabTitles[index]),
-                                  );
-                                }),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 8),
-
-                          Text(
-                            "We'd like to know more about you",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
                             ),
                           ),
-
-                          const SizedBox(height: 24),
-
-                          // Content based on selected tab
-                          Expanded(
-                            child: _buildSelectedTabContent(),
-                          ),
+                          const SizedBox(width: 40),
                         ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
+
+                    // Profile photo or avatar
+                    ValueListenableBuilder(
+                      valueListenable: _controller.profileData,
+                      builder: (context, profileData, _) {
+                        // Check if there's a photo URL in the profileData
+                        String? photoUrl = profileData?.photoUrl;
+
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 20),
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            image: photoUrl != null && photoUrl.isNotEmpty
+                                ? DecorationImage(
+                              image: NetworkImage(photoUrl),
+                              fit: BoxFit.cover,
+                            )
+                                : null,
+                          ),
+                          child: photoUrl == null || photoUrl.isEmpty
+                              ? const Icon(
+                            Icons.person,
+                            color: Color(0xFF2196F3),
+                            size: 30,
+                          )
+                              : null,
+                        );
+                      },
+                    ),
+
+                    // Main content in white card
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(30),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Section title with dropdown
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Title - with flexible to prevent overflow
+                                Flexible(
+                                  child: Text(
+                                    _selectedTab == 5 ? "Work Experience" : _tabTitles[_selectedTab],
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF333333),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                // Dropdown for tab selection
+                                DropdownButton<int>(
+                                  value: _selectedTab,
+                                  icon: const Icon(Icons.arrow_drop_down),
+                                  elevation: 16,
+                                  underline: Container(height: 0),
+                                  onChanged: (int? newValue) {
+                                    if (newValue != null) {
+                                      setState(() {
+                                        _selectedTab = newValue;
+                                      });
+                                    }
+                                  },
+                                  items: List.generate(_tabTitles.length, (index) {
+                                    return DropdownMenuItem<int>(
+                                      value: index,
+                                      child: Text(_tabTitles[index]),
+                                    );
+                                  }),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            Text(
+                              "We'd like to know more about you",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // Content based on selected tab
+                            Expanded(
+                              child: _buildSelectedTabContent(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/screen/schedule/schedule_controller.dart';
+import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
@@ -20,190 +21,192 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor,
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [AppTheme.primaryShadow],
-            ),
-            margin: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          "Start Date",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+    return ConnectivityWidget(
+      child: Scaffold(
+        backgroundColor: AppTheme.backgroundColor,
+        body: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [AppTheme.primaryShadow],
+              ),
+              margin: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            "Start Date",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          "End Date",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            "End Date",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const SizedBox(width: 10),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const SizedBox(width: 10),
 
-                    // Start date selector
-                    Expanded(
-                      child: ValueListenableBuilder<String>(
-                        valueListenable: _controller.startDate,
-                        builder: (context, startDate, _) {
-                          return GestureDetector(
-                            onTap: () => _controller.selectStartDate(context),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      startDate,
-                                      style: const TextStyle(
-                                        color: AppTheme.textPrimaryColor,
-                                        fontSize: 14,
+                      // Start date selector
+                      Expanded(
+                        child: ValueListenableBuilder<String>(
+                          valueListenable: _controller.startDate,
+                          builder: (context, startDate, _) {
+                            return GestureDetector(
+                              onTap: () => _controller.selectStartDate(context),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        startDate,
+                                        style: const TextStyle(
+                                          color: AppTheme.textPrimaryColor,
+                                          fontSize: 14,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                  ),
-                                  const Icon(
-                                    Icons.calendar_month_outlined,
-                                    size: 18,
-                                    color: AppTheme.primaryColor,
-                                  ),
-                                ],
+                                    const Icon(
+                                      Icons.calendar_month_outlined,
+                                      size: 18,
+                                      color: AppTheme.primaryColor,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(width: 15),
+                      const SizedBox(width: 15),
 
-                    // End date selector
-                    Expanded(
-                      child: ValueListenableBuilder<String>(
-                        valueListenable: _controller.endDate,
-                        builder: (context, endDate, _) {
-                          return GestureDetector(
-                            onTap: () => _controller.selectEndDate(context),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      endDate,
-                                      style: const TextStyle(
-                                        color: AppTheme.textPrimaryColor,
-                                        fontSize: 14,
+                      // End date selector
+                      Expanded(
+                        child: ValueListenableBuilder<String>(
+                          valueListenable: _controller.endDate,
+                          builder: (context, endDate, _) {
+                            return GestureDetector(
+                              onTap: () => _controller.selectEndDate(context),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        endDate,
+                                        style: const TextStyle(
+                                          color: AppTheme.textPrimaryColor,
+                                          fontSize: 14,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                  ),
-                                  const Icon(
-                                    Icons.calendar_month_outlined,
-                                    size: 18,
-                                    color: AppTheme.primaryColor,
-                                  ),
-                                ],
+                                    const Icon(
+                                      Icons.calendar_month_outlined,
+                                      size: 18,
+                                      color: AppTheme.primaryColor,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(width: 10),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Information message
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor,
-              borderRadius: BorderRadius.circular(15),
-            ),
-            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            child: const Text(
-              "Report:- All hours and amount are approximate for the current week",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
+                      const SizedBox(width: 10),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ),
 
-          // Schedule content
-          Expanded(
-            child: ValueListenableBuilder<bool>(
-              valueListenable: _controller.isLoading,
-              builder: (context, isLoading, _) {
-                if (isLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else {
-                  return ValueListenableBuilder<bool>(
-                    valueListenable: _controller.hasData,
-                    builder: (context, hasData, _) {
-                      if (hasData) {
-                        return _buildScheduleData();
-                      } else {
-                        return const Center(
-                          child: Text(
-                            "No data found on this date",
-                            style: TextStyle(
-                              color: AppTheme.textSecondaryColor,
-                              fontSize: 16,
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                  );
-                }
-              },
+            // Information message
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              child: const Text(
+                "Report:- All hours and amount are approximate for the current week",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                ),
+              ),
             ),
-          ),
-        ],
+
+            // Schedule content
+            Expanded(
+              child: ValueListenableBuilder<bool>(
+                valueListenable: _controller.isLoading,
+                builder: (context, isLoading, _) {
+                  if (isLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else {
+                    return ValueListenableBuilder<bool>(
+                      valueListenable: _controller.hasData,
+                      builder: (context, hasData, _) {
+                        if (hasData) {
+                          return _buildScheduleData();
+                        } else {
+                          return const Center(
+                            child: Text(
+                              "No data found on this date",
+                              style: TextStyle(
+                                color: AppTheme.textSecondaryColor,
+                                fontSize: 16,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

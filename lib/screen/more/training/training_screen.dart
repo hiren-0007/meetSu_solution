@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meetsu_solutions/screen/more/training/training_controller.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
+import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 
 class TrainingScreen extends StatefulWidget {
   const TrainingScreen({super.key});
@@ -29,185 +30,187 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: Stack(
-        children: [
-          // Top design - blue background
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.35,
-              decoration: const BoxDecoration(
-                color: AppTheme.primaryColor,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(0),
-                  bottomRight: Radius.circular(0),
+    return ConnectivityWidget(
+      child: Scaffold(
+        backgroundColor: AppTheme.backgroundColor,
+        body: Stack(
+          children: [
+            // Top design - blue background
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.35,
+                decoration: const BoxDecoration(
+                  color: AppTheme.primaryColor,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(0),
+                    bottomRight: Radius.circular(0),
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // Main content
-          SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title with back button
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.of(context).pop(),
-                        child: const Icon(
-                          Icons.arrow_back,
-                          color: AppTheme.cardColor,
+            // Main content
+            SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title with back button
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: const Icon(
+                            Icons.arrow_back,
+                            color: AppTheme.cardColor,
+                          ),
                         ),
-                      ),
-                      const Expanded(
-                        child: Center(
-                          child: Text(
-                            "Trainings",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.cardColor,
+                        const Expanded(
+                          child: Center(
+                            child: Text(
+                              "Trainings",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.cardColor,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 24), // Balance the back button
-                    ],
-                  ),
-                ),
-
-                // App Icon - circular with shadow
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: AppTheme.cardColor,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
+                        const SizedBox(width: 24), // Balance the back button
                       ],
                     ),
-                    child: const Icon(
-                      Icons.school,
-                      color: AppTheme.primaryColor,
-                      size: 30,
+                  ),
+
+                  // App Icon - circular with shadow
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: AppTheme.cardColor,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.school,
+                        color: AppTheme.primaryColor,
+                        size: 30,
+                      ),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                // Training content
-                Expanded(
-                  child: ValueListenableBuilder<bool>(
-                    valueListenable: _controller.isLoading,
-                    builder: (context, isLoading, child) {
-                      if (isLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
+                  // Training content
+                  Expanded(
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: _controller.isLoading,
+                      builder: (context, isLoading, child) {
+                        if (isLoading) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
 
-                      return ValueListenableBuilder<String?>(
-                        valueListenable: _controller.errorMessage,
-                        builder: (context, errorMessage, child) {
-                          if (errorMessage != null) {
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    errorMessage,
-                                    style: const TextStyle(color: AppTheme.cardColorRed),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  TextButton(
-                                    onPressed: _controller.loadTrainings,
-                                    child: const Text("Retry"),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-
-                          return ValueListenableBuilder<List<Training>>(
-                            valueListenable: _controller.trainingsData,
-                            builder: (context, trainings, child) {
-                              return Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 16),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.cardColor,
-                                  borderRadius: BorderRadius.circular(15),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 10,
-                                      spreadRadius: 1,
-                                    ),
-                                  ],
-                                ),
-                                child: ListView(
-                                  padding: EdgeInsets.zero,
+                        return ValueListenableBuilder<String?>(
+                          valueListenable: _controller.errorMessage,
+                          builder: (context, errorMessage, child) {
+                            if (errorMessage != null) {
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    // Section for Assigned Trainings
-                                    _buildSectionTitle("Assigned Trainings"),
-                                    if (_controller.assignedTrainings.isEmpty)
-                                      _buildEmptyState("No assigned trainings found.")
-                                    else
-                                      ...List.generate(
-                                        _controller.assignedTrainings.length,
-                                            (index) => _buildTrainingItem(
-                                          _controller.assignedTrainings[index],
-                                          isAssigned: true,
-                                        ),
-                                      ),
-
-                                    const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                                      child: Divider(
-                                        height: 1,
-                                        thickness: 1,
-                                        color: AppTheme.textSecondaryColor, // Light gray color
-                                      ),
+                                    Text(
+                                      errorMessage,
+                                      style: const TextStyle(color: AppTheme.cardColorRed),
+                                      textAlign: TextAlign.center,
                                     ),
-
-                                    // Section for Completed Trainings
-                                    _buildSectionTitle("Completed Trainings"),
-                                    if (_controller.completedTrainings.isEmpty)
-                                      _buildEmptyState("No completed trainings found.")
-                                    else
-                                      ...List.generate(
-                                        _controller.completedTrainings.length,
-                                            (index) => _buildTrainingItem(
-                                          _controller.completedTrainings[index],
-                                          isAssigned: false,
-                                        ),
-                                      ),
+                                    TextButton(
+                                      onPressed: _controller.loadTrainings,
+                                      child: const Text("Retry"),
+                                    ),
                                   ],
                                 ),
                               );
-                            },
-                          );
-                        },
-                      );
-                    },
+                            }
+
+                            return ValueListenableBuilder<List<Training>>(
+                              valueListenable: _controller.trainingsData,
+                              builder: (context, trainings, child) {
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.cardColor,
+                                    borderRadius: BorderRadius.circular(15),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 10,
+                                        spreadRadius: 1,
+                                      ),
+                                    ],
+                                  ),
+                                  child: ListView(
+                                    padding: EdgeInsets.zero,
+                                    children: [
+                                      // Section for Assigned Trainings
+                                      _buildSectionTitle("Assigned Trainings"),
+                                      if (_controller.assignedTrainings.isEmpty)
+                                        _buildEmptyState("No assigned trainings found.")
+                                      else
+                                        ...List.generate(
+                                          _controller.assignedTrainings.length,
+                                              (index) => _buildTrainingItem(
+                                            _controller.assignedTrainings[index],
+                                            isAssigned: true,
+                                          ),
+                                        ),
+
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                                        child: Divider(
+                                          height: 1,
+                                          thickness: 1,
+                                          color: AppTheme.textSecondaryColor, // Light gray color
+                                        ),
+                                      ),
+
+                                      // Section for Completed Trainings
+                                      _buildSectionTitle("Completed Trainings"),
+                                      if (_controller.completedTrainings.isEmpty)
+                                        _buildEmptyState("No completed trainings found.")
+                                      else
+                                        ...List.generate(
+                                          _controller.completedTrainings.length,
+                                              (index) => _buildTrainingItem(
+                                            _controller.completedTrainings[index],
+                                            isAssigned: false,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

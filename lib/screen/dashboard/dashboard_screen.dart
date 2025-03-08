@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/screen/dashboard/dashboard_controller.dart';
+import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key,});
@@ -46,177 +47,176 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // String? temperature = widget.weatherData?['temperature'];
-    // String time = formatDate(widget.weatherData?['time']);
-    // String iconUrl = widget.weatherData?['iconLink'];
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: RefreshIndicator(
-        onRefresh: _controller.refreshDashboardData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [AppTheme.primaryShadow],
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Weather
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.wb_sunny,
+    return ConnectivityWidget(
+      child: Scaffold(
+        backgroundColor: AppTheme.backgroundColor,
+        body: RefreshIndicator(
+          onRefresh: _controller.refreshDashboardData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [AppTheme.primaryShadow],
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Weather
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.wb_sunny,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 8),
+                            ValueListenableBuilder<String>(
+                              valueListenable: _controller.temperature,
+                              builder: (context, temperature, _) {
+                                return ValueListenableBuilder<String>(
+                                  valueListenable: _controller.date,
+                                  builder: (context, date, _) {
+                                    return Text(
+                                      "$temperature  $date",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+
+
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Quote
+                        const Text(
+                          "Quote of the day",
+                          style: TextStyle(
                             color: Colors.white,
-                            size: 24,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 8),
-                          ValueListenableBuilder<String>(
-                            valueListenable: _controller.temperature,
-                            builder: (context, temperature, _) {
-                              return ValueListenableBuilder<String>(
-                                valueListenable: _controller.date,
-                                builder: (context, date, _) {
-                                  return Text(
-                                    "$temperature  $date",
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-
-
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Quote
-                      const Text(
-                        "Quote of the day",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      ValueListenableBuilder<String>(
-                        valueListenable: _controller.quote,
-                        builder: (context, quote, _) {
-                          return Text(
-                            quote,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 4),
-                      ValueListenableBuilder<String>(
-                        valueListenable: _controller.quoteAuthor,
-                        builder: (context, author, _) {
-                          return Text(
-                            "- $author",
-                            textAlign: TextAlign.right,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        ValueListenableBuilder<String>(
+                          valueListenable: _controller.quote,
+                          builder: (context, quote, _) {
+                            return Text(
+                              quote,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 4),
+                        ValueListenableBuilder<String>(
+                          valueListenable: _controller.quoteAuthor,
+                          builder: (context, author, _) {
+                            return Text(
+                              "- $author",
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                // Title for Ads section
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Latest Advertisements",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimaryColor,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        "Swipe to view all",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppTheme.textSecondaryColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                ValueListenableBuilder<bool>(
-                  valueListenable: _controller.isLoading,
-                  builder: (context, isLoading, _) {
-                    if (isLoading) {
-                      return Container(
-                        height: 400,
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        alignment: Alignment.center,
-                        child: const CircularProgressIndicator(),
-                      );
-                    }
-
-                    return ValueListenableBuilder<List<AdItem>>(
-                      valueListenable: _controller.adItems,
-                      builder: (context, adItems, _) {
-                        if (adItems.isEmpty) {
-                          return _buildAppDownloadCard();
-                        }
-
-                        return SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.7,
-                          child: PageView.builder(
-                            controller: _pageController,
-                            itemCount: adItems.length,
-                            onPageChanged: (index) {
-                              _controller.setCurrentIndex(index);
-                            },
-                            itemBuilder: (context, index) {
-                              return SingleChildScrollView(
-                                child: _buildAdCard(adItems[index]),
-                              );
-                            },
+                  // Title for Ads section
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Latest Advertisements",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimaryColor,
                           ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          "Swipe to view all",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppTheme.textSecondaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  ValueListenableBuilder<bool>(
+                    valueListenable: _controller.isLoading,
+                    builder: (context, isLoading, _) {
+                      if (isLoading) {
+                        return Container(
+                          height: 400,
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          alignment: Alignment.center,
+                          child: const CircularProgressIndicator(),
                         );
-                      },
-                    );
-                  },
-                ),
-              ],
+                      }
+
+                      return ValueListenableBuilder<List<AdItem>>(
+                        valueListenable: _controller.adItems,
+                        builder: (context, adItems, _) {
+                          if (adItems.isEmpty) {
+                            return _buildAppDownloadCard();
+                          }
+
+                          return SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.7,
+                            child: PageView.builder(
+                              controller: _pageController,
+                              itemCount: adItems.length,
+                              onPageChanged: (index) {
+                                _controller.setCurrentIndex(index);
+                              },
+                              itemBuilder: (context, index) {
+                                return SingleChildScrollView(
+                                  child: _buildAdCard(adItems[index]),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
