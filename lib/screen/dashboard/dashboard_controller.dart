@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:meetsu_solutions/model/job&ads/job_and_ads_response_model.dart';
 import 'dart:async';
 import 'package:meetsu_solutions/services/api/api_service.dart';
@@ -6,6 +9,8 @@ import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 import 'package:meetsu_solutions/utils/extra/html_parsers.dart';
 import 'package:share_plus/share_plus.dart';
+
+import '../../model/weather/weather_response_model.dart';
 
 class AdItem {
   final int id;
@@ -62,9 +67,10 @@ class DashboardController {
       : _apiService = apiService ?? ApiService(ApiClient()) {
     // Fetch ads data when controller is initialized
     fetchAdsData();
-
+    // fetchWeatherData();
     // Setup auto-scroll timer
     _setupAutoScroll();
+
   }
 
   // Set up auto-scrolling
@@ -196,7 +202,7 @@ class DashboardController {
 
   // Dispose resources
   void dispose() {
-    temperature.dispose();
+    temperature1.dispose();
     date.dispose();
     quote.dispose();
     quoteAuthor.dispose();
@@ -206,4 +212,105 @@ class DashboardController {
     benefits.dispose();
     _autoScrollTimer?.cancel();
   }
+
+  void initialize() {
+    isLoading.value = true;
+
+    // Fetch token
+    final token = SharedPrefsService.instance.getAccessToken();
+    if (token != null && token.isNotEmpty) {
+      _apiService.client.addAuthToken(token);
+    }
+
+    debugPrint("🔄 Initializing Dashboard...");
+    debugPrint("🔄 weather Dashboard...");
+    // Ensure weather API call is made
+    fetchWeatherData();
+    // fetchAdsData();
+  }
+
+  // Profile data ValueNotifier
+  final ValueNotifier<GetWeatherResponse?> getWeatherData = ValueNotifier<GetWeatherResponse?>(null);
+  // ValueNotifiers for reactive state management
+  final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
+  ValueNotifier<String> iconLink = ValueNotifier('');
+  final ValueNotifier<String> temperature1 = ValueNotifier<String>("");
+  final ValueNotifier<String> date1 = ValueNotifier<String>("");
+
+  ValueNotifier<String> time = ValueNotifier('');
+  // Fetch profile data from API
+  // Future<void> fetchWeatherData() async {
+  //   try {
+  //     final response = await _apiService.getWeather();
+  //     final jsonResponse = jsonDecode(response['temperature']); // Decode JSON string
+  //
+  //
+  //     // Extract values
+  //     String? iconLink = jsonResponse['iconLink'];
+  //     double? temp = jsonResponse['temperature'];
+  //     String? time = jsonResponse['time'];
+  //
+  //
+  //     // Format time (e.g., "Mar 08, 2025")
+  //     DateTime parsedTime = DateTime.parse(time ?? '');
+  //     String formattedTime = DateFormat("MMM dd, yyyy").format(parsedTime);
+  //
+  //
+  //     // Update ValueNotifiers
+  //     iconLink = iconLink ?? '';
+  //     temperature1.value = "${temp?.toStringAsFixed(1)}°C"; // 1 decimal place
+  //     time = formattedTime;
+  //     // Parse the profile response
+  //     final weather = GetWeatherResponse.fromJson(response);
+  //     // Update ValueNotifiers with weather data
+  //     temperature1.value = weather.temperature ?? "N/A";
+  //     date.value = weather.temperature ?? "Unknown Date";
+  //     getWeatherData.value = weather;
+  //     debugPrint("🔄 weather Dashboard...${getWeatherData.value.toString()}");
+  //     debugPrint("🔄 weather Dashboard...${iconLink}");
+  //     debugPrint("🔄 weather Dashboard...${temperature1.value}");
+  //     debugPrint("🔄 weather Dashboard...${time}");
+  //
+  //     debugPrint("🔄 weather Dashboard...");
+  //
+  //     errorMessage.value = null;
+  //   } catch (e) {
+  //     errorMessage.value = "Failed to load profile data: ${e.toString()}";
+  //
+  //   } finally {
+  //     isLoading.value = false;
+  //   }
+  // }
+  Future<void> fetchWeatherData() async {
+    try {
+      isLoading.value = true;
+
+      final response = await _apiService.getWeather();
+      debugPrint("📥 Raw Weather API Response: ${jsonEncode(response)}");
+
+      if (response != null) {
+        final weather = GetWeatherResponse.fromJson(response);
+
+        // Validate extracted values
+        debugPrint("🌡 Temperature: ${weather.temperature}");
+        debugPrint("📅 Date: ${weather.date}");
+        debugPrint("🌤 Icon: ${weather.icon}");
+
+        temperature1.value = weather.temperature ?? "N/A";
+        date.value = weather.date ?? "Unknown Date";
+        iconLink.value = weather.icon ?? "";
+
+        getWeatherData.value = weather;
+        debugPrint("✅ Weather Data Updated");
+      } else {
+        errorMessage.value = "Failed to fetch weather data: Response is null";
+      }
+    } catch (e) {
+      errorMessage.value = "❌ Error: ${e.toString()}";
+      debugPrint("❌ Weather API Error: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
 }
