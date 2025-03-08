@@ -16,6 +16,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
   @override
   void initState() {
     super.initState();
+    // Call loadTrainings which now fetches both assigned and completed trainings
     _controller.loadTrainings();
   }
 
@@ -139,52 +140,63 @@ class _TrainingScreenState extends State<TrainingScreen> {
                             );
                           }
 
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: AppTheme.cardColor,
-                              borderRadius: BorderRadius.circular(15),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 10,
-                                  spreadRadius: 1,
+                          return ValueListenableBuilder<List<Training>>(
+                            valueListenable: _controller.trainingsData,
+                            builder: (context, trainings, child) {
+                              return Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.cardColor,
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 10,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: ListView(
-                              padding: EdgeInsets.zero,
-                              children: [
-                                // Section for Assigned Trainings
-                                _buildSectionTitle("Assigned Trainings"),
-                                ...List.generate(
-                                  _controller.assignedTrainings.length,
-                                      (index) => _buildTrainingItem(
-                                    _controller.assignedTrainings[index],
-                                    isAssigned: true,
-                                  ),
-                                ),
+                                child: ListView(
+                                  padding: EdgeInsets.zero,
+                                  children: [
+                                    // Section for Assigned Trainings
+                                    _buildSectionTitle("Assigned Trainings"),
+                                    if (_controller.assignedTrainings.isEmpty)
+                                      _buildEmptyState("No assigned trainings found.")
+                                    else
+                                      ...List.generate(
+                                        _controller.assignedTrainings.length,
+                                            (index) => _buildTrainingItem(
+                                          _controller.assignedTrainings[index],
+                                          isAssigned: true,
+                                        ),
+                                      ),
 
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                                  child: Divider(
-                                    height: 1,
-                                    thickness: 1,
-                                    color: AppTheme.textSecondaryColor, // Light gray color
-                                  ),
-                                ),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                                      child: Divider(
+                                        height: 1,
+                                        thickness: 1,
+                                        color: AppTheme.textSecondaryColor, // Light gray color
+                                      ),
+                                    ),
 
-                                // Section for Completed Trainings
-                                _buildSectionTitle("Completed Trainings"),
-                                ...List.generate(
-                                  _controller.completedTrainings.length,
-                                      (index) => _buildTrainingItem(
-                                    _controller.completedTrainings[index],
-                                    isAssigned: false,
-                                  ),
+                                    // Section for Completed Trainings
+                                    _buildSectionTitle("Completed Trainings"),
+                                    if (_controller.completedTrainings.isEmpty)
+                                      _buildEmptyState("No completed trainings found.")
+                                    else
+                                      ...List.generate(
+                                        _controller.completedTrainings.length,
+                                            (index) => _buildTrainingItem(
+                                          _controller.completedTrainings[index],
+                                          isAssigned: false,
+                                        ),
+                                      ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              );
+                            },
                           );
                         },
                       );
@@ -196,6 +208,21 @@ class _TrainingScreenState extends State<TrainingScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String message) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Center(
+        child: Text(
+          message,
+          style: TextStyle(
+            color: AppTheme.textSecondaryColor,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
       ),
     );
   }
@@ -229,7 +256,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
-                Icons.school,
+                isAssigned ? Icons.school : Icons.check_circle,
                 color: AppTheme.primaryColor,
                 size: 20,
               ),
@@ -256,6 +283,18 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       color: AppTheme.textSecondaryColor,
                     ),
                   ),
+                  if (training.document != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      "Document: ${training.document}",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.textSecondaryColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ],
               ),
             ),

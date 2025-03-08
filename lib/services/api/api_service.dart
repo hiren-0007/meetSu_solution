@@ -36,6 +36,16 @@ class ApiService {
     return await _client.get(ApiEndpoints.compliance);
   }
 
+  // Assigned Training related APIs
+  Future<Map<String, dynamic>> getTrainingAssigned() async {
+    return await _client.get(ApiEndpoints.getTrainingAssigned);
+  }
+
+  // Completed Training related APIs
+  Future<Map<String, dynamic>> getTrainingCompleted() async {
+    return await _client.get(ApiEndpoints.getTrainingCompleted);
+  }
+
   // Contact related APIs
   Future<Map<String, dynamic>> submitContactForm(Map<String, String> data) async {
     return await client.post(ApiEndpoints.contactUs, body: data);
