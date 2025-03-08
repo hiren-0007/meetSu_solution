@@ -64,4 +64,9 @@ class ApiService {
         fileField: fileFieldName
     );
   }
+
+  // Weather related APIs
+  Future<Map<String, dynamic>> getWeather() async {
+    return await _client.get(ApiEndpoints.getWeather);
+  }
 }
