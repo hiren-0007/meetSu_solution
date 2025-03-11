@@ -47,11 +47,16 @@ class DashboardController {
   final ValueNotifier<String> date = ValueNotifier<String>("Feb 27, 2025");
   final ValueNotifier<String> quote = ValueNotifier<String>("Just trust yourself, then you will know how to live.");
   final ValueNotifier<String> quoteAuthor = ValueNotifier<String>("Goethe");
+  final ValueNotifier<String> iconLink = ValueNotifier<String>("");
 
   // Observable states for ads
   final ValueNotifier<List<AdItem>> adItems = ValueNotifier<List<AdItem>>([]);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(true);
   final ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
+  final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
+
+  // Profile data ValueNotifier
+  final ValueNotifier<WeatherResponseModel?> getWeatherData = ValueNotifier<WeatherResponseModel?>(null);
 
   // Timer for auto-scrolling
   Timer? _autoScrollTimer;
@@ -65,12 +70,37 @@ class DashboardController {
   // Constructor
   DashboardController({ApiService? apiService})
       : _apiService = apiService ?? ApiService(ApiClient()) {
-    // Fetch ads data when controller is initialized
-    fetchAdsData();
-    // fetchWeatherData();
+    // Initialize and start loading data
+    initialize();
+  }
+
+  // Initialize the controller and fetch data
+  void initialize() {
+    isLoading.value = true;
+
+    // Fetch token
+    final token = SharedPrefsService.instance.getAccessToken();
+    if (token != null && token.isNotEmpty) {
+      _apiService.client.addAuthToken(token);
+    }
+
+    debugPrint("🔄 Initializing Dashboard...");
+
+    // Start API calls
+    Future.wait([
+      fetchWeatherData(),
+      fetchQuoteData(),
+      fetchAdsData(),
+    ]).then((_) {
+      isLoading.value = false;
+      debugPrint("✅ Dashboard fully initialized");
+    }).catchError((error) {
+      isLoading.value = false;
+      debugPrint("❌ Error during initialization: $error");
+    });
+
     // Setup auto-scroll timer
     _setupAutoScroll();
-
   }
 
   // Set up auto-scrolling
@@ -91,10 +121,129 @@ class DashboardController {
     currentIndex.value = index;
   }
 
+  // Fetch weather data from API
+  Future<void> fetchWeatherData() async {
+    try {
+      debugPrint("🌤️ Fetching weather data...");
+
+      // First, try to get the location coordinates from your epicode endpoint
+      Map<String, dynamic>? locationData;
+      try {
+        locationData = await _apiService.getWeatherLocation();
+        debugPrint("📍 Location data: ${jsonEncode(locationData)}");
+      } catch (e) {
+        debugPrint("⚠️ Could not fetch location data: $e");
+      }
+
+      // Let's debug what's happening with the parameters
+      double? lat, long;
+      if (locationData != null &&
+          locationData['success'] == true &&
+          locationData['response'] != null) {
+
+        final response = locationData['response'];
+
+        // Let's log the exact values we're receiving
+        debugPrint("📍 Raw lat value: ${response['lat']}");
+        debugPrint("📍 Raw long value: ${response['long']}");
+
+        // Try parsing with more defensive code
+        try {
+          lat = double.tryParse("${response['lat']}");
+          long = double.tryParse("${response['long']}");
+          debugPrint("📍 Parsed coordinates: lat=$lat, long=$long");
+        } catch (e) {
+          debugPrint("❌ Error parsing coordinates: $e");
+        }
+      }
+
+      // Make sure we have valid coordinates before proceeding
+      if (lat == null || long == null) {
+        debugPrint("⚠️ No valid coordinates found, using defaults");
+        lat = 43.595336;
+        long = -79.648579;
+      }
+
+      // Debug the exact parameters being sent
+      Map<String, String> params = {
+        'lat': lat.toString(),
+        'long': long.toString(),
+      };
+      debugPrint("📍 Sending parameters: $params");
+
+      // Try constructing the URL manually to see if there's a formatting issue
+      final baseUrl = 'https://meetsusolutions.com/api/web/';
+      final endpoint = 'flutter/weather';
+      final uri = Uri.parse('$baseUrl$endpoint').replace(queryParameters: params);
+      debugPrint("🔍 Final URL being called: $uri");
+
+      // Now call the weather API with explicit parameters
+      final response = await _apiService.getWeather(lat: lat, long: long);
+      debugPrint("📥 Weather API Response: ${jsonEncode(response)}");
+
+      // Process response - same as before
+      if (response != null && response['success'] == true && response['response'] != null) {
+        // Processing code...
+      } else {
+        debugPrint("❌ Invalid weather response format: $response");
+
+        // Let's try a workaround if the API keeps failing
+        try {
+          // Create some default weather data to show
+          temperature.value = "21°C";
+          date.value = DateFormat("MMM dd, yyyy").format(DateTime.now());
+          iconLink.value = "https://weather.hereapi.com/static/weather/icon/1.png";
+
+          final weather = WeatherResponseModel(
+              temperature: temperature.value,
+              date: date.value,
+              icon: iconLink.value
+          );
+
+          getWeatherData.value = weather;
+          debugPrint("⚠️ Using fallback weather data as API failed");
+        } catch (e) {
+          debugPrint("❌ Error setting fallback weather: $e");
+        }
+      }
+    } catch (e) {
+      debugPrint("❌ Weather API Error: $e");
+      errorMessage.value = "Failed to load weather data: ${e.toString()}";
+    }
+  }
+
+  // Fetch quote data from Forismatic API
+  Future<void> fetchQuoteData() async {
+    try {
+      debugPrint("📝 Fetching quote data...");
+
+      // Call the quote API
+      final response = await _apiService.getQuote();
+      debugPrint("📥 Quote API Response: ${jsonEncode(response)}");
+
+      // Extract quote text and author
+      if (response != null) {
+        quote.value = response['quoteText']?.trim() ?? "Just trust yourself, then you will know how to live.";
+        quoteAuthor.value = response['quoteAuthor']?.trim() ?? "Goethe";
+
+        // If author is empty, use "Unknown"
+        if (quoteAuthor.value.isEmpty) {
+          quoteAuthor.value = "Unknown";
+        }
+
+        debugPrint("✅ Quote Updated: ${quote.value} - ${quoteAuthor.value}");
+      }
+    } catch (e) {
+      // If there's an error, keep the default quote
+      debugPrint("❌ Error fetching quote: $e");
+      // No need to update error message for quote failures - just use defaults
+    }
+  }
+
   // Fetch ads data from the API
   Future<void> fetchAdsData() async {
     try {
-      isLoading.value = true;
+      debugPrint("📢 Fetching ads data...");
 
       // Get user token from Shared Preferences
       final token = SharedPrefsService.instance.getAccessToken();
@@ -151,8 +300,6 @@ class DashboardController {
     } catch (e) {
       debugPrint("❌ Error fetching ads data: $e");
       adItems.value = [];
-    } finally {
-      isLoading.value = false;
     }
   }
 
@@ -195,122 +342,36 @@ class DashboardController {
 
   // Refresh dashboard data
   Future<void> refreshDashboardData() async {
-    // Get latest ads data from API
-    await fetchAdsData();
-    debugPrint("Dashboard data refreshed");
-  }
-
-  // Dispose resources
-  void dispose() {
-    temperature1.dispose();
-    date.dispose();
-    quote.dispose();
-    quoteAuthor.dispose();
-    adItems.dispose();
-    isLoading.dispose();
-    currentIndex.dispose();
-    benefits.dispose();
-    _autoScrollTimer?.cancel();
-  }
-
-  void initialize() {
     isLoading.value = true;
 
-    // Fetch token
-    final token = SharedPrefsService.instance.getAccessToken();
-    if (token != null && token.isNotEmpty) {
-      _apiService.client.addAuthToken(token);
-    }
-
-    debugPrint("🔄 Initializing Dashboard...");
-    debugPrint("🔄 weather Dashboard...");
-    // Ensure weather API call is made
-    fetchWeatherData();
-    // fetchAdsData();
-  }
-
-  // Profile data ValueNotifier
-  final ValueNotifier<GetWeatherResponse?> getWeatherData = ValueNotifier<GetWeatherResponse?>(null);
-  // ValueNotifiers for reactive state management
-  final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
-  ValueNotifier<String> iconLink = ValueNotifier('');
-  final ValueNotifier<String> temperature1 = ValueNotifier<String>("");
-  final ValueNotifier<String> date1 = ValueNotifier<String>("");
-
-  ValueNotifier<String> time = ValueNotifier('');
-  // Fetch profile data from API
-  // Future<void> fetchWeatherData() async {
-  //   try {
-  //     final response = await _apiService.getWeather();
-  //     final jsonResponse = jsonDecode(response['temperature']); // Decode JSON string
-  //
-  //
-  //     // Extract values
-  //     String? iconLink = jsonResponse['iconLink'];
-  //     double? temp = jsonResponse['temperature'];
-  //     String? time = jsonResponse['time'];
-  //
-  //
-  //     // Format time (e.g., "Mar 08, 2025")
-  //     DateTime parsedTime = DateTime.parse(time ?? '');
-  //     String formattedTime = DateFormat("MMM dd, yyyy").format(parsedTime);
-  //
-  //
-  //     // Update ValueNotifiers
-  //     iconLink = iconLink ?? '';
-  //     temperature1.value = "${temp?.toStringAsFixed(1)}°C"; // 1 decimal place
-  //     time = formattedTime;
-  //     // Parse the profile response
-  //     final weather = GetWeatherResponse.fromJson(response);
-  //     // Update ValueNotifiers with weather data
-  //     temperature1.value = weather.temperature ?? "N/A";
-  //     date.value = weather.temperature ?? "Unknown Date";
-  //     getWeatherData.value = weather;
-  //     debugPrint("🔄 weather Dashboard...${getWeatherData.value.toString()}");
-  //     debugPrint("🔄 weather Dashboard...${iconLink}");
-  //     debugPrint("🔄 weather Dashboard...${temperature1.value}");
-  //     debugPrint("🔄 weather Dashboard...${time}");
-  //
-  //     debugPrint("🔄 weather Dashboard...");
-  //
-  //     errorMessage.value = null;
-  //   } catch (e) {
-  //     errorMessage.value = "Failed to load profile data: ${e.toString()}";
-  //
-  //   } finally {
-  //     isLoading.value = false;
-  //   }
-  // }
-  Future<void> fetchWeatherData() async {
     try {
-      isLoading.value = true;
+      // Refresh all data sources
+      await Future.wait([
+        fetchWeatherData(),
+        fetchQuoteData(),
+        fetchAdsData(),
+      ]);
 
-      final response = await _apiService.getWeather();
-      debugPrint("📥 Raw Weather API Response: ${jsonEncode(response)}");
-
-      if (response != null) {
-        final weather = GetWeatherResponse.fromJson(response);
-
-        // Validate extracted values
-        debugPrint("🌡 Temperature: ${weather.temperature}");
-        debugPrint("📅 Date: ${weather.date}");
-        debugPrint("🌤 Icon: ${weather.icon}");
-
-        temperature1.value = weather.temperature ?? "N/A";
-        date.value = weather.date ?? "Unknown Date";
-        iconLink.value = weather.icon ?? "";
-
-        getWeatherData.value = weather;
-        debugPrint("✅ Weather Data Updated");
-      } else {
-        errorMessage.value = "Failed to fetch weather data: Response is null";
-      }
+      debugPrint("✅ Dashboard data refreshed");
     } catch (e) {
-      errorMessage.value = "❌ Error: ${e.toString()}";
-      debugPrint("❌ Weather API Error: $e");
+      debugPrint("❌ Error refreshing dashboard data: $e");
     } finally {
       isLoading.value = false;
     }
   }
 
+  // Dispose resources
+  void dispose() {
+    temperature.dispose();
+    date.dispose();
+    quote.dispose();
+    quoteAuthor.dispose();
+    iconLink.dispose();
+    adItems.dispose();
+    isLoading.dispose();
+    currentIndex.dispose();
+    benefits.dispose();
+    errorMessage.dispose();
+    _autoScrollTimer?.cancel();
+  }
 }

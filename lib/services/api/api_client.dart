@@ -194,6 +194,32 @@ class ApiClient {
     }
   }
 
+  Future<Map<String, dynamic>> fetchQuote() async {
+    try {
+      final url = Uri.parse('https://api.forismatic.com/api/1.0/?method=getQuote&lang=en&format=json');
+
+      final client = http.Client();
+      try {
+        final response = await client.get(url)
+            .timeout(_connectionTimeout);
+
+        if (response.statusCode == 200) {
+          return json.decode(response.body);
+        } else {
+          throw HttpException(
+            statusCode: response.statusCode,
+            message: response.body,
+          );
+        }
+      } finally {
+        client.close();
+      }
+    } catch (e) {
+      debugPrint('Error fetching quote: $e');
+      throw _handleError(e);
+    }
+  }
+
   Map<String, dynamic> _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       Map<String, dynamic> responseData;

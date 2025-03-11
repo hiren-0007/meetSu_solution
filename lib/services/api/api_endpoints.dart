@@ -16,6 +16,8 @@ class ApiEndpoints {
 
   static const String getWeather = 'flutter/weather';
 
+  static const String getWeatherEpicode = 'flutter/weather-epicode';
+
   static const String getTrainingAssigned = 'flutter/training-assigned';
 
   static const String getTrainingCompleted = 'flutter/training-finished';

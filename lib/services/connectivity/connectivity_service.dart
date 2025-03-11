@@ -110,7 +110,7 @@ class ConnectivityService {
       backgroundColor: result == ConnectivityResult.none
           ? Colors.red
           : Colors.green,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 2),
     );
 
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
