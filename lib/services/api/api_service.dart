@@ -93,4 +93,14 @@ class ApiService {
   Future<Map<String, dynamic>> getQuote() async {
     return await _client.fetchQuote();
   }
+
+  //Training Doc related APIs
+  Future<Map<String, dynamic>> trainingDoc(Map<String, dynamic> userData) async {
+    return await _client.post(ApiEndpoints.trainingDoc, body: userData);
+  }
+
+  //Training Doc View related APIs
+  Future<Map<String, dynamic>> trainingDocView(Map<String, dynamic> userData) async {
+    return await _client.post(ApiEndpoints.trainingView, body: userData);
+  }
 }

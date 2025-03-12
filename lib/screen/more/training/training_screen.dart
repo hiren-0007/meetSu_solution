@@ -17,7 +17,6 @@ class _TrainingScreenState extends State<TrainingScreen> {
   @override
   void initState() {
     super.initState();
-    // Call loadTrainings which now fetches both assigned and completed trainings
     _controller.loadTrainings();
   }
 
@@ -246,7 +245,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
   Widget _buildTrainingItem(Training training, {required bool isAssigned}) {
     return InkWell(
-      onTap: () => _controller.viewTraining(context, training),
+      onTap: () {
+
+       _controller.viewTraining(context, training);      },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         child: Row(

@@ -69,8 +69,8 @@ class ApiClient {
         final response = await http.Response.fromStream(streamedResponse)
             .timeout(_receiveTimeout);
 
-        debugPrint('Response status: ${response.statusCode}');
-        debugPrint('Response body: ${response.body}');
+        // debugPrint('Response status: ${response.statusCode}');
+        // debugPrint('Response body: ${response.body}');
 
         return _handleResponse(response);
       } finally {
@@ -181,8 +181,8 @@ class ApiClient {
         final response = await http.Response.fromStream(streamedResponse)
             .timeout(_receiveTimeout);
 
-        debugPrint('Response status: ${response.statusCode}');
-        debugPrint('Response body: ${response.body}');
+        // debugPrint('Response status: ${response.statusCode}');
+        // debugPrint('Response body: ${response.body}');
 
         return _handleResponse(response);
       } finally {

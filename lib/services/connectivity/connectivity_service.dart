@@ -101,19 +101,19 @@ class ConnectivityService {
 
   // Show internet connectivity snackbar
   void showConnectivitySnackBar(BuildContext context, ConnectivityResult result) {
-    final snackBar = SnackBar(
-      content: Text(
-        result == ConnectivityResult.none
-            ? 'You are offline'
-            : 'You are online on ${result.name}',
-      ),
-      backgroundColor: result == ConnectivityResult.none
-          ? Colors.red
-          : Colors.green,
-      duration: const Duration(seconds: 2),
-    );
+    // final snackBar = SnackBar(
+    //   content: Text(
+    //     result == ConnectivityResult.none
+    //         ? 'You are offline'
+    //         : 'You are online on ${result.name}',
+    //   ),
+    //   backgroundColor: result == ConnectivityResult.none
+    //       ? Colors.red
+    //       : Colors.green,
+    //   duration: const Duration(seconds: 2),
+    // );
 
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    // ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   // Dispose resources

@@ -21,4 +21,8 @@ class ApiEndpoints {
   static const String getTrainingAssigned = 'flutter/training-assigned';
 
   static const String getTrainingCompleted = 'flutter/training-finished';
+
+  static const String trainingDoc = 'flutter/training-documents';
+
+  static const String trainingView = 'flutter/training-view';
 }
