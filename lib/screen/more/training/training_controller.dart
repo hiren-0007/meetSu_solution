@@ -1,9 +1,16 @@
+import 'dart:io';
+import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:meetsu_solutions/model/training/assigned_training_response_model.dart';
 import 'package:meetsu_solutions/model/training/completed_training_response_model.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
+import 'package:meetsu_solutions/utils/extra/pdf_view_handler.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class Training {
   final String id;
@@ -30,6 +37,7 @@ class TrainingController {
 
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
+  late final PdfViewHandler _pdfViewHandler;
 
   final ValueNotifier<List<Training>> trainingsData =
       ValueNotifier<List<Training>>([]);
@@ -47,6 +55,10 @@ class TrainingController {
               'Accept': 'application/json',
             })) {
     _initializeWithToken();
+
+    _pdfViewHandler = PdfViewHandler(
+      getAccessToken: () => SharedPrefsService.instance.getAccessToken() ?? '',
+    );
   }
 
   Future<void> _initializeWithToken() async {
@@ -243,10 +255,30 @@ class TrainingController {
                     };
 
                     final response = await _apiService.trainingDocView(viewData);
-                    // debugPrint('Training document view response: $response');
 
                     if (response != null) {
-                      debugPrint('Successfully retrieved training document view: $response');
+                      final String documentPath = response['document_path'] ?? '';
+
+                      if (documentPath.isNotEmpty) {
+                        // Remove trailing slash from base URL if present
+                        final String baseUrl = 'https://www.meetsusolutions.com'.trimRight().endsWith('/')
+                            ? 'https://www.meetsusolutions.com'.substring(0, 'https://www.meetsusolutions.com'.length - 1)
+                            : 'https://www.meetsusolutions.com';
+
+                        // Ensure document path starts with a slash
+                        final String normalizedPath = documentPath.startsWith('/')
+                            ? documentPath
+                            : '/$documentPath';
+
+                        // Join and encode
+                        String fullUrl = '$baseUrl$normalizedPath';
+
+                        // Replace spaces with %20
+                        String encodedUrl = fullUrl.replaceAll(' ', '%20');
+                        print('Final URL: $encodedUrl');
+
+                        await _pdfViewHandler.viewPdfWithCachedViewer(context, encodedUrl);
+                      }
                     }
                   } catch (e) {
                     debugPrint('Error viewing training document: $e');
