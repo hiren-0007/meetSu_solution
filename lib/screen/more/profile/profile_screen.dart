@@ -56,7 +56,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return ConnectivityWidget(
       child: Scaffold(
-        backgroundColor: const Color(0xFF2196F3), // Match blue background
+        backgroundColor: const Color(0xFF2196F3),
         body: SafeArea(
           child: ValueListenableBuilder<bool>(
             valueListenable: _controller.isLoading,
@@ -302,14 +302,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildInfoField("Last Login", loginInfo.lastLogin),
 
               const SizedBox(height: 24),
-              _buildSubmitButton("Update Info", () async {
-                final result = await _controller.submitProfile();
-                if (result && mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Profile updated successfully")),
-                  );
-                }
-              }),
             ],
           ),
         );
@@ -331,14 +323,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildInfoField("Certifications", aptitudeInfo.certifications),
 
               const SizedBox(height: 24),
-              _buildSubmitButton("Update Skills", () async {
-                final result = await _controller.submitProfile();
-                if (result && mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Skills updated successfully")),
-                  );
-                }
-              }),
             ],
           ),
         );
@@ -362,14 +346,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildInfoField("Country", addressInfo.country),
 
               const SizedBox(height: 24),
-              _buildSubmitButton("Update Address", () async {
-                final result = await _controller.submitProfile();
-                if (result && mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Address updated successfully")),
-                  );
-                }
-              }),
             ],
           ),
         );
@@ -443,9 +419,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
             ),
-            _buildSubmitButton("Add Education", () {
-              _controller.addEducation(context);
-            }),
           ],
         );
       },
@@ -536,9 +509,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
             ),
-            _buildSubmitButton("Add Experience", () {
-              _controller.addExperience(context);
-            }),
           ],
         );
       },
@@ -561,14 +531,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildInfoField("Social Security", credentialInfo.socialSecurity),
 
               const SizedBox(height: 24),
-              _buildSubmitButton("Update Credentials", () async {
-                final result = await _controller.submitProfile();
-                if (result && mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Credentials updated successfully")),
-                  );
-                }
-              }),
             ],
           ),
         );

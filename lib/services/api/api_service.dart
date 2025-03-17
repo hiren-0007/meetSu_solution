@@ -103,4 +103,9 @@ class ApiService {
   Future<Map<String, dynamic>> trainingDocView(Map<String, dynamic> userData) async {
     return await _client.post(ApiEndpoints.trainingView, body: userData);
   }
+
+  // Show check in button related APIs
+  Future<Map<String, dynamic>> getCheckInButton() async {
+    return await _client.get(ApiEndpoints.showCheckIn);
+  }
 }

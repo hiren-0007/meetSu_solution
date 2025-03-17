@@ -117,32 +117,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               _buildTextField("Referred By :", _referredByController),
               _buildTextField("Referred Relationship :", _referredRelationshipController),
 
-              const SizedBox(height: 30),
-
-              // Save Button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Save functionality
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Information Saved")),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                  ),
-                  child: const Text(
-                    "Save",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
