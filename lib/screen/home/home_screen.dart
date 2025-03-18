@@ -46,12 +46,12 @@ class _HomeScreenState extends State<HomeScreen> {
           //   icon: const Icon(Icons.menu, color: Colors.white),
           //   onPressed: () => _controller.openDrawer(context),
           // ),
-          // actions: [
-          //   IconButton(
-          //     icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-          //     onPressed: () => _controller.openNotifications(context),
-          //   ),
-          // ],
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.question_mark, color: Colors.white),
+              onPressed: () => _controller.openNotifications(context),
+            ),
+          ],
         ),
         body: ValueListenableBuilder<int>(
           valueListenable: _controller.selectedIndex,

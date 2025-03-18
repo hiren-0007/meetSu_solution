@@ -178,7 +178,8 @@ class DashboardController {
       debugPrint("🔍 Final URL being called: $uri");
 
       // Now call the weather API with explicit parameters
-      final response = await _apiService.getWeather(lat: lat, long: long);
+      // final response = await _apiService.getWeather(lat: lat, long: long);
+      final response = await _apiService.getWeather();
       debugPrint("📥 Weather API Response: ${jsonEncode(response)}");
 
       // Process response - same as before

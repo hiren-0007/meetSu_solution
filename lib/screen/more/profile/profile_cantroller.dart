@@ -12,7 +12,7 @@ class ProfileController {
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
 
-  // Profile data ValueNotifier
+  // Profile data ValueNotifier - using new ProfileResponseModel model
   final ValueNotifier<ProfileResponseModel?> profileData = ValueNotifier<ProfileResponseModel?>(null);
 
   // Section data ValueNotifiers
@@ -52,7 +52,7 @@ class ProfileController {
     try {
       final response = await _apiService.fetchProfile();
 
-      // Parse the profile response
+      // Parse the profile response with your new ProfileResponseModel model
       final profile = ProfileResponseModel.fromJson(response);
       profileData.value = profile;
 
@@ -71,102 +71,101 @@ class ProfileController {
 
   // Update all section data from profile response
   void _updateSectionDataFromProfile(ProfileResponseModel profile) {
-    if (profile.data != null) {
-      final data = profile.data!;
+    // Update login info
+    loginInfo.value = LoginInfo(
+      username: profile.data.username,
+      email: profile.data.email,
+      phone: profile.data.mobileNumber,
+      role: "Employee", // Default role or fetch from API
+      lastLogin: profile.data.lastLoginAt != 0
+          ? DateTime.fromMillisecondsSinceEpoch(profile.data.lastLoginAt * 1000).toString()
+          : "",
+    );
 
-      // Update login info
-      loginInfo.value = LoginInfo(
-        username: data.username ?? "",
-        email: data.email ?? "",
-        phone: data.mobileNumber ?? "",
-        role: "Employee", // Default role or fetch from API
-        lastLogin: data.lastLoginAt != null ?
-        DateTime.fromMillisecondsSinceEpoch(data.lastLoginAt! * 1000).toString() : "",
-      );
+    // Update personal info
+    personalInfo.value = PersonalInfo(
+      fullName: "${profile.data.firstName} ${profile.data.lastName}",
+      dateOfBirth: profile.data.dob,
+      gender: profile.data.gender,
+      maritalStatus: profile.data.maritalStatus,
+      nationality: profile.country, // Using country as nationality
+    );
 
-      // Update personal info
-      personalInfo.value = PersonalInfo(
-        fullName: "${data.firstName ?? ""} ${data.lastName ?? ""}",
-        dateOfBirth: data.dob ?? "",
-        gender: data.gender ?? "",
-        maritalStatus: data.maritalStatus ?? "",
-        nationality: "", // Not available in the API
-      );
+    // Update address info
+    addressInfo.value = AddressInfo(
+      street: profile.data.address,
+      city: profile.city,
+      state: profile.province,
+      postalCode: profile.data.postalCode,
+      country: profile.country,
+    );
 
-      // Update address info
-      addressInfo.value = AddressInfo(
-        street: data.address ?? "",
-        city: profile.city ?? "",
-        state: profile.province ?? "",
-        postalCode: data.postalCode ?? "",
-        country: profile.country ?? "",
-      );
+    // Calculate test scores from category_wise_answer
+    int totalQuestions = 0;
+    int correctAnswers = 0;
 
-      // Update aptitude info if available
-      if (profile.aptitude != null && profile.aptitude!.isNotEmpty) {
-        // Calculate test scores
-        int totalQuestions = 0;
-        int correctAnswers = 0;
+    profile.categoryWiseAnswer.forEach((key, value) {
+      totalQuestions += value.totalQuestion;
+      correctAnswers += value.correctAnswer;
+    });
 
-        for (var apt in profile.aptitude!) {
-          if (apt.correctAnswer == apt.givenAnswer.toString()) {
-            correctAnswers++;
-          }
-          totalQuestions++;
-        }
+    String testScore = totalQuestions > 0
+        ? "${correctAnswers}/${totalQuestions}"
+        : "0/0";
 
-        String testScore = totalQuestions > 0
-            ? "${correctAnswers}/${totalQuestions}"
-            : "0/0";
-
-        aptitudeInfo.value = AptitudeInfo(
-          testScores: testScore,
-          skills: data.language ?? "",
-          certifications: "",  // Not directly available in the API
-        );
-      }
-
-      // Update credential info
-      credentialInfo.value = CredentialInfo(
-        idNumber: data.employeeId?.toString() ?? "",
-        passport: "",  // Not directly available in the API
-        driversLicense: "",  // Not directly available in the API
-        taxId: "",  // Not directly available in the API
-        socialSecurity: data.sinNo ?? "",
-      );
-    }
+    // Update aptitude info
+    aptitudeInfo.value = AptitudeInfo(
+      testScores: testScore,
+      skills: profile.data.language,
+      certifications: _findCredentialByType(profile.credentials, "WHMIS 2025"), // Using WHMIS as an example
+    );
 
     // Update education list
-    if (profile.education != null && profile.education!.isNotEmpty) {
-      final educationItems = profile.education!.map((edu) =>
-          EducationInfo(
-            degree: edu.courseName ?? "",
-            institution: edu.collegeName ?? "",
-            startDate: "", // Not available in the API
-            endDate: edu.graduateYear ?? "",
-            grade: "", // Not available in the API
-          )
-      ).toList();
+    final educationItems = profile.education.map((edu) =>
+        EducationInfo(
+          degree: edu.courseName,
+          institution: edu.collegeName,
+          startDate: "", // Not available in the API
+          endDate: edu.graduateYear,
+          grade: "", // Not available in the API
+        )
+    ).toList();
 
-      educationList.value = educationItems;
-    }
+    educationList.value = educationItems;
 
     // Update experience list
-    if (profile.experience != null && profile.experience!.isNotEmpty) {
-      final experienceItems = profile.experience!.map((exp) =>
-          ExperienceInfo(
-            company: exp.companyName ?? "",
-            position: exp.positionName ?? "",
-            startDate: exp.startDate ?? "",
-            endDate: exp.endDate ?? "",
-            supervisor: exp.nameSupervisor ?? "",
-            responsibilities: exp.reasonForLeaving ?? "",
-            yearsOfExperience: exp.noExperience?.toString() ?? "0",
-          )
-      ).toList();
+    final experienceItems = profile.experience.map((exp) =>
+        ExperienceInfo(
+          company: exp.companyName,
+          position: exp.positionName,
+          startDate: exp.startDate,
+          endDate: exp.endDate,
+          supervisor: exp.nameSupervisor,
+          responsibilities: exp.reasonForLeaving,
+          yearsOfExperience: exp.noExperience.toString(),
+        )
+    ).toList();
 
-      experienceList.value = experienceItems;
+    experienceList.value = experienceItems;
+
+    // Update credential info - find specific document types
+    credentialInfo.value = CredentialInfo(
+      idNumber: profile.data.employeeId.toString(),
+      passport: _findCredentialByType(profile.credentials, "Passport"),
+      driversLicense: _findCredentialByType(profile.credentials, "Driver License"),
+      taxId: "", // Not directly available in the API
+      socialSecurity: profile.data.sinNo,
+    );
+  }
+
+  // Helper method to find credentials by document type
+  String _findCredentialByType(List<Credential> credentials, String type) {
+    for (var credential in credentials) {
+      if (credential.document.contains(type)) {
+        return credential.image;
+      }
     }
+    return "";
   }
 
   // Fetch mock user data (simulate API call) - Keep as fallback
@@ -221,13 +220,13 @@ class ProfileController {
 
     experienceList.value = [
       ExperienceInfo(
-        company: "sdf",
-        position: "sdf",
-        startDate: "2021-03-01",
-        endDate: "2021-03-04",
-        supervisor: "sdf",
-        responsibilities: "",
-        yearsOfExperience: "0",
+        company: "Tech Solutions Inc.",
+        position: "Junior Software Developer",
+        startDate: "2016-07",
+        endDate: "2018-05",
+        supervisor: "John Smith",
+        responsibilities: "Mobile app development, API integration",
+        yearsOfExperience: "2",
       ),
       ExperienceInfo(
         company: "Google LLC",
@@ -235,7 +234,7 @@ class ProfileController {
         startDate: "2018-06",
         endDate: "Present",
         supervisor: "Jane Smith",
-        responsibilities: "Lead development of Flutter applications, mentor junior developers, implement CI/CD pipelines",
+        responsibilities: "Lead development of Flutter applications, mentor junior developers",
         yearsOfExperience: "5",
       ),
     ];

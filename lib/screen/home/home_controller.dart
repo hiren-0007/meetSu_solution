@@ -17,12 +17,31 @@ class HomeController {
 
   // Open notifications
   void openNotifications(BuildContext context) {
-    // Show notifications or navigate to notifications screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Notifications will be shown here'),
-        backgroundColor: Colors.blueGrey,
-      ),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          title: Text("Upcoming Quiz"),
+          content: Text("Quiz will be on every Sunday at 12:00 PM"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+              ),
+              child: Text(
+                "Close",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
     );
     debugPrint("Open notifications");
   }

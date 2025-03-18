@@ -240,12 +240,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Text(
                               "We'd like to know more about you",
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 13,
                                 color: Colors.grey[600],
                               ),
                             ),
 
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 16),
 
                             // Content based on selected tab
                             Expanded(
@@ -312,19 +312,391 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Aptitude Tab
   Widget _buildAptitudeTab() {
     return ValueListenableBuilder(
-      valueListenable: _controller.aptitudeInfo,
-      builder: (context, aptitudeInfo, _) {
-        return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildInfoField("Test Scores", aptitudeInfo.testScores),
-              _buildInfoField("Skills", aptitudeInfo.skills),
-              _buildInfoField("Certifications", aptitudeInfo.certifications),
+      valueListenable: _controller.profileData,
+      builder: (context, profileData, _) {
+        if (profileData == null || profileData.aptitude.isEmpty) {
+          return Center(
+            child: Text(
+              "No aptitude information available",
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          );
+        }
 
-              const SizedBox(height: 24),
-            ],
-          ),
+        // Get aptitude test summary
+        int totalQuestions = 0;
+        int correctAnswers = 0;
+
+        // Calculate from category_wise_answer
+        profileData.categoryWiseAnswer.forEach((key, value) {
+          totalQuestions += value.totalQuestion;
+          correctAnswers += value.correctAnswer;
+        });
+
+        String testScore = totalQuestions > 0
+            ? "$correctAnswers/$totalQuestions"
+            : "0/0";
+
+        double scorePercentage = totalQuestions > 0
+            ? (correctAnswers / totalQuestions) * 100
+            : 0;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Aptitude Summary Card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Aptitude Test Results",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade800,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Score",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                          Text(
+                            testScore,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Percentage",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                          Text(
+                            "${scorePercentage.toStringAsFixed(1)}%",
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            // Category-wise results section
+            Text(
+              "Category Breakdown",
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Category list
+            Container(
+              height: 120,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: profileData.categoryWiseAnswer.length,
+                itemBuilder: (context, index) {
+                  final entry = profileData.categoryWiseAnswer.entries.elementAt(index);
+                  final categoryKey = entry.key;
+                  final category = entry.value;
+
+                  double categoryPercentage = category.totalQuestion > 0
+                      ? (category.correctAnswer / category.totalQuestion) * 100
+                      : 0;
+
+                  return Container(
+                    width: 120,
+                    margin: const EdgeInsets.only(right: 10),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          category.category,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[800],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          "${category.correctAnswer}/${category.totalQuestion}",
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "${categoryPercentage.toStringAsFixed(1)}%",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            // Questions and Answers Section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Questions & Answers",
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                Text(
+                  "${profileData.aptitude.length} Questions",
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Questions List
+            Expanded(
+              child: ListView.builder(
+                itemCount: profileData.aptitude.length,
+                itemBuilder: (context, index) {
+                  final question = profileData.aptitude[index];
+
+                  // Get the correct and given answer indices (convert from string to int)
+                  int correctAnsIndex = int.tryParse(question.correctAnswer) ?? 1;
+                  int givenAnsIndex = question.givenAnswer;
+
+                  // Check if the answer was correct
+                  bool isCorrect = correctAnsIndex == givenAnsIndex;
+
+                  // Create a list of answer options
+                  List<String> answerOptions = [
+                    question.answer1,
+                    question.answer2,
+                    question.answer3,
+                    question.answer4,
+                  ];
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey.shade300),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade100,
+                          offset: const Offset(0, 2),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Question
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                "${index + 1}",
+                                style: TextStyle(
+                                  color: Colors.blue.shade800,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    question.question,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "Category: ${question.category}",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // Answer Options
+                        ...List.generate(4, (i) {
+                          // Option letter (A, B, C, D)
+                          String optionLetter = String.fromCharCode(65 + i);
+
+                          // Check if this is the correct answer or the given answer
+                          bool isCorrectOption = correctAnsIndex == (i + 1);
+                          bool isGivenOption = givenAnsIndex == (i + 1);
+
+                          // Set color based on correctness and selection
+                          Color optionColor = Colors.transparent;
+                          Color textColor = Colors.black;
+
+                          if (isGivenOption) {
+                            if (isCorrect) {
+                              // Given answer is correct
+                              optionColor = Colors.green.shade100;
+                              textColor = Colors.green.shade800;
+                            } else {
+                              // Given answer is wrong
+                              optionColor = Colors.red.shade100;
+                              textColor = Colors.red.shade800;
+                            }
+                          } else if (isCorrectOption && !isCorrect) {
+                            // Show correct answer when user got it wrong
+                            optionColor = Colors.green.shade50;
+                            textColor = Colors.green.shade800;
+                          }
+
+                          return Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: optionColor,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: isGivenOption || (isCorrectOption && !isCorrect)
+                                    ? textColor.withOpacity(0.5)
+                                    : Colors.grey.shade300,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isGivenOption || (isCorrectOption && !isCorrect)
+                                          ? textColor
+                                          : Colors.grey.shade400,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    optionLetter,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: isGivenOption || (isCorrectOption && !isCorrect)
+                                          ? textColor
+                                          : Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    answerOptions[i],
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontWeight: isCorrectOption || isGivenOption
+                                          ? FontWeight.w500
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                                if (isGivenOption)
+                                  Icon(
+                                    isCorrect ? Icons.check_circle : Icons.cancel,
+                                    color: isCorrect ? Colors.green : Colors.red,
+                                    size: 18,
+                                  ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         );
       },
     );

@@ -5,6 +5,7 @@ import 'package:meetsu_solutions/screen/auth/signup/signup_screen.dart';
 import 'package:meetsu_solutions/screen/home/home_screen.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
+import 'package:meetsu_solutions/services/map/LocationService.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 
 class LoginController {
@@ -19,6 +20,8 @@ class LoginController {
 
   // API service
   final ApiService _apiService = ApiService(ApiClient());
+
+  final LocationService _locationService = LocationService();
 
   // Toggle password visibility
   void togglePasswordVisibility() {
@@ -66,6 +69,7 @@ class LoginController {
 
         // Navigate to home screen
         if (context.mounted) {
+          await requestLocationPermission(context);
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const HomeScreen())
@@ -91,6 +95,10 @@ class LoginController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> requestLocationPermission(BuildContext context) async {
+    await _locationService.handleLocationPermission(context);
   }
 
   // Navigate to signup screen

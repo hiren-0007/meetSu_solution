@@ -65,24 +65,24 @@ class ApiService {
     );
   }
 
-  // // Weather related APIs
-  // Future<Map<String, dynamic>> getWeather() async {
-  //   return await _client.get(ApiEndpoints.getWeather);
-  // }
-
-  // Add parameters to the getWeather method
-  Future<Map<String, dynamic>> getWeather({double? lat, double? long}) async {
-    Map<String, dynamic>? queryParams;
-
-    if (lat != null && long != null) {
-      queryParams = {
-        'lat': lat.toString(),
-        'long': long.toString(),
-      };
-    }
-
-    return await _client.get(ApiEndpoints.getWeather, queryParams: queryParams);
+  // Weather related APIs
+  Future<Map<String, dynamic>> getWeather() async {
+    return await _client.get(ApiEndpoints.getWeather);
   }
+
+  // // Add parameters to the getWeather method
+  // Future<Map<String, dynamic>> getWeather({double? lat, double? long}) async {
+  //   Map<String, dynamic>? queryParams;
+  //
+  //   if (lat != null && long != null) {
+  //     queryParams = {
+  //       'lat': lat.toString(),
+  //       'long': long.toString(),
+  //     };
+  //   }
+  //
+  //   return await _client.get(ApiEndpoints.getWeather, queryParams: queryParams);
+  // }
 
 // Add method to get location data
   Future<Map<String, dynamic>> getWeatherLocation() async {
