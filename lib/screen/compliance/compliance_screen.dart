@@ -181,7 +181,7 @@ class ComplianceScreenState extends State<ComplianceScreen> {
                                               ),
                                               onPressed: isLoading
                                                   ? null
-                                                  : () => _controller.downloadReport(
+                                                  : () => _controller.simpleDownloadReport(
                                                 context,
                                                 report,
                                               ),

@@ -108,4 +108,28 @@ class ApiService {
   Future<Map<String, dynamic>> getCheckInButton() async {
     return await _client.get(ApiEndpoints.showCheckIn);
   }
+
+  //Test related APIs
+  Future<Map<String, dynamic>> giveTest(Map<String, dynamic> userData) async {
+    return await _client.post(ApiEndpoints.giveTest, body: userData);
+  }
+
+  //Compliance Download related APIs
+  Future<Map<String, dynamic>> complianceDownload(Map<String, dynamic> userData) async {
+    return await _client.post(ApiEndpoints.complianceDownload, body: userData);
+  }
+
+  //Submit Test related APIs
+  Future<Map<String, dynamic>> submitTest(Map<String, dynamic> userData, {File? signatureFile}) async {
+    if (signatureFile != null) {
+      return await _client.postMultipart(
+          ApiEndpoints.submitTest,
+          body: userData,
+          file: signatureFile,
+          fileField: 'signature'
+      );
+    } else {
+      return await _client.post(ApiEndpoints.submitTest, body: userData);
+    }
+  }
 }

@@ -1,0 +1,14 @@
+def scriptDir = project.buildscript.sourceFile.parentFile.path
+def androidDir = "${scriptDir}/.."
+def resDir = "${androidDir}/app/src/main/res"
+
+// Copy provider_paths.xml to the open_file_android plugin build directory
+task copyProviderPaths(type: Copy) {
+    from "${resDir}/xml/provider_paths.xml"
+    into "${buildDir}/../open_file_android/intermediates/merged_res/debug/xml"
+    doLast {
+        println "Copied provider_paths.xml to open_file_android plugin"
+    }
+}
+
+preBuild.dependsOn(copyProviderPaths)

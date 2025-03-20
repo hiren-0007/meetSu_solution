@@ -1,15 +1,10 @@
-import 'dart:io';
-import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:meetsu_solutions/model/training/assigned_training_response_model.dart';
 import 'package:meetsu_solutions/model/training/completed_training_response_model.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
-import 'package:meetsu_solutions/utils/extra/pdf_view_handler.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:meetsu_solutions/utils/extra/pdf_viewer_screen_assigned_screen.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class Training {
@@ -37,10 +32,9 @@ class TrainingController {
 
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
-  late final PdfViewHandler _pdfViewHandler;
 
   final ValueNotifier<List<Training>> trainingsData =
-      ValueNotifier<List<Training>>([]);
+  ValueNotifier<List<Training>>([]);
 
   List<Training> get assignedTrainings =>
       trainingsData.value.where((t) => !t.isCompleted).toList();
@@ -50,15 +44,11 @@ class TrainingController {
 
   TrainingController({ApiService? apiService})
       : _apiService = apiService ??
-            ApiService(ApiClient(headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            })) {
+      ApiService(ApiClient(headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      })) {
     _initializeWithToken();
-
-    _pdfViewHandler = PdfViewHandler(
-      getAccessToken: () => SharedPrefsService.instance.getAccessToken() ?? '',
-    );
   }
 
   Future<void> _initializeWithToken() async {
@@ -84,7 +74,7 @@ class TrainingController {
       debugPrint('Assigned trainings response: $assignedResponse');
 
       final AssignedTrainingResponseModel assignedTrainings =
-          AssignedTrainingResponseModel.fromJson(assignedResponse);
+      AssignedTrainingResponseModel.fromJson(assignedResponse);
 
       if (assignedTrainings.data != null) {
         for (var item in assignedTrainings.data!) {
@@ -103,7 +93,7 @@ class TrainingController {
       debugPrint('Completed trainings response: $completedResponse');
 
       final CompletedTrainingResponseModel completedTrainings =
-          CompletedTrainingResponseModel.fromJson(completedResponse);
+      CompletedTrainingResponseModel.fromJson(completedResponse);
 
       if (completedTrainings.data != null) {
         for (var item in completedTrainings.data!) {
@@ -235,10 +225,90 @@ class TrainingController {
             ),
             if (!training.isCompleted)
               TextButton(
-                child: const Text("Mark as Completed"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  markAsCompleted(context, training);
+                child: const Text("Start Training"),
+                onPressed: () async {
+                  debugPrint('Starting training with ID: ${training.id}');
+                  isLoading.value = true;
+
+                  try {
+                    // Step 1: Call trainingDoc API to get document_id
+                    final Map<String, dynamic> docData = {
+                      'training_id': training.id
+                    };
+
+                    final response = await _apiService.trainingDoc(docData);
+                    debugPrint('Training document response: $response');
+
+                    String? docId;
+                    if (response != null &&
+                        response['data'] != null &&
+                        response['data'] is List &&
+                        response['data'].isNotEmpty &&
+                        response['data'][0]['document_id'] != null) {
+                      docId = response['data'][0]['document_id'].toString();
+                      debugPrint('Found document_id: $docId');
+
+                      // Step 2: Call trainingDocView API with document_id
+                      if (docId != null) {
+                        final Map<String, dynamic> viewData = {'document_id': docId};
+                        final viewResponse = await _apiService.trainingDocView(viewData);
+
+                        if (viewResponse != null) {
+                          final String documentPath = viewResponse['document_path'] ?? '';
+
+                          // Step 3: Create training data map to pass to PDF viewer
+                          // Include give_test flag and any other necessary data
+                          final Map<String, dynamic> trainingData = {
+                            'training_id': training.id,
+                            'document_id': docId,
+                            'give_test': viewResponse['give_test'] ?? 0, // Get give_test from response or default to 0
+                            'client_name': training.clientName,
+                            'training_name': training.trainingName,
+                          };
+
+                          if (documentPath.isNotEmpty) {
+                            String baseUrl = 'https://www.meetsusolutions.com';
+                            String normalizedPath = documentPath.startsWith('/') ? documentPath : '/$documentPath';
+                            String fullUrl = '$baseUrl$normalizedPath'.replaceAll(' ', '%20');
+
+                            debugPrint('Final PDF URL: $fullUrl');
+
+                            // Step 4: Open PDF Viewer Screen with training data
+                            Navigator.pop(context); // Close the dialog first
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PdfViewerScreenAssignedScreen(
+                                  pdfUrl: fullUrl,
+                                  trainingData: trainingData,
+                                ),
+                              ),
+                            );
+                          } else {
+                            throw Exception("Document path is empty");
+                          }
+                        } else {
+                          throw Exception("Failed to get document path");
+                        }
+                      } else {
+                        throw Exception("Document ID is null");
+                      }
+                    } else {
+                      throw Exception("No document found for this training");
+                    }
+                  } catch (e) {
+                    debugPrint('Error starting training: $e');
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Failed to start training: ${e.toString()}"),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  } finally {
+                    isLoading.value = false;
+                  }
                 },
               ),
             if (documentId != null)
@@ -246,38 +316,29 @@ class TrainingController {
                 child: const Text("Show Document"),
                 onPressed: () async {
                   debugPrint('Opening document with ID: $documentId');
-
                   isLoading.value = true;
 
                   try {
-                    final Map<String, dynamic> viewData = {
-                      'document_id': documentId
-                    };
-
+                    final Map<String, dynamic> viewData = {'document_id': documentId};
                     final response = await _apiService.trainingDocView(viewData);
 
                     if (response != null) {
                       final String documentPath = response['document_path'] ?? '';
 
                       if (documentPath.isNotEmpty) {
-                        // Remove trailing slash from base URL if present
-                        final String baseUrl = 'https://www.meetsusolutions.com'.trimRight().endsWith('/')
-                            ? 'https://www.meetsusolutions.com'.substring(0, 'https://www.meetsusolutions.com'.length - 1)
-                            : 'https://www.meetsusolutions.com';
+                        String baseUrl = 'https://www.meetsusolutions.com';
+                        String normalizedPath = documentPath.startsWith('/') ? documentPath : '/$documentPath';
+                        String fullUrl = '$baseUrl$normalizedPath'.replaceAll(' ', '%20');
 
-                        // Ensure document path starts with a slash
-                        final String normalizedPath = documentPath.startsWith('/')
-                            ? documentPath
-                            : '/$documentPath';
+                        debugPrint('Final PDF URL: $fullUrl');
 
-                        // Join and encode
-                        String fullUrl = '$baseUrl$normalizedPath';
-
-                        // Replace spaces with %20
-                        String encodedUrl = fullUrl.replaceAll(' ', '%20');
-                        print('Final URL: $encodedUrl');
-
-                        await _pdfViewHandler.viewPdfWithCachedViewer(context, encodedUrl);
+                        // Open PDF Viewer Screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PdfViewerScreen(pdfUrl: fullUrl),
+                          ),
+                        );
                       }
                     }
                   } catch (e) {
@@ -292,7 +353,6 @@ class TrainingController {
                     }
                   } finally {
                     isLoading.value = false;
-                    Navigator.of(context).pop();
                   }
                 },
               ),
@@ -329,9 +389,9 @@ class TrainingController {
 
                   if (success) {
                     final updatedTrainings =
-                        List<Training>.from(trainingsData.value);
+                    List<Training>.from(trainingsData.value);
                     final index =
-                        updatedTrainings.indexWhere((t) => t.id == training.id);
+                    updatedTrainings.indexWhere((t) => t.id == training.id);
 
                     if (index >= 0) {
                       final updatedTraining = Training(
@@ -414,7 +474,7 @@ class TrainingController {
       return true;
     } catch (e) {
       errorMessage.value =
-          "Failed to mark training as completed: ${e.toString()}";
+      "Failed to mark training as completed: ${e.toString()}";
       return false;
     }
   }
@@ -423,5 +483,19 @@ class TrainingController {
     isLoading.dispose();
     errorMessage.dispose();
     trainingsData.dispose();
+  }
+}
+
+class PdfViewerScreen extends StatelessWidget {
+  final String pdfUrl;
+
+  const PdfViewerScreen({super.key, required this.pdfUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("PDF Viewer")),
+      body: SfPdfViewer.network(pdfUrl),
+    );
   }
 }

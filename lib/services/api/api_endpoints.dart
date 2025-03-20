@@ -27,4 +27,10 @@ class ApiEndpoints {
   static const String trainingView = 'flutter/training-view';
 
   static const String showCheckIn = 'flutter/show-checkin';
+
+  static const String giveTest = 'flutter/test';
+
+  static const String submitTest = 'flutter/test-submit';
+
+  static const String complianceDownload = 'flutter/download-compliance';
 }

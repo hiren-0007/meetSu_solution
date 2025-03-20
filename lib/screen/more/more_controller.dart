@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meetsu_solutions/screen/more/location/check_in_screen.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
@@ -114,7 +115,7 @@ class MoreController {
           // Insert Check In item after Trainings
           if (trainingIndex != -1) {
             updatedMenuItems.insert(trainingIndex + 1, MenuItem(
-              icon: Icons.lock_clock,
+              icon: Icons.location_on,
               title: "Check In",
               route: "/check-in",
               iconColor: Colors.blue,
@@ -181,6 +182,13 @@ class MoreController {
             ],
           );
         },
+      );
+    } else if (route == "/check-in") {
+      // Navigate to the Check In screen
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const CheckInScreen(),
+        ),
       );
     } else {
       // Navigate to the route
