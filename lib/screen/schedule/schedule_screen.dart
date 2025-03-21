@@ -259,9 +259,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Date and Company
+                      // Date and Company - Make this responsive by wrapping in a Row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             item.date ?? "N/A",
@@ -270,11 +271,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               fontSize: 16,
                             ),
                           ),
-                          Text(
-                            item.company ?? "N/A",
-                            style: const TextStyle(
-                              color: AppTheme.primaryColor,
-                              fontWeight: FontWeight.w500,
+                          Flexible(
+                            child: Text(
+                              item.company ?? "N/A",
+                              style: const TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -287,10 +291,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                         children: [
                           const Icon(Icons.work, size: 16, color: AppTheme.textSecondaryColor),
                           const SizedBox(width: 8),
-                          Text(
-                            "Position: ${item.position ?? 'N/A'}",
-                            style: const TextStyle(
-                              color: AppTheme.textSecondaryColor,
+                          Expanded(
+                            child: Text(
+                              "Position: ${item.position ?? 'N/A'}",
+                              style: const TextStyle(
+                                color: AppTheme.textSecondaryColor,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -303,10 +310,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                         children: [
                           const Icon(Icons.schedule, size: 16, color: AppTheme.textSecondaryColor),
                           const SizedBox(width: 8),
-                          Text(
-                            "Shift: ${item.shift ?? 'N/A'}",
-                            style: const TextStyle(
-                              color: AppTheme.textSecondaryColor,
+                          Expanded(
+                            child: Text(
+                              "Shift: ${item.shift ?? 'N/A'}",
+                              style: const TextStyle(
+                                color: AppTheme.textSecondaryColor,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -316,13 +326,18 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
                       // Time
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Icon(Icons.access_time, size: 16, color: AppTheme.textSecondaryColor),
                           const SizedBox(width: 8),
-                          Text(
-                            "Time: ${item.startTime ?? 'N/A'} - ${item.endTime ?? 'N/A'}",
-                            style: const TextStyle(
-                              color: AppTheme.textSecondaryColor,
+                          Expanded(
+                            child: Text(
+                              "Time: ${item.startTime ?? 'N/A'} - ${item.endTime ?? 'N/A'}",
+                              style: const TextStyle(
+                                color: AppTheme.textSecondaryColor,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
                             ),
                           ),
                         ],
