@@ -1,4 +1,4 @@
-package com.example.meetsu_solutions
+package com.meetSu_Solutions
 
 import io.flutter.embedding.android.FlutterActivity
 

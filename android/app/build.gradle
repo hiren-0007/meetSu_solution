@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.meetsu_solutions"
+    namespace = "com.meetSu_Solutions"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -19,7 +19,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.meetsu_solutions"
+        applicationId = "com.meetSu_Solutions"
         minSdk = 25
         targetSdk = 34
         versionCode = flutter.versionCode

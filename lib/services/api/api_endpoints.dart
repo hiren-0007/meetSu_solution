@@ -33,4 +33,8 @@ class ApiEndpoints {
   static const String submitTest = 'flutter/test-submit';
 
   static const String complianceDownload = 'flutter/download-compliance';
+
+  static const String checkIn = 'flutter/checkin';
+
+  static const String checkOut = 'flutter/checkout';
 }

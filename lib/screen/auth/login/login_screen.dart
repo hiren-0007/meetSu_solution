@@ -56,11 +56,7 @@ class LoginScreenState extends State<LoginScreen> {
                             Container(
                               padding: const EdgeInsets.all(15),
                               decoration: AppTheme.appIconDecoration,
-                              child: const Icon(
-                                Icons.diamond_outlined,
-                                color: AppTheme.primaryColor,
-                                size: 40,
-                              ),
+                              child:Image.asset('assets/images/logo.png',height: 50,width: 50,),
                             ),
                             SizedBox(height: AppTheme.smallSpacing),
                             const Text(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meetsu_solutions/screen/auth/login/login_screen.dart';
 import 'package:meetsu_solutions/screen/more/contact/contact_screen.dart';
-import 'package:meetsu_solutions/screen/more/location/check_in_screen.dart';
 import 'package:meetsu_solutions/screen/more/profile/profile_screen.dart';
 import 'package:meetsu_solutions/screen/more/quiz/quiz_result_screen.dart';
 import 'package:meetsu_solutions/screen/more/request/send_request_screen.dart';
@@ -41,7 +40,6 @@ class JobPortalApp extends StatelessWidget {
           '/trainings': (context) => const TrainingScreen(),
           '/send-request': (context) => const SendRequestScreen(),
           '/quiz-result': (context) => const QuizResultScreen(),
-          '/check-in': (context) => const CheckInScreen(),
           '/login': (context) => LoginScreen(),
         },
       ),

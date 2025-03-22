@@ -119,6 +119,16 @@ class ApiService {
     return await _client.post(ApiEndpoints.complianceDownload, body: userData);
   }
 
+  //Check In related APIs
+  Future<Map<String, dynamic>> checkIn(Map<String, dynamic> userData) async {
+    return await _client.post(ApiEndpoints.checkIn, body: userData);
+  }
+
+  //Check Out related APIs
+  Future<Map<String, dynamic>> checkOut(Map<String, dynamic> userData) async {
+    return await _client.post(ApiEndpoints.checkOut, body: userData);
+  }
+
   //Submit Test related APIs
   Future<Map<String, dynamic>> submitTest(Map<String, dynamic> userData, {File? signatureFile}) async {
     if (signatureFile != null) {
