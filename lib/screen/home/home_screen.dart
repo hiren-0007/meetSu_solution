@@ -143,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Icon(
             Icons.dashboard,
             size: 80,
-            color: AppTheme.primaryColor.withOpacity(0.5),
+            color: AppTheme.primaryColor.withValues(alpha: 0.5),
           ),
           SizedBox(height: AppTheme.contentSpacing),
           const Text(
@@ -169,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Icon(
             Icons.calendar_today,
             size: 80,
-            color: AppTheme.primaryColor.withOpacity(0.5),
+            color: AppTheme.primaryColor.withValues(alpha: 0.5),
           ),
           SizedBox(height: AppTheme.contentSpacing),
           const Text(
@@ -194,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Icon(
             Icons.work,
             size: 80,
-            color: AppTheme.primaryColor.withOpacity(0.5),
+            color: AppTheme.primaryColor.withValues(alpha: 0.5),
           ),
           SizedBox(height: AppTheme.contentSpacing),
           const Text(
@@ -219,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Icon(
             Icons.verified,
             size: 80,
-            color: AppTheme.primaryColor.withOpacity(0.5),
+            color: AppTheme.primaryColor.withValues(alpha: 0.5),
           ),
           SizedBox(height: AppTheme.contentSpacing),
           const Text(
@@ -244,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Icon(
             Icons.more_horiz,
             size: 80,
-            color: AppTheme.primaryColor.withOpacity(0.5),
+            color: AppTheme.primaryColor.withValues(alpha: 0.5),
           ),
           SizedBox(height: AppTheme.contentSpacing),
           const Text(

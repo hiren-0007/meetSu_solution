@@ -52,7 +52,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       borderRadius: BorderRadius.circular(40),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
+                          color: Colors.grey.withValues(alpha:0.3),
                           spreadRadius: 2,
                           blurRadius: 5,
                           offset: const Offset(0, 3),
@@ -91,10 +91,10 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       padding: const EdgeInsets.all(15),
                       margin: const EdgeInsets.symmetric(horizontal: 30),
                       decoration: BoxDecoration(
-                        color: _messageColor.withOpacity(0.1),
+                        color: _messageColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: _messageColor.withOpacity(0.5),
+                          color: _messageColor.withValues(alpha: 0.5),
                         ),
                       ),
                       child: Text(

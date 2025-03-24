@@ -143,7 +143,7 @@ class _MoreScreenState extends State<MoreScreen> {
                                       leading: Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: menuItem.iconColor.withOpacity(0.1),
+                                          color: menuItem.iconColor.withValues(alpha: 0.1),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Icon(

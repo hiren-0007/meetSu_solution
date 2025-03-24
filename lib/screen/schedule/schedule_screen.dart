@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/screen/schedule/schedule_controller.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
+import 'package:meetsu_solutions/model/schedule/schedule_response_model.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
@@ -26,6 +27,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         backgroundColor: AppTheme.backgroundColor,
         body: Column(
           children: [
+            // Date Range Selector
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -173,7 +175,126 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               ),
             ),
 
-            // Schedule content
+            // Job Information Card
+            ValueListenableBuilder<bool>(
+              valueListenable: _controller.hasData,
+              builder: (context, hasData, _) {
+                if (hasData && _controller.scheduleItems.value.isNotEmpty) {
+                  // Extract common information from the first item
+                  final firstItem = _controller.scheduleItems.value.first;
+                  return Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withValues(alpha: 0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Company
+                        Row(
+                          children: [
+                            const Text(
+                              "Company: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            Text(
+                              firstItem.company ?? "N/A",
+                              style: const TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        // Position
+                        Row(
+                          children: [
+                            const Icon(Icons.work, size: 16, color: AppTheme.textSecondaryColor),
+                            const SizedBox(width: 8),
+                            const Text(
+                              "Position: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              firstItem.position ?? "N/A",
+                              style: const TextStyle(
+                                color: AppTheme.textSecondaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        // Shift
+                        Row(
+                          children: [
+                            const Icon(Icons.schedule, size: 16, color: AppTheme.textSecondaryColor),
+                            const SizedBox(width: 8),
+                            const Text(
+                              "Shift: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              firstItem.shift ?? "N/A",
+                              style: const TextStyle(
+                                color: AppTheme.textSecondaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        // Rate
+                        Row(
+                          children: [
+                            const Icon(Icons.attach_money, size: 16, color: AppTheme.textSecondaryColor),
+                            const SizedBox(width: 8),
+                            const Text(
+                              "Rate: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              "${firstItem.rate ?? 'N/A'}/hr",
+                              style: const TextStyle(
+                                color: AppTheme.textSecondaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+
+            // Schedule table
             Expanded(
               child: ValueListenableBuilder<bool>(
                 valueListenable: _controller.isLoading,
@@ -187,11 +308,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       valueListenable: _controller.hasData,
                       builder: (context, hasData, _) {
                         if (hasData) {
-                          return _buildScheduleData();
+                          return _buildScheduleTable();
                         } else {
                           return const Center(
                             child: Text(
-                              "No data found on this date",
+                              "No data found for this date range",
                               style: TextStyle(
                                 color: AppTheme.textSecondaryColor,
                                 fontSize: 16,
@@ -205,198 +326,303 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 },
               ),
             ),
+
+            // Total Pay
+            ValueListenableBuilder<List<Data>>(
+              valueListenable: _controller.scheduleItems,
+              builder: (context, scheduleItems, _) {
+                if (scheduleItems.isNotEmpty) {
+                  // Calculate total pay
+                  double totalPay = 0;
+                  for (var item in scheduleItems) {
+                    if (item.totalPay != null) {
+                      // Remove the $ sign and convert to double
+                      final payString = item.totalPay!.replaceAll('\$', '');
+                      try {
+                        totalPay += double.parse(payString);
+                      } catch (e) {
+                        // Skip if unable to parse
+                      }
+                    }
+                  }
+
+                  return Container(
+                    margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryLightColor,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withValues(alpha: 0.3),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      "Total Pay: \$${totalPay.toStringAsFixed(2)}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+
+            // Display pay check if available
+            ValueListenableBuilder<String?>(
+              valueListenable: _controller.payCheck,
+              builder: (context, payCheck, _) {
+                if (payCheck != null && payCheck.isNotEmpty) {
+                  return Container(
+                    margin: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade100,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withValues(alpha: 0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: Text(
+                      "Pay Check: $payCheck",
+                      style: const TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildScheduleData() {
-    return Column(
-      children: [
-        // Display pay check if available
-        ValueListenableBuilder<String?>(
-          valueListenable: _controller.payCheck,
-          builder: (context, payCheck, _) {
-            if (payCheck != null && payCheck.isNotEmpty) {
-              return Container(
-                width: double.infinity,
+  Widget _buildScheduleTable() {
+    return ValueListenableBuilder<List<Data>>(
+      valueListenable: _controller.scheduleItems,
+      builder: (context, scheduleItems, _) {
+        return Container(
+          margin: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.2),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Table header
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade100,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  "Pay Check: $payCheck",
-                  style: const TextStyle(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                  color: AppTheme.primaryColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10),
                   ),
                 ),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-
-        // Schedule items list
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            itemCount: _controller.scheduleItems.value.length,
-            itemBuilder: (context, index) {
-              final item = _controller.scheduleItems.value[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 16),
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Date and Company - Make this responsive by wrapping in a Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.date ?? "N/A",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Flexible(
-                            child: Text(
-                              item.company ?? "N/A",
-                              style: const TextStyle(
-                                color: AppTheme.primaryColor,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Position
-                      Row(
-                        children: [
-                          const Icon(Icons.work, size: 16, color: AppTheme.textSecondaryColor),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              "Position: ${item.position ?? 'N/A'}",
-                              style: const TextStyle(
-                                color: AppTheme.textSecondaryColor,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // Shift
-                      Row(
-                        children: [
-                          const Icon(Icons.schedule, size: 16, color: AppTheme.textSecondaryColor),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              "Shift: ${item.shift ?? 'N/A'}",
-                              style: const TextStyle(
-                                color: AppTheme.textSecondaryColor,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // Time
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.access_time, size: 16, color: AppTheme.textSecondaryColor),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              "Time: ${item.startTime ?? 'N/A'} - ${item.endTime ?? 'N/A'}",
-                              style: const TextStyle(
-                                color: AppTheme.textSecondaryColor,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 2,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // Hours
-                      Row(
-                        children: [
-                          const Icon(Icons.timelapse, size: 16, color: AppTheme.textSecondaryColor),
-                          const SizedBox(width: 8),
-                          Text(
-                            "Hours: ${item.hours ?? 'N/A'}",
-                            style: const TextStyle(
-                              color: AppTheme.textSecondaryColor,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Pay information
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        "Date",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Rate: ${item.rate ?? 'N/A'}/hr",
-                              style: const TextStyle(
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        "Start",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        "End",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        "Hours",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        "Total Pay",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Table rows (scrollable)
+              Expanded(
+                child: ListView.builder(
+                  itemCount: scheduleItems.length,
+                  itemBuilder: (context, index) {
+                    final item = scheduleItems[index];
+
+                    // Extract time from the time string if it's in the format "2025-03-07 10:00:00 - 2025-03-07 18:00:00"
+                    String startTime = "00:00";
+                    String endTime = "00:00";
+
+                    if (item.startTime != null) {
+                      final startTimeParts = item.startTime!.split(' ');
+                      if (startTimeParts.length > 1) {
+                        startTime = startTimeParts[1].substring(0, 5); // Extract HH:MM
+                      }
+                    }
+
+                    if (item.endTime != null) {
+                      final endTimeParts = item.endTime!.split(' ');
+                      if (endTimeParts.length > 1) {
+                        endTime = endTimeParts[1].substring(0, 5); // Extract HH:MM
+                      }
+                    }
+
+                    // Format date to show as Mar 24, 2025
+                    String formattedDate = item.date ?? "N/A";
+                    try {
+                      if (item.date != null) {
+                        final dateParts = item.date!.split('-');
+                        if (dateParts.length == 3) {
+                          final year = dateParts[0];
+                          final month = dateParts[1];
+                          final day = dateParts[2];
+
+                          // Convert month number to name
+                          final monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                          final monthName = monthNames[int.parse(month) - 1];
+
+                          formattedDate = "$monthName $day, $year";
+                        }
+                      }
+                    } catch (e) {
+                      // Keep original date if parsing fails
+                    }
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Colors.grey.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              formattedDate,
+                              style: TextStyle(
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            Text(
-                              "Total: ${item.totalPay ?? 'N/A'}",
-                              style: const TextStyle(
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              startTime,
+                              style: TextStyle(
+                                color: AppTheme.textSecondaryColor,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              endTime,
+                              style: TextStyle(
+                                color: AppTheme.textSecondaryColor,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              item.hours ?? "0.00",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              item.totalPay ?? "\$0.00",
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: AppTheme.primaryColor,
                               ),
+                              textAlign: TextAlign.right,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+            ],
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

@@ -22,8 +22,8 @@ class ApiService {
   }
 
   // Schedule related APIs
-  Future<Map<String, dynamic>> getSchedule() async {
-    return await _client.get(ApiEndpoints.schedule);
+  Future<Map<String, dynamic>> getSchedule(Map<String, dynamic> body) async {
+    return await _client.post(ApiEndpoints.schedule, body: body);
   }
 
   // Job related APIs

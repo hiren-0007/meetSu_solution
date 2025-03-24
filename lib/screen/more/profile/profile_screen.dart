@@ -552,7 +552,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               borderRadius: BorderRadius.circular(AppTheme.miniRadius),
                               border: Border.all(
                                 color: isGivenOption || (isCorrectOption && !isCorrect)
-                                    ? textColor.withOpacity(0.5)
+                                    ? textColor.withValues(alpha: 0.5)
                                     : AppTheme.categoryCardBorderColor,
                               ),
                             ),

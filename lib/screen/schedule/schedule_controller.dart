@@ -41,12 +41,15 @@ class ScheduleController {
   }
 
   // Select end date
+  // Select end date
   Future<void> selectEndDate(BuildContext context) async {
+    final DateTime minEndDate = _parseDate(startDate.value).add(const Duration(days: 14));
     final DateTime currentDate = _parseDate(endDate.value);
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: currentDate,
-      firstDate: DateTime(2020),
+      initialDate: currentDate.isBefore(minEndDate) ? minEndDate : currentDate,
+      firstDate: minEndDate, // Ensure minimum selection is 2 weeks after start date
       lastDate: DateTime(2030),
     );
 
@@ -55,6 +58,7 @@ class ScheduleController {
       _fetchScheduleData();
     }
   }
+
 
   // Fetch schedule data from API
   Future<void> _fetchScheduleData() async {
@@ -68,7 +72,11 @@ class ScheduleController {
 
       _apiService.client.addAuthToken(token);
 
-      final response = await _apiService.getSchedule();
+      final response = await _apiService.getSchedule({
+        "start_date": startDate.value,
+        "end_date": endDate.value
+      });
+
       final scheduleResponse = ScheduleResponseModel.fromJson(response);
 
       payCheck.value = scheduleResponse.payCheck;
@@ -88,6 +96,8 @@ class ScheduleController {
       isLoading.value = false;
     }
   }
+
+
 
   // Parse date string to DateTime
   DateTime _parseDate(String dateStr) {
