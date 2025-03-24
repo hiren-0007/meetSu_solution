@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           elevation: 0,
           title: const Text(
-            "MEETsu SOLUTIONS",
+            "MEETsu Solutions",
             style: AppTheme.appNameStyle,
           ),
           centerTitle: true,

@@ -6,6 +6,8 @@ import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 
+import '../../../utils/theme/app_theme.dart';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -56,7 +58,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return ConnectivityWidget(
       child: Scaffold(
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: AppTheme.primaryColor,
         body: SafeArea(
           child: ValueListenableBuilder<bool>(
             valueListenable: _controller.isLoading,
@@ -64,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (isLoading) {
                 return const Center(
                   child: CircularProgressIndicator(
-                    color: Colors.white,
+                    color: AppTheme.white,
                   ),
                 );
               }
@@ -74,32 +76,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 builder: (context, errorMessage, child) {
                   if (errorMessage != null && errorMessage.isNotEmpty) {
                     return Padding(
-                      padding: const EdgeInsets.all(20.0),
+                      padding: const EdgeInsets.all(AppTheme.screenPadding),
                       child: Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Text(
                               "Error loading profile",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: AppTheme.errorStyle,
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppTheme.extraSmallSpacing),
                             Text(
                               errorMessage,
-                              style: const TextStyle(color: Colors.white),
+                              style: AppTheme.errorMessageStyle,
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppTheme.contentSpacing),
                             ElevatedButton(
                               onPressed: () => _controller.initialize(),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: const Color(0xFF2196F3),
-                              ),
+                              style: AppTheme.retryButtonStyle,
                               child: const Text("Retry"),
                             ),
                           ],
@@ -114,21 +109,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     // App bar with back button and title
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppTheme.screenPadding,
+                        vertical: AppTheme.smallSpacing + 2,
+                      ),
                       child: Row(
                         children: [
                           GestureDetector(
                             onTap: () => Navigator.pop(context),
                             child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: Colors.white30,
-                                shape: BoxShape.circle,
-                              ),
+                              padding: const EdgeInsets.all(AppTheme.iconPadding),
+                              decoration: AppTheme.backButtonDecoration,
                               child: const Icon(
                                 Icons.arrow_back,
-                                color: Colors.white,
-                                size: 24,
+                                color: AppTheme.iconColorPrimary,
+                                size: AppTheme.mediumIconSize,
                               ),
                             ),
                           ),
@@ -136,15 +131,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             child: Center(
                               child: Text(
                                 "Profile",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
+                                style: AppTheme.titleStyle,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 40),
+                          const SizedBox(width: AppTheme.appBarBackButtonMargin),
                         ],
                       ),
                     ),
@@ -157,24 +148,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         String? photoUrl = profileData?.photoUrl;
 
                         return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 20),
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            image: photoUrl != null && photoUrl.isNotEmpty
-                                ? DecorationImage(
-                              image: NetworkImage(photoUrl),
-                              fit: BoxFit.cover,
-                            )
-                                : null,
-                          ),
+                          margin: const EdgeInsets.symmetric(vertical: AppTheme.contentSpacing),
+                          width: AppTheme.avatarSizeMedium,
+                          height: AppTheme.avatarSizeMedium,
+                          decoration: photoUrl != null && photoUrl.isNotEmpty
+                              ? AppTheme.avatarWithPhotoDecoration(photoUrl)
+                              : AppTheme.avatarWithoutPhotoDecoration,
                           child: photoUrl == null || photoUrl.isEmpty
                               ? const Icon(
                             Icons.person,
-                            color: Color(0xFF2196F3),
-                            size: 30,
+                            color: AppTheme.primaryColor,
+                            size: AppTheme.largeIconSize,
                           )
                               : null,
                         );
@@ -185,14 +169,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Expanded(
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(30),
-                            topRight: Radius.circular(30),
-                          ),
+                        padding: const EdgeInsets.fromLTRB(
+                          AppTheme.contentSpacing,
+                          AppTheme.mediumSpacing,
+                          AppTheme.contentSpacing,
+                          0,
                         ),
+                        decoration: AppTheme.profileContentDecoration,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -204,11 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Flexible(
                                   child: Text(
                                     _selectedTab == 5 ? "Work Experience" : _tabTitles[_selectedTab],
-                                    style: const TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF333333),
-                                    ),
+                                    style: AppTheme.sectionTitleStyle,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -235,17 +214,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ],
                             ),
 
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppTheme.extraSmallSpacing),
 
                             Text(
                               "We'd like to know more about you",
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[600],
-                              ),
+                              style: AppTheme.sectionSubtitleStyle,
                             ),
 
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppTheme.contentSpacing),
 
                             // Content based on selected tab
                             Expanded(
@@ -301,7 +277,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildInfoField("Role", loginInfo.role),
               _buildInfoField("Last Login", loginInfo.lastLogin),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.mediumSpacing),
             ],
           ),
         );
@@ -318,7 +294,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           return Center(
             child: Text(
               "No aptitude information available",
-              style: TextStyle(color: Colors.grey[600]),
+              style: AppTheme.emptyStateStyle,
             ),
           );
         }
@@ -347,62 +323,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Aptitude Summary Card
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.shade200),
-              ),
+              padding: const EdgeInsets.all(AppTheme.contentSpacing),
+              decoration: AppTheme.aptitudeCardDecoration,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     "Aptitude Test Results",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade800,
-                    ),
+                    style: AppTheme.aptitudeTitleStyle,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppTheme.extraSmallSpacing),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             "Score",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[700],
-                            ),
+                            style: AppTheme.aptitudeLabelStyle,
                           ),
                           Text(
                             testScore,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: AppTheme.aptitudeValueStyle,
                           ),
                         ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             "Percentage",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[700],
-                            ),
+                            style: AppTheme.aptitudeLabelStyle,
                           ),
                           Text(
                             "${scorePercentage.toStringAsFixed(1)}%",
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: AppTheme.aptitudeValueStyle,
                           ),
                         ],
                       ),
@@ -412,22 +368,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: AppTheme.contentSpacing - 2),
 
             // Category-wise results section
             Text(
               "Category Breakdown",
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
-              ),
+              style: AppTheme.categoryTitleStyle,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: AppTheme.smallSpacing),
 
             // Category list
-            Container(
-              height: 120,
+            SizedBox(
+              height: AppTheme.tabBarHeight,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: profileData.categoryWiseAnswer.length,
@@ -441,14 +393,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       : 0;
 
                   return Container(
-                    width: 120,
-                    margin: const EdgeInsets.only(right: 10),
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
+                    width: AppTheme.categoryCardWidth,
+                    margin: const EdgeInsets.only(right: AppTheme.smallSpacing),
+                    padding: const EdgeInsets.all(AppTheme.smallSpacing),
+                    decoration: AppTheme.categoryCardDecoration,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -456,28 +404,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Text(
                           category.category,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[800],
-                          ),
+                          style: AppTheme.tabTitleStyle,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 5),
+                        const SizedBox(height: AppTheme.miniSpacing),
                         Text(
                           "${category.correctAnswer}/${category.totalQuestion}",
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: AppTheme.categoryScoreStyle,
                         ),
                         Text(
                           "${categoryPercentage.toStringAsFixed(1)}%",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[600],
-                          ),
+                          style: AppTheme.categoryPercentStyle,
                         ),
                       ],
                     ),
@@ -486,7 +424,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: AppTheme.contentSpacing - 2),
 
             // Questions and Answers Section
             Row(
@@ -494,22 +432,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Text(
                   "Questions & Answers",
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
+                  style: AppTheme.categoryTitleStyle,
                 ),
                 Text(
                   "${profileData.aptitude.length} Questions",
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[600],
-                  ),
+                  style: AppTheme.categoryPercentStyle,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.smallSpacing),
 
             // Questions List
             Expanded(
@@ -534,20 +465,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ];
 
                   return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade300),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.shade100,
-                          offset: const Offset(0, 2),
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
+                    margin: const EdgeInsets.only(bottom: AppTheme.contentSpacing),
+                    padding: const EdgeInsets.all(AppTheme.contentSpacing),
+                    decoration: AppTheme.questionCardDecoration,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -556,38 +476,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(6),
+                              padding: const EdgeInsets.all(AppTheme.miniSpacing + 1),
                               decoration: BoxDecoration(
-                                color: Colors.blue.shade50,
+                                color: AppTheme.aptitudeCardColor,
                                 shape: BoxShape.circle,
                               ),
                               child: Text(
                                 "${index + 1}",
                                 style: TextStyle(
-                                  color: Colors.blue.shade800,
+                                  color: AppTheme.aptitudeTitleColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: AppTheme.smallSpacing),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     question.question,
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                    style: AppTheme.questionStyle,
                                   ),
-                                  const SizedBox(height: 4),
+                                  const SizedBox(height: AppTheme.microSpacing),
                                   Text(
                                     "Category: ${question.category}",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
+                                    style: AppTheme.questionCategoryStyle,
                                   ),
                                 ],
                               ),
@@ -595,7 +509,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
 
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppTheme.smallSpacing),
 
                         // Answer Options
                         ...List.generate(4, (i) {
@@ -607,68 +521,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           bool isGivenOption = givenAnsIndex == (i + 1);
 
                           // Set color based on correctness and selection
-                          Color optionColor = Colors.transparent;
-                          Color textColor = Colors.black;
+                          Color optionColor = AppTheme.transparent;
+                          Color textColor = AppTheme.textPrimaryColor;
 
                           if (isGivenOption) {
                             if (isCorrect) {
                               // Given answer is correct
-                              optionColor = Colors.green.shade100;
-                              textColor = Colors.green.shade800;
+                              optionColor = AppTheme.correctAnswerBgColor;
+                              textColor = AppTheme.correctAnswerTextColor;
                             } else {
                               // Given answer is wrong
-                              optionColor = Colors.red.shade100;
-                              textColor = Colors.red.shade800;
+                              optionColor = AppTheme.wrongAnswerBgColor;
+                              textColor = AppTheme.wrongAnswerTextColor;
                             }
                           } else if (isCorrectOption && !isCorrect) {
                             // Show correct answer when user got it wrong
-                            optionColor = Colors.green.shade50;
-                            textColor = Colors.green.shade800;
+                            optionColor = AppTheme.correctAnswerLightBgColor;
+                            textColor = AppTheme.correctAnswerTextColor;
                           }
 
                           return Container(
                             width: double.infinity,
-                            margin: const EdgeInsets.only(bottom: 8),
+                            margin: const EdgeInsets.only(bottom: AppTheme.extraSmallSpacing),
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
+                              horizontal: AppTheme.smallSpacing + 2,
+                              vertical: AppTheme.extraSmallSpacing,
                             ),
                             decoration: BoxDecoration(
                               color: optionColor,
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(AppTheme.miniRadius),
                               border: Border.all(
                                 color: isGivenOption || (isCorrectOption && !isCorrect)
                                     ? textColor.withOpacity(0.5)
-                                    : Colors.grey.shade300,
+                                    : AppTheme.categoryCardBorderColor,
                               ),
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  width: 24,
-                                  height: 24,
+                                  width: AppTheme.optionCircleSize,
+                                  height: AppTheme.optionCircleSize,
                                   alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: isGivenOption || (isCorrectOption && !isCorrect)
-                                          ? textColor
-                                          : Colors.grey.shade400,
-                                    ),
+                                  decoration: AppTheme.optionCircleDecoration(
+                                    isGivenOption || (isCorrectOption && !isCorrect),
+                                    isGivenOption || (isCorrectOption && !isCorrect)
+                                        ? textColor
+                                        : AppTheme.categoryCardBorderColor,
                                   ),
                                   child: Text(
                                     optionLetter,
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: AppTheme.textSizeExtraSmall,
                                       fontWeight: FontWeight.bold,
                                       color: isGivenOption || (isCorrectOption && !isCorrect)
                                           ? textColor
-                                          : Colors.grey.shade600,
+                                          : AppTheme.textSecondaryColor,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 10),
+                                const SizedBox(width: AppTheme.smallSpacing),
                                 Expanded(
                                   child: Text(
                                     answerOptions[i],
@@ -683,8 +594,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 if (isGivenOption)
                                   Icon(
                                     isCorrect ? Icons.check_circle : Icons.cancel,
-                                    color: isCorrect ? Colors.green : Colors.red,
-                                    size: 18,
+                                    color: isCorrect ? AppTheme.successColor : AppTheme.errorColor,
+                                    size: AppTheme.smallIconSize,
                                   ),
                               ],
                             ),
@@ -717,7 +628,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildInfoField("Postal Code", addressInfo.postalCode),
               _buildInfoField("Country", addressInfo.country),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.mediumSpacing),
             ],
           ),
         );
@@ -737,7 +648,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ? Center(
                 child: Text(
                   "No education information added yet",
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: AppTheme.emptyStateStyle,
                 ),
               )
                   : ListView.builder(
@@ -745,44 +656,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 itemBuilder: (context, index) {
                   final education = educationList[index];
                   return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade200),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    margin: const EdgeInsets.only(bottom: AppTheme.contentSpacing),
+                    padding: const EdgeInsets.all(AppTheme.contentSpacing),
+                    decoration: AppTheme.educationCardDecoration,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           education.degree,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: AppTheme.educationDegreeStyle,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppTheme.microSpacing),
                         Text(
                           education.institution,
-                          style: const TextStyle(fontSize: 14),
+                          style: AppTheme.educationInstitutionStyle,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppTheme.microSpacing),
                         Text(
                           "${education.startDate.isNotEmpty ? education.startDate : 'N/A'} - ${education.endDate.isNotEmpty ? education.endDate : 'N/A'}",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
+                          style: AppTheme.educationDateStyle,
                         ),
                         if (education.grade.isNotEmpty)
                           Padding(
-                            padding: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.only(top: AppTheme.microSpacing),
                             child: Text(
                               "Grade: ${education.grade}",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
+                              style: AppTheme.educationDateStyle,
                             ),
                           ),
                       ],
@@ -809,7 +708,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ? Center(
                 child: Text(
                   "No experience information added yet",
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: AppTheme.emptyStateStyle,
                 ),
               )
                   : ListView.builder(
@@ -817,62 +716,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 itemBuilder: (context, index) {
                   final experience = experienceList[index];
                   return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade200),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    margin: const EdgeInsets.only(bottom: AppTheme.contentSpacing),
+                    padding: const EdgeInsets.all(AppTheme.contentSpacing),
+                    decoration: AppTheme.experienceCardDecoration,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           "Company Name: ${experience.company}",
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: AppTheme.experienceItemStyle,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppTheme.extraSmallSpacing),
                         Text(
                           "Position Name: ${experience.position}",
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: AppTheme.experienceItemStyle,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppTheme.extraSmallSpacing),
                         Text(
                           "Years of Experience: ${experience.yearsOfExperience}",
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: AppTheme.experienceItemStyle,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppTheme.extraSmallSpacing),
                         Text(
                           "Start Date: ${experience.startDate}",
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: AppTheme.experienceItemStyle,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppTheme.extraSmallSpacing),
                         Text(
                           "End Date: ${experience.endDate}",
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: AppTheme.experienceItemStyle,
                         ),
                         if (experience.supervisor.isNotEmpty) ...[
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppTheme.extraSmallSpacing),
                           Text(
                             "Name of Supervisor: ${experience.supervisor}",
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: AppTheme.experienceItemStyle,
                           ),
                         ],
                       ],
@@ -902,7 +780,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildInfoField("Tax ID", credentialInfo.taxId),
               _buildInfoField("Social Security", credentialInfo.socialSecurity),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.mediumSpacing),
             ],
           ),
         );
@@ -917,39 +795,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
+          style: AppTheme.infoFieldLabelStyle,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppTheme.extraSmallSpacing),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: Colors.grey.shade300,
-                width: 1.0,
-              ),
-            ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.contentSpacing,
+            vertical: AppTheme.smallSpacing + 2,
           ),
+          decoration: AppTheme.infoFieldDecoration,
           child: Row(
             children: [
-              const Icon(
-                Icons.edit,
-                color: Color(0xFF2196F3),
-                size: 18,
-              ),
-              const SizedBox(width: 12),
-              // Wrap the text with Flexible to prevent overflow
               Flexible(
                 child: Text(
                   value.isEmpty ? "Not provided" : value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF333333),
-                  ),
+                  style: AppTheme.infoFieldValueStyle,
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
@@ -957,7 +818,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppTheme.contentSpacing),
       ],
     );
   }
@@ -966,22 +827,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildSubmitButton(String text, VoidCallback onPressed) {
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: AppTheme.buttonHeight,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF2196F3),
+          backgroundColor: AppTheme.primaryColor,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppTheme.extraSmallBorderRadius),
           ),
         ),
         child: Text(
           text,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: AppTheme.buttonTextStyle,
         ),
       ),
     );

@@ -93,7 +93,7 @@ class MoreController {
 
       // Check if we should show the check-in button
       // FIXED: Check the boolean value, not string
-      final shouldShowCheckIn = response['show_checkin'] == false;
+      final shouldShowCheckIn = response['show_checkin'] == true;
 
       // Check if user is already checked in
       final isAlreadyCheckedIn = response['show_checkout'] == true;

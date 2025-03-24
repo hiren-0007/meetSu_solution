@@ -60,7 +60,7 @@ class SignupScreenState extends State<SignupScreen> {
                             ),
                             SizedBox(height: AppTheme.smallSpacing),
                             const Text(
-                              "MEETsu SOLUTIONS",
+                              "MEETsu Solutions",
                               style: AppTheme.appNameStyle,
                             ),
                           ],

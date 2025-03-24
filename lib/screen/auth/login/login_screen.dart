@@ -60,7 +60,7 @@ class LoginScreenState extends State<LoginScreen> {
                             ),
                             SizedBox(height: AppTheme.smallSpacing),
                             const Text(
-                              "MEETsu SOLUTIONS",
+                              "MEETsu Solutions",
                               style: AppTheme.appNameStyle,
                             ),
                           ],

@@ -117,7 +117,7 @@ class ProfileController {
     aptitudeInfo.value = AptitudeInfo(
       testScores: testScore,
       skills: profile.data.language,
-      certifications: _findCredentialByType(profile.credentials, "WHMIS 2025"), // Using WHMIS as an example
+      certifications: _findCredentialByType(profile.credentials, "WHMIS 2025"),
     );
 
     // Update education list
