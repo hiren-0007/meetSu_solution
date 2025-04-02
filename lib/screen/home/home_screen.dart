@@ -7,6 +7,7 @@ import 'package:meetsu_solutions/screen/schedule/schedule_screen.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/screen/home/home_controller.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
+import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -47,9 +48,50 @@ class _HomeScreenState extends State<HomeScreen> {
           //   onPressed: () => _controller.openDrawer(context),
           // ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.question_mark, color: Colors.white),
-              onPressed: () => _controller.openNotifications(context),
+            ValueListenableBuilder<int>(
+              valueListenable: _controller.selectedIndex,
+              builder: (context, selectedIndex, _) {
+                // Show question mark icon only for Dashboard tab
+                if (selectedIndex == 0) {
+                  return IconButton(
+                    icon: const Icon(Icons.question_mark, color: Colors.white),
+                    onPressed: () => _controller.openNotifications(context),
+                  );
+                }
+                // Show username for all other tabs
+                else {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 16.0, top: 8.0, bottom: 8.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            SharedPrefsService.instance.getUsername(),
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+              },
             ),
           ],
         ),

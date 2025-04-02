@@ -248,7 +248,7 @@ class _TestScreenState extends State<TestScreen> {
                                         : null,
                                     style: AppTheme.primaryButtonStyle,
                                     child: const Text(
-                                      "SUBMIT TEST",
+                                      "Submit Test",
                                       style: AppTheme.buttonTextStyle,
                                     ),
                                   ),

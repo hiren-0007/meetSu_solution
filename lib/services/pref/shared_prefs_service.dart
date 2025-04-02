@@ -81,4 +81,15 @@ class SharedPrefsService {
   Future<bool> clear() async {
     return await _prefs.clear();
   }
+
+  // Add these methods to SharedPrefsService
+  static const String _usernameKey = 'username';
+
+  Future<bool> saveUsername(String username) async {
+    return await _prefs.setString(_usernameKey, username);
+  }
+
+  String getUsername() {
+    return _prefs.getString(_usernameKey) ?? 'User';
+  }
 }

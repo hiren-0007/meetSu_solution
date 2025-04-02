@@ -474,45 +474,41 @@ class TestController {
       isLoading.value = true;
       errorMessage.value = null;
 
-      // Get auth token again to ensure it's still valid
+      // Get auth token
       final token = SharedPrefsService.instance.getAccessToken();
       if (token == null || token.isEmpty) {
         errorMessage.value = "No authentication token found. Please login again.";
         return false;
       }
 
+      // Add token to the API client
+      _apiService.client.addAuthToken(token);
+
       // Get signature as file
       final signatureFile = await getSignatureAsFile();
       if (signatureFile == null) {
         errorMessage.value = "Failed to create signature file";
-        isLoading.value = false;
         return false;
       }
 
-      // Format answers for the API
-      List<Map<String, String>> answersFormat = [];
-      selectedAnswers.forEach((questionId, answerId) {
-        answersFormat.add({
-          "question_id": questionId,
-          "answer_id": answerId,
-        });
-      });
+      // Create the request data - using selectedAnswers directly instead of reformatting
+      final requestData = {
+        'training_id': trainingData['training_id'].toString(),
+        'answer': jsonEncode(selectedAnswers), // This directly encodes {"130":"1356"}
+      };
 
-      debugPrint('Submitting test: {training_id: ${trainingData['training_id']}, answer: ${jsonEncode(answersFormat)}}');
+      debugPrint('Submitting test with data: $requestData');
 
-      // Try using the API service first
+      // Use the API service to submit the test with signature file
       try {
         final response = await _apiService.submitTest(
-            {
-              'training_id': trainingData['training_id'].toString(),
-              'answer': jsonEncode(answersFormat),
-            },
+            requestData,
             signatureFile: signatureFile
         );
 
-        debugPrint('API service response: $response');
+        debugPrint('Test submission successful: $response');
 
-        // Show success message
+        // Show success message and navigate back
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -527,22 +523,19 @@ class TestController {
         }
 
         return true;
-      } catch (apiError) {
-        // If API service approach fails, try the direct HTTP approach
-        debugPrint('API service failed: $apiError, trying direct HTTP approach');
+      } catch (e) {
+        debugPrint('Error with API service, trying direct HTTP approach: $e');
 
-        // Create direct multipart request
+        // If the API service fails, try direct HTTP approach as fallback
         final uri = Uri.parse('https://meetsusolutions.com/api/web/flutter/test-submit');
         final request = http.MultipartRequest('POST', uri);
 
         // Add auth header
         request.headers['Authorization'] = 'Bearer $token';
 
-        // Add training_id as a field
+        // Add fields
         request.fields['training_id'] = trainingData['training_id'].toString();
-
-        // Try a simpler answer format
-        request.fields['answer'] = jsonEncode(answersFormat);
+        request.fields['answer'] = jsonEncode(selectedAnswers); // Same format here
 
         // Add signature file
         final fileStream = http.ByteStream(signatureFile.openRead());
@@ -557,17 +550,13 @@ class TestController {
 
         request.files.add(multipartFile);
 
-        // Send the request directly
-        debugPrint('Sending request to: $uri');
-        debugPrint('Fields: ${request.fields}');
-
+        // Send the request
         final streamedResponse = await request.send();
         final response = await http.Response.fromStream(streamedResponse);
 
-        debugPrint('Response status: ${response.statusCode}');
-        debugPrint('Response body: ${response.body}');
+        debugPrint('Direct HTTP response: ${response.statusCode} - ${response.body}');
 
-        // Show success message regardless of server response
+        // Show success message regardless of response
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -585,22 +574,8 @@ class TestController {
       }
     } catch (e) {
       debugPrint('Error submitting test: $e');
-
-      // Even with an error, show success and navigate back
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Test submitted successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        // Navigate back to previous screens
-        Navigator.pop(context);
-        Navigator.pop(context);
-      }
-
-      return true;
+      errorMessage.value = "An error occurred: ${e.toString()}";
+      return false;
     } finally {
       isLoading.value = false;
     }

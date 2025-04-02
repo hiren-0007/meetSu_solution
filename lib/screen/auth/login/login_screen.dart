@@ -159,20 +159,19 @@ class LoginScreenState extends State<LoginScreen> {
                                   onPressed: isLoading
                                       ? null
                                       : () async {
-                                          final success =
                                               await _controller.login(context);
-                                          if (success && mounted) {
-                                            // Navigate to home screen or main app
-                                            // Navigator.pushReplacementNamed(context, '/home');
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                    'Login successful! Navigating...'),
-                                                backgroundColor: Colors.green,
-                                              ),
-                                            );
-                                          }
+                                          // if (success && mounted) {
+                                          //   // Navigate to home screen or main app
+                                          //   // Navigator.pushReplacementNamed(context, '/home');
+                                          //   ScaffoldMessenger.of(context)
+                                          //       .showSnackBar(
+                                          //     const SnackBar(
+                                          //       content: Text(
+                                          //           'Login successful! Navigating...'),
+                                          //       backgroundColor: Colors.green,
+                                          //     ),
+                                          //   );
+                                          // }
                                         },
                                   style: AppTheme.primaryButtonStyle,
                                   child: isLoading

@@ -62,6 +62,8 @@ class LoginController {
         // Store token in SharedPreferences
         await SharedPrefsService.instance.saveLoginResponse(loginResponse);
 
+        await SharedPrefsService.instance.saveUsername(username);
+
         // Check if temporary login
         if (loginResponse.isTempLogin == 1) {
           debugPrint("Temporary login detected, user should change password");
