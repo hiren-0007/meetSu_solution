@@ -9,26 +9,20 @@ import 'package:meetsu_solutions/model/test/test_response_model.dart';
 class TestScreen extends StatefulWidget {
   final Map<String, dynamic> trainingData;
 
-  const TestScreen({
-    super.key,
-    required this.trainingData
-  });
+  const TestScreen({super.key, required this.trainingData});
 
   @override
   State<TestScreen> createState() => _TestScreenState();
 }
 
 class _TestScreenState extends State<TestScreen> {
-  // Use the controller (import the controller you created)
   late final TestController _controller;
 
   @override
   void initState() {
     super.initState();
-    // Initialize controller with training data
     _controller = TestController(widget.trainingData);
 
-    // Auto-load the test when screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _controller.giveTest(context);
     });
@@ -36,7 +30,6 @@ class _TestScreenState extends State<TestScreen> {
 
   @override
   void dispose() {
-    // Dispose controller resources
     _controller.dispose();
     super.dispose();
   }
@@ -53,7 +46,6 @@ class _TestScreenState extends State<TestScreen> {
         ),
         body: Stack(
           children: [
-            // Top design
             Positioned(
               top: 0,
               left: 0,
@@ -63,8 +55,6 @@ class _TestScreenState extends State<TestScreen> {
                 decoration: AppTheme.headerContainerDecoration,
               ),
             ),
-
-            // Main content
             SafeArea(
               child: SingleChildScrollView(
                 child: Padding(
@@ -73,8 +63,6 @@ class _TestScreenState extends State<TestScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 20),
-
-                      // Test card
                       Container(
                         width: double.infinity,
                         padding: EdgeInsets.all(AppTheme.cardPadding),
@@ -82,7 +70,6 @@ class _TestScreenState extends State<TestScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Header text
                             const Text(
                               "Load Test",
                               style: AppTheme.headerStyle,
@@ -92,10 +79,7 @@ class _TestScreenState extends State<TestScreen> {
                               "Enter training ID to load test questions",
                               style: AppTheme.subHeaderStyle,
                             ),
-
                             SizedBox(height: AppTheme.largeSpacing),
-
-                            // Training Information
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
@@ -120,29 +104,24 @@ class _TestScreenState extends State<TestScreen> {
                                 ],
                               ),
                             ),
-
-                            // Error message (if any)
                             ValueListenableBuilder<String?>(
                               valueListenable: _controller.errorMessage,
                               builder: (context, errorMessage, _) {
                                 return errorMessage != null
                                     ? Padding(
-                                  padding: const EdgeInsets.only(top: 10),
-                                  child: Text(
-                                    errorMessage,
-                                    style: const TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                )
+                                        padding: const EdgeInsets.only(top: 10),
+                                        child: Text(
+                                          errorMessage,
+                                          style: const TextStyle(
+                                            color: Colors.red,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      )
                                     : const SizedBox.shrink();
                               },
                             ),
-
                             SizedBox(height: AppTheme.largeSpacing - 10),
-
-                            // Refresh Test Button
                             ValueListenableBuilder<bool>(
                               valueListenable: _controller.isLoading,
                               builder: (context, isLoading, _) {
@@ -150,32 +129,29 @@ class _TestScreenState extends State<TestScreen> {
                                   onPressed: isLoading
                                       ? null
                                       : () async {
-                                    await _controller.giveTest(context);
-                                  },
+                                          await _controller.giveTest(context);
+                                        },
                                   style: AppTheme.primaryButtonStyle,
                                   child: isLoading
                                       ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2,
+                                          ),
+                                        )
                                       : const Text(
-                                    "REFRESH TEST",
-                                    style: AppTheme.buttonTextStyle,
-                                  ),
+                                          "REFRESH TEST",
+                                          style: AppTheme.buttonTextStyle,
+                                        ),
                                 );
                               },
                             ),
                           ],
                         ),
                       ),
-
                       SizedBox(height: AppTheme.largeSpacing),
-
-                      // Test Questions Display
                       ValueListenableBuilder<TestResponseModel?>(
                         valueListenable: _controller.testResponse,
                         builder: (context, testResponseModel, _) {
@@ -193,8 +169,8 @@ class _TestScreenState extends State<TestScreen> {
                             );
                           }
 
-                          // Check if data exists and is not empty
-                          if (testResponseModel.data == null || testResponseModel.data!.isEmpty) {
+                          if (testResponseModel.data == null ||
+                              testResponseModel.data!.isEmpty) {
                             return Container(
                               width: double.infinity,
                               padding: EdgeInsets.all(AppTheme.cardPadding),
@@ -202,7 +178,8 @@ class _TestScreenState extends State<TestScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.warning, color: Colors.orange, size: 48),
+                                  Icon(Icons.warning,
+                                      color: Colors.orange, size: 48),
                                   SizedBox(height: 16),
                                   Text(
                                     "No test questions available",
@@ -219,7 +196,6 @@ class _TestScreenState extends State<TestScreen> {
                             );
                           }
 
-                          // Display the questions
                           return Container(
                             width: double.infinity,
                             padding: EdgeInsets.all(AppTheme.cardPadding),
@@ -234,17 +210,13 @@ class _TestScreenState extends State<TestScreen> {
                                 const SizedBox(height: 10),
                                 const Divider(),
                                 const SizedBox(height: 10),
-
-                                // Display questions
                                 ...buildQuestionsWidgets(testResponseModel),
-
                                 const SizedBox(height: 20),
-
-                                // Submit button
                                 Center(
                                   child: ElevatedButton(
                                     onPressed: _controller.allQuestionsAnswered
-                                        ? () => _controller.showSignatureDialog(context)
+                                        ? () => _controller
+                                            .showSignatureDialog(context)
                                         : null,
                                     style: AppTheme.primaryButtonStyle,
                                     child: const Text(
@@ -253,7 +225,6 @@ class _TestScreenState extends State<TestScreen> {
                                     ),
                                   ),
                                 ),
-
                                 const SizedBox(height: 20),
                               ],
                             ),
@@ -271,13 +242,6 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  // Helper method to pretty print JSON
-  String _getPrettyJSONString(Map<String, dynamic> json) {
-    var encoder = const JsonEncoder.withIndent('  ');
-    return encoder.convert(json);
-  }
-
-  // Helper method to build question widgets from the response data
   List<Widget> buildQuestionsWidgets(TestResponseModel testResponseModel) {
     final List<Widget> widgets = [];
 
@@ -301,7 +265,6 @@ class _TestScreenState extends State<TestScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Question number and text
                   Text(
                     "Q${i + 1}: ${questionData.question ?? 'No question text'}",
                     style: const TextStyle(
@@ -310,19 +273,17 @@ class _TestScreenState extends State<TestScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // If there's an image, show it
-                  if (questionData.image != null && questionData.image!.isNotEmpty)
+                  if (questionData.image != null &&
+                      questionData.image!.isNotEmpty)
                     Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       child: Image.network(
-                        _getFullImageUrl(data[i].imageUrl ?? questionData.image!),
+                        _getFullImageUrl(
+                            data[i].imageUrl ?? questionData.image!),
                         errorBuilder: (context, error, stackTrace) =>
                             Text("Error loading image: ${error.toString()}"),
                       ),
                     ),
-
-                  // Answers
                   if (answers != null && answers.isNotEmpty)
                     ...answers.map((answer) {
                       final questionId = questionData.id.toString();
@@ -351,7 +312,6 @@ class _TestScreenState extends State<TestScreen> {
       }
     }
 
-    // If no questions were found or processed
     if (widgets.isEmpty) {
       widgets.add(
         Center(
@@ -372,15 +332,11 @@ class _TestScreenState extends State<TestScreen> {
     return widgets;
   }
 
-  // Helper method to ensure image URLs have the base URL
   String _getFullImageUrl(String imagePath) {
-    // If the URL is already complete (starts with http or https), return it as is
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
 
-    // Otherwise, prepend the base URL
-    // If the path already starts with a slash, don't add another one
     final baseUrl = 'https://meetsusolutions.com';
     final separator = imagePath.startsWith('/') ? '' : '/';
     return '$baseUrl$separator$imagePath';

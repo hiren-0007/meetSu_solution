@@ -8,26 +8,34 @@ class PersonalInfoScreen extends StatefulWidget {
 }
 
 class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
-  // Controllers for form fields
-  final TextEditingController _firstNameController = TextEditingController(text: "HIREN");
-  final TextEditingController _lastNameController = TextEditingController(text: "PANCHAL");
-  final TextEditingController _typeController = TextEditingController(text: "Male");
-  final TextEditingController _dobController = TextEditingController(text: "Oct 19 1999");
-  final TextEditingController _mobileController = TextEditingController(text: "909 232 5200");
+  final TextEditingController _firstNameController =
+      TextEditingController(text: "HIREN");
+  final TextEditingController _lastNameController =
+      TextEditingController(text: "PANCHAL");
+  final TextEditingController _typeController =
+      TextEditingController(text: "Male");
+  final TextEditingController _dobController =
+      TextEditingController(text: "Oct 19 1999");
+  final TextEditingController _mobileController =
+      TextEditingController(text: "909 232 5200");
   final TextEditingController _homeNoController = TextEditingController();
   final TextEditingController _simNoController = TextEditingController();
   final TextEditingController _simExpiryController = TextEditingController();
 
-  // Emergency contact controllers
-  final TextEditingController _emergencyNameController = TextEditingController(text: "TEST");
-  final TextEditingController _emergencyPhoneController = TextEditingController(text: "311 313 1313");
-  final TextEditingController _emergencyEmailController = TextEditingController();
-  final TextEditingController _relationshipController = TextEditingController(text: "FRIEND");
-  final TextEditingController _languageController = TextEditingController(text: "TEST");
+  final TextEditingController _emergencyNameController =
+      TextEditingController(text: "TEST");
+  final TextEditingController _emergencyPhoneController =
+      TextEditingController(text: "311 313 1313");
+  final TextEditingController _emergencyEmailController =
+      TextEditingController();
+  final TextEditingController _relationshipController =
+      TextEditingController(text: "FRIEND");
+  final TextEditingController _languageController =
+      TextEditingController(text: "TEST");
 
-  // Reference controllers
   final TextEditingController _referredByController = TextEditingController();
-  final TextEditingController _referredRelationshipController = TextEditingController();
+  final TextEditingController _referredRelationshipController =
+      TextEditingController();
 
   @override
   void dispose() {
@@ -62,7 +70,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Profile Photo Container
               Center(
                 child: Container(
                   width: 100,
@@ -73,8 +80,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Personal Details
               _buildTextField("First Name :", _firstNameController),
               _buildTextField("Last Name :", _lastNameController),
               _buildTextField("Type :", _typeController),
@@ -83,10 +88,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               _buildTextField("Home No. :", _homeNoController),
               _buildTextField("Sim No :", _simNoController),
               _buildTextField("Sim Expiry :", _simExpiryController),
-
               const SizedBox(height: 20),
-
-              // Emergency Contact Section
               const Text(
                 "Emergency Contact",
                 style: TextStyle(
@@ -95,16 +97,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-
               _buildTextField("Name :", _emergencyNameController),
               _buildTextField("Phone No :", _emergencyPhoneController),
               _buildTextField("Email :", _emergencyEmailController),
               _buildTextField("Relationship :", _relationshipController),
               _buildTextField("Language :", _languageController),
-
               const SizedBox(height: 20),
-
-              // References Section
               const Text(
                 "References",
                 style: TextStyle(
@@ -113,10 +111,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-
               _buildTextField("Referred By :", _referredByController),
-              _buildTextField("Referred Relationship :", _referredRelationshipController),
-
+              _buildTextField(
+                  "Referred Relationship :", _referredRelationshipController),
             ],
           ),
         ),

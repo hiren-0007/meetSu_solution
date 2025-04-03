@@ -14,9 +14,8 @@ class _CheckInScreenState extends State<CheckInScreen> {
   String _message = '';
   Color _messageColor = Colors.black;
 
-  // Target location coordinates - replace with your actual coordinates
-  final double _targetLatitude = 37.4220; // Example latitude
-  final double _targetLongitude = -122.0841; // Example longitude
+  final double _targetLatitude = 43.595310;
+  final double _targetLongitude = -79.640579;
   final double _radiusInMeters = 50;
 
   @override
@@ -52,7 +51,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       borderRadius: BorderRadius.circular(40),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withValues(alpha:0.3),
+                          color: Colors.grey.withValues(alpha: 0.3),
                           spreadRadius: 2,
                           blurRadius: 5,
                           offset: const Offset(0, 3),
@@ -121,20 +120,20 @@ class _CheckInScreenState extends State<CheckInScreen> {
                     ),
                     child: _isLoading
                         ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
                         : const Text(
-                      'Check In Now',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                            'Check In Now',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ],
               ),
@@ -152,25 +151,25 @@ class _CheckInScreenState extends State<CheckInScreen> {
     });
 
     try {
-      // Check if location services are enabled
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         setState(() {
           _isLoading = false;
-          _message = 'Location services are disabled. Please enable them to check in.';
+          _message =
+              'Location services are disabled. Please enable them to check in.';
           _messageColor = Colors.orange;
         });
         return;
       }
 
-      // Check for permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           setState(() {
             _isLoading = false;
-            _message = 'Location permissions are denied. Please grant them to check in.';
+            _message =
+                'Location permissions are denied. Please grant them to check in.';
             _messageColor = Colors.orange;
           });
           return;
@@ -180,18 +179,17 @@ class _CheckInScreenState extends State<CheckInScreen> {
       if (permission == LocationPermission.deniedForever) {
         setState(() {
           _isLoading = false;
-          _message = 'Location permissions are permanently denied. Please enable them in settings.';
+          _message =
+              'Location permissions are permanently denied. Please enable them in settings.';
           _messageColor = Colors.red;
         });
         return;
       }
 
-      // Get current position
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      // Calculate distance between current position and target location
       double distanceInMeters = Geolocator.distanceBetween(
         position.latitude,
         position.longitude,
@@ -199,7 +197,6 @@ class _CheckInScreenState extends State<CheckInScreen> {
         _targetLongitude,
       );
 
-      // Check if user is within the radius
       if (distanceInMeters <= _radiusInMeters) {
         setState(() {
           _message = 'You are ready to work! Successfully checked in.';
@@ -208,7 +205,8 @@ class _CheckInScreenState extends State<CheckInScreen> {
         debugPrint('ready to work');
       } else {
         setState(() {
-          _message = 'You are out of location. Please move closer to your work location to check in.';
+          _message =
+              'You are out of location. Please move closer to your work location to check in.';
           _messageColor = Colors.red;
         });
         debugPrint('out of location');

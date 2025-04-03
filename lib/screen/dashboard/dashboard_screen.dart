@@ -68,7 +68,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Weather and Quote header card
   Widget _buildHeaderCard() {
     return Container(
       width: double.infinity,
@@ -82,7 +81,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Weather section
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -91,23 +89,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 builder: (context, iconUrl, _) {
                   return iconUrl.isNotEmpty
                       ? Image.network(
-                    iconUrl,
-                    width: 24,
-                    height: 24,
-                    color: Colors.white,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(
-                        Icons.wb_sunny,
-                        color: Colors.white,
-                        size: 24,
-                      );
-                    },
-                  )
+                          iconUrl,
+                          width: 24,
+                          height: 24,
+                          color: Colors.white,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.wb_sunny,
+                              color: Colors.white,
+                              size: 24,
+                            );
+                          },
+                        )
                       : const Icon(
-                    Icons.wb_sunny,
-                    color: Colors.white,
-                    size: 24,
-                  );
+                          Icons.wb_sunny,
+                          color: Colors.white,
+                          size: 24,
+                        );
                 },
               ),
               const SizedBox(width: 8),
@@ -132,8 +130,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
           const SizedBox(height: 16),
-
-          // Quote section
           const Text(
             "Quote of the day",
             style: TextStyle(
@@ -177,7 +173,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Advertisement section
   Widget _buildAdvertisementSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,8 +202,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
         ),
-
-        // Ads content - loading or content
         ValueListenableBuilder<bool>(
           valueListenable: _controller.isLoading,
           builder: (context, isLoading, _) {
@@ -232,7 +225,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Loading indicator
   Widget _buildLoadingIndicator() {
     return Container(
       height: 400,
@@ -246,7 +238,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Ads PageView
   Widget _buildAdsPageView(List<AdItem> adItems) {
     return Container(
       constraints: BoxConstraints(
@@ -266,7 +257,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Build ad card
   Widget _buildAdCard(AdItem ad) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -275,7 +265,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha:0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 2),
@@ -289,7 +279,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildAdImage(ad),
-
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(
@@ -301,17 +290,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
-
             _buildDateAndPlace(ad),
-
             _buildStatusAndAmount(ad),
-
             const Divider(),
-
             _buildDescription(ad),
-
             _buildBenefits(),
-
             const SizedBox(height: 16),
           ],
         ),
@@ -319,7 +302,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Ad Image
   Widget _buildAdImage(AdItem ad) {
     return Container(
       decoration: BoxDecoration(
@@ -330,37 +312,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(15),
         child: ad.imageUrl.isNotEmpty
             ? Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(
-            minHeight: 200,
-            maxHeight: 300,
-          ),
-          child: Image.network(
-            ad.imageUrl,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(
+                  minHeight: 200,
+                  maxHeight: 300,
+                ),
+                child: Image.network(
+                  ad.imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 200,
+                      width: double.infinity,
+                      color: Colors.grey.shade200,
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.campaign,
+                          size: 50, color: Colors.grey),
+                    );
+                  },
+                ),
+              )
+            : Container(
                 height: 200,
                 width: double.infinity,
                 color: Colors.grey.shade200,
                 alignment: Alignment.center,
                 child: const Icon(Icons.campaign, size: 50, color: Colors.grey),
-              );
-            },
-          ),
-        )
-            : Container(
-          height: 200,
-          width: double.infinity,
-          color: Colors.grey.shade200,
-          alignment: Alignment.center,
-          child: const Icon(Icons.campaign, size: 50, color: Colors.grey),
-        ),
+              ),
       ),
     );
   }
 
-  // Date and Place
   Widget _buildDateAndPlace(AdItem ad) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -413,7 +395,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Status and Amount
   Widget _buildStatusAndAmount(AdItem ad) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -463,7 +444,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Description
   Widget _buildDescription(AdItem ad) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -485,7 +465,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               GestureDetector(
                 onTap: () => _controller.shareAd(context, ad),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
                     borderRadius: BorderRadius.circular(8),
@@ -526,7 +507,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Benefits
   Widget _buildBenefits() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -555,7 +535,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("${index + 1}. ", style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Text("${index + 1}. ",
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
                         Expanded(
                           child: Text(
                             benefit,
@@ -577,7 +559,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // App Download Card (shown when no ads available)
   Widget _buildAppDownloadCard() {
     return Container(
       margin: const EdgeInsets.all(16),
@@ -589,7 +570,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Store buttons
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -600,7 +580,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
-
           const Center(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 8.0),
@@ -613,20 +592,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
           ),
-
           _buildAppDownloadInfo(),
-
           const Divider(height: 1),
-
           _buildAppDownloadDescription(),
-
           _buildAppDownloadBenefits(),
         ],
       ),
     );
   }
 
-  // Play Store Button
   Widget _buildPlayStoreButton() {
     return GestureDetector(
       onTap: () => _controller.downloadFromPlayStore(context),
@@ -653,7 +627,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // App Store Button
   Widget _buildAppStoreButton() {
     return GestureDetector(
       onTap: () => _controller.downloadFromAppStore(context),
@@ -680,7 +653,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // App Download Info
   Widget _buildAppDownloadInfo() {
     return Column(
       children: [
@@ -736,7 +708,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // App Download Description
   Widget _buildAppDownloadDescription() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -757,7 +728,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               GestureDetector(
                 onTap: () {},
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
                     borderRadius: BorderRadius.circular(8),
@@ -795,7 +767,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // App Download Benefits
   Widget _buildAppDownloadBenefits() {
     return Column(
       children: [

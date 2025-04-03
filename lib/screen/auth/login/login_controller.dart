@@ -9,78 +9,62 @@ import 'package:meetsu_solutions/services/map/LocationService.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 
 class LoginController {
-  // Text controllers
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  // Observable states
   final ValueNotifier<bool> obscureText = ValueNotifier<bool>(true);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
 
-  // API service
   final ApiService _apiService = ApiService(ApiClient());
 
   final LocationService _locationService = LocationService();
 
-  // Toggle password visibility
   void togglePasswordVisibility() {
     obscureText.value = !obscureText.value;
   }
 
-  // Login function
   Future<bool> login(BuildContext context) async {
     try {
-      // Set loading state
       isLoading.value = true;
       errorMessage.value = null;
 
-      // Get values from controllers
       final username = emailController.text.trim();
       final password = passwordController.text;
 
-      // Validate input
       if (username.isEmpty || password.isEmpty) {
         errorMessage.value = "Please enter both username and password";
         return false;
       }
 
-      // Create login request model
       final loginRequest = LoginRequestModel(
         username: username,
         password: password,
       );
 
-      // Call API
       final response = await _apiService.loginUser(loginRequest.toJson());
 
-      // Parse response
       final loginResponse = LoginResponseModel.fromJson(response);
 
-      // Check if access token exists
-      if (loginResponse.accessToken != null && loginResponse.accessToken!.isNotEmpty) {
-        // Store token in SharedPreferences
+      if (loginResponse.accessToken != null &&
+          loginResponse.accessToken!.isNotEmpty) {
         await SharedPrefsService.instance.saveLoginResponse(loginResponse);
 
         await SharedPrefsService.instance.saveUsername(username);
 
-        // Check if temporary login
         if (loginResponse.isTempLogin == 1) {
           debugPrint("Temporary login detected, user should change password");
         }
 
-        // Navigate to home screen
         if (context.mounted) {
           await requestLocationPermission(context);
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomeScreen())
-          );
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()));
         }
         return true;
       } else {
-        // Login failed
-        errorMessage.value = "Authentication failed. Please check your credentials.";
+        errorMessage.value =
+            "Authentication failed. Please check your credentials.";
         return false;
       }
     } catch (e) {
@@ -103,7 +87,6 @@ class LoginController {
     await _locationService.handleLocationPermission(context);
   }
 
-  // Navigate to signup screen
   void navigateToSignup(BuildContext context) {
     Navigator.push(
       context,
@@ -111,7 +94,6 @@ class LoginController {
     );
   }
 
-  // Dispose resources
   void dispose() {
     emailController.dispose();
     passwordController.dispose();

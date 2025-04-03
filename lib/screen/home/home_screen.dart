@@ -9,7 +9,6 @@ import 'package:meetsu_solutions/screen/home/home_controller.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -18,12 +17,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Use the controller
   final HomeController _controller = HomeController();
 
   @override
   void dispose() {
-    // Dispose controller resources
     _controller.dispose();
     super.dispose();
   }
@@ -43,33 +40,28 @@ class _HomeScreenState extends State<HomeScreen> {
             style: AppTheme.appNameStyle,
           ),
           centerTitle: true,
-          // leading: IconButton(
-          //   icon: const Icon(Icons.menu, color: Colors.white),
-          //   onPressed: () => _controller.openDrawer(context),
-          // ),
           actions: [
             ValueListenableBuilder<int>(
               valueListenable: _controller.selectedIndex,
               builder: (context, selectedIndex, _) {
-                // Show question mark icon only for Dashboard tab
                 if (selectedIndex == 0) {
                   return IconButton(
                     icon: const Icon(Icons.question_mark, color: Colors.white),
                     onPressed: () => _controller.openNotifications(context),
                   );
-                }
-                // Show username for all other tabs
-                else {
+                } else {
                   return Padding(
-                    padding: const EdgeInsets.only(right: 16.0, top: 8.0, bottom: 8.0),
+                    padding: const EdgeInsets.only(
+                        right: 16.0, top: 8.0, bottom: 8.0),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12.0, vertical: 6.0),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(15.0),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -160,7 +152,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBody(int index) {
-    // Return different content based on selected tab
     switch (index) {
       case 0:
         return const DashboardScreen();
@@ -175,131 +166,5 @@ class _HomeScreenState extends State<HomeScreen> {
       default:
         return const DashboardScreen();
     }
-  }
-
-  Widget _buildDashboardTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.dashboard,
-            size: 80,
-            color: AppTheme.primaryColor.withValues(alpha: 0.5),
-          ),
-          SizedBox(height: AppTheme.contentSpacing),
-          const Text(
-            "Dashboard",
-            style: AppTheme.headerStyle,
-          ),
-          SizedBox(height: AppTheme.smallSpacing),
-          Text(
-            "Your upcoming appointments and events",
-            style: AppTheme.subHeaderStyle,
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  Widget _buildScheduleTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.calendar_today,
-            size: 80,
-            color: AppTheme.primaryColor.withValues(alpha: 0.5),
-          ),
-          SizedBox(height: AppTheme.contentSpacing),
-          const Text(
-            "Schedule",
-            style: AppTheme.headerStyle,
-          ),
-          SizedBox(height: AppTheme.smallSpacing),
-          Text(
-            "Your upcoming appointments and events",
-            style: AppTheme.subHeaderStyle,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildJobOpeningTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.work,
-            size: 80,
-            color: AppTheme.primaryColor.withValues(alpha: 0.5),
-          ),
-          SizedBox(height: AppTheme.contentSpacing),
-          const Text(
-            "Job Openings",
-            style: AppTheme.headerStyle,
-          ),
-          SizedBox(height: AppTheme.smallSpacing),
-          Text(
-            "Explore and manage available positions",
-            style: AppTheme.subHeaderStyle,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildComplianceTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.verified,
-            size: 80,
-            color: AppTheme.primaryColor.withValues(alpha: 0.5),
-          ),
-          SizedBox(height: AppTheme.contentSpacing),
-          const Text(
-            "Compliance",
-            style: AppTheme.headerStyle,
-          ),
-          SizedBox(height: AppTheme.smallSpacing),
-          Text(
-            "View and update compliance documents",
-            style: AppTheme.subHeaderStyle,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMoreTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.more_horiz,
-            size: 80,
-            color: AppTheme.primaryColor.withValues(alpha: 0.5),
-          ),
-          SizedBox(height: AppTheme.contentSpacing),
-          const Text(
-            "More Options",
-            style: AppTheme.headerStyle,
-          ),
-          SizedBox(height: AppTheme.smallSpacing),
-          Text(
-            "Access additional features and settings",
-            style: AppTheme.subHeaderStyle,
-          ),
-        ],
-      ),
-    );
   }
 }

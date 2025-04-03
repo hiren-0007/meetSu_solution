@@ -11,7 +11,6 @@ class TrainingScreen extends StatefulWidget {
 }
 
 class _TrainingScreenState extends State<TrainingScreen> {
-  // Use the controller
   final TrainingController _controller = TrainingController();
 
   @override
@@ -22,7 +21,6 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
   @override
   void dispose() {
-    // Dispose controller resources
     _controller.dispose();
     super.dispose();
   }
@@ -34,7 +32,6 @@ class _TrainingScreenState extends State<TrainingScreen> {
         backgroundColor: AppTheme.backgroundColor,
         body: Stack(
           children: [
-            // Top design - blue background
             Positioned(
               top: 0,
               left: 0,
@@ -50,13 +47,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
                 ),
               ),
             ),
-
-            // Main content
             SafeArea(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title with back button
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Row(
@@ -80,12 +74,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 24), // Balance the back button
+                        const SizedBox(width: 24),
                       ],
                     ),
                   ),
-
-                  // App Icon - circular with shadow
                   Center(
                     child: Container(
                       padding: const EdgeInsets.all(15),
@@ -107,16 +99,14 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
-                  // Training content
                   Expanded(
                     child: ValueListenableBuilder<bool>(
                       valueListenable: _controller.isLoading,
                       builder: (context, isLoading, child) {
                         if (isLoading) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                              child: CircularProgressIndicator());
                         }
 
                         return ValueListenableBuilder<String?>(
@@ -129,7 +119,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                   children: [
                                     Text(
                                       errorMessage,
-                                      style: const TextStyle(color: AppTheme.cardColorRed),
+                                      style: const TextStyle(
+                                          color: AppTheme.cardColorRed),
                                       textAlign: TextAlign.center,
                                     ),
                                     TextButton(
@@ -145,13 +136,15 @@ class _TrainingScreenState extends State<TrainingScreen> {
                               valueListenable: _controller.trainingsData,
                               builder: (context, trainings, child) {
                                 return Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 16),
                                   decoration: BoxDecoration(
                                     color: AppTheme.cardColor,
                                     borderRadius: BorderRadius.circular(15),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.05),
+                                        color: Colors.black
+                                            .withValues(alpha: 0.05),
                                         blurRadius: 10,
                                         spreadRadius: 1,
                                       ),
@@ -160,37 +153,39 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                   child: ListView(
                                     padding: EdgeInsets.zero,
                                     children: [
-                                      // Section for Assigned Trainings
                                       _buildSectionTitle("Assigned Trainings"),
                                       if (_controller.assignedTrainings.isEmpty)
-                                        _buildEmptyState("No assigned trainings found.")
+                                        _buildEmptyState(
+                                            "No assigned trainings found.")
                                       else
                                         ...List.generate(
                                           _controller.assignedTrainings.length,
-                                              (index) => _buildTrainingItem(
-                                            _controller.assignedTrainings[index],
+                                          (index) => _buildTrainingItem(
+                                            _controller
+                                                .assignedTrainings[index],
                                             isAssigned: true,
                                           ),
                                         ),
-
                                       const Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 30, vertical: 10),
                                         child: Divider(
                                           height: 1,
                                           thickness: 1,
-                                          color: AppTheme.textSecondaryColor, // Light gray color
+                                          color: AppTheme.textSecondaryColor,
                                         ),
                                       ),
-
-                                      // Section for Completed Trainings
                                       _buildSectionTitle("Completed Trainings"),
-                                      if (_controller.completedTrainings.isEmpty)
-                                        _buildEmptyState("No completed trainings found.")
+                                      if (_controller
+                                          .completedTrainings.isEmpty)
+                                        _buildEmptyState(
+                                            "No completed trainings found.")
                                       else
                                         ...List.generate(
                                           _controller.completedTrainings.length,
-                                              (index) => _buildTrainingItem(
-                                            _controller.completedTrainings[index],
+                                          (index) => _buildTrainingItem(
+                                            _controller
+                                                .completedTrainings[index],
                                             isAssigned: false,
                                           ),
                                         ),
@@ -246,8 +241,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
   Widget _buildTrainingItem(Training training, {required bool isAssigned}) {
     return InkWell(
       onTap: () {
-
-       _controller.viewTraining(context, training);      },
+        _controller.viewTraining(context, training);
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         child: Row(
@@ -267,7 +262,6 @@ class _TrainingScreenState extends State<TrainingScreen> {
             ),
             const SizedBox(width: 12),
 
-            // Training details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,21 +297,21 @@ class _TrainingScreenState extends State<TrainingScreen> {
               ),
             ),
 
-            // Action buttons
             isAssigned
                 ? IconButton(
-              icon: const Icon(
-                Icons.check_circle_outline,
-                color: AppTheme.primaryColor,
-                size: 22,
-              ),
-              onPressed: () => _controller.markAsCompleted(context, training),
-            )
+                    icon: const Icon(
+                      Icons.check_circle_outline,
+                      color: AppTheme.primaryColor,
+                      size: 22,
+                    ),
+                    onPressed: () =>
+                        _controller.markAsCompleted(context, training),
+                  )
                 : const Icon(
-              Icons.arrow_forward_ios,
-              size: 14,
-              color: AppTheme.textSecondaryColor,
-            ),
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: AppTheme.textSecondaryColor,
+                  ),
           ],
         ),
       ),

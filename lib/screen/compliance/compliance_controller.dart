@@ -7,102 +7,88 @@ import 'package:meetsu_solutions/utils/extra/file_utils.dart';
 import '../../utils/extra/downloads_helper.dart';
 
 class ComplianceController {
-  // API Service
   final ApiService _apiService;
 
-  // ValueNotifiers for reactive state management
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
-  final ValueNotifier<List<ComplianceReport>> reports = ValueNotifier<List<ComplianceReport>>([]);
+  final ValueNotifier<List<ComplianceReport>> reports =
+      ValueNotifier<List<ComplianceReport>>([]);
 
-  // Constructor
   ComplianceController({ApiService? apiService})
       : _apiService = apiService ?? ApiService(ApiClient()) {
-    // Fetch compliance reports when controller is initialized
     fetchComplianceReports();
   }
 
-  // Fetch compliance reports from the API
   Future<void> fetchComplianceReports() async {
     try {
       isLoading.value = true;
       errorMessage.value = null;
 
-      // Get user token from Shared Preferences
       final token = SharedPrefsService.instance.getAccessToken();
       if (token == null || token.isEmpty) {
         throw Exception("No authentication token found");
       }
 
-      // Add Authorization Token to API Client
       _apiService.client.addAuthToken(token);
 
-      // Make API Call
       final response = await _apiService.getCompliance();
 
-      // Check if response has data
       if (response != null && response['data'] != null) {
         final List<dynamic> reportsData = response['data'];
 
-        // Convert API data to ComplianceReport objects
-        final List<ComplianceReport> complianceReports = reportsData.map((report) {
+        final List<ComplianceReport> complianceReports =
+            reportsData.map((report) {
           return ComplianceReport(
             name: report['name'] ?? "Unnamed Report",
             id: report['id'] ?? 0,
           );
         }).toList();
 
-        // Update the reports list
         reports.value = complianceReports;
       } else {
         throw Exception("Invalid response format or no data available");
       }
     } catch (e) {
       debugPrint("❌ Error fetching compliance reports: $e");
-      errorMessage.value = "Failed to load compliance reports. Please try again later.";
+      errorMessage.value =
+          "Failed to load compliance reports. Please try again later.";
       reports.value = [];
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Improved download method with simplified implementation
-  Future<bool> simpleDownloadReport(BuildContext context, ComplianceReport report) async {
+  Future<bool> simpleDownloadReport(
+      BuildContext context, ComplianceReport report) async {
     try {
       isLoading.value = true;
       errorMessage.value = null;
 
-      // Get user token from Shared Preferences
       final token = SharedPrefsService.instance.getAccessToken();
       if (token == null || token.isEmpty) {
         throw Exception("No authentication token found");
       }
 
-      // Add Authorization Token to API Client
       _apiService.client.addAuthToken(token);
 
-      // Prepare data for the API call
       final userData = {
         "id": report.id.toString(),
       };
 
-      // Make the API call to download the report
       final downloadResponse = await _apiService.complianceDownload(userData);
       debugPrint("📥 Download response: $downloadResponse");
 
-      // Extract the filename from the response
       if (downloadResponse != null &&
           downloadResponse['filename'] != null &&
           downloadResponse['statusCode'] == 200) {
-
         final String filePath = downloadResponse['filename'];
         String baseUrl = 'https://www.meetsusolutions.com';
-        String normalizedPath = filePath.startsWith('/') ? filePath : '/$filePath';
+        String normalizedPath =
+            filePath.startsWith('/') ? filePath : '/$filePath';
         String fullUrl = '$baseUrl$normalizedPath'.replaceAll(' ', '%20');
         String fileName = fullUrl.split('/').last;
         debugPrint("🔗 Download URL: $fullUrl");
 
-        // Use our simplified DownloadHelper to download the file
         final downloadedFilePath = await DownloadHelper.downloadFile(
           context: context,
           url: fullUrl,
@@ -111,7 +97,6 @@ class ComplianceController {
           headers: {"Authorization": "Bearer $token"},
         );
 
-        // Check if download was successful
         if (downloadedFilePath != null) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -122,7 +107,6 @@ class ComplianceController {
                 action: SnackBarAction(
                   label: 'VIEW',
                   onPressed: () {
-                    // Open the file using FileUtils
                     FileUtils.openFile(downloadedFilePath, context: context);
                   },
                 ),
@@ -155,12 +139,10 @@ class ComplianceController {
     }
   }
 
-  // Retry fetching data
   void retryFetch() {
     fetchComplianceReports();
   }
 
-  // Clean up resources
   void dispose() {
     isLoading.dispose();
     errorMessage.dispose();
@@ -168,7 +150,6 @@ class ComplianceController {
   }
 }
 
-// Model class for compliance reports
 class ComplianceReport {
   final String name;
   final int id;

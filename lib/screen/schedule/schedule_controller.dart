@@ -18,13 +18,11 @@ class ScheduleController {
 
   final ValueNotifier<String?> payCheck = ValueNotifier<String?>(null);
 
-  // Constructor
   ScheduleController({ApiService? apiService})
       : _apiService = apiService ?? ApiService(ApiClient()) {
     _fetchScheduleData();
   }
 
-  // Select start date
   Future<void> selectStartDate(BuildContext context) async {
     final DateTime currentDate = _parseDate(startDate.value);
     final DateTime? picked = await showDatePicker(
@@ -40,16 +38,15 @@ class ScheduleController {
     }
   }
 
-  // Select end date
-  // Select end date
   Future<void> selectEndDate(BuildContext context) async {
-    final DateTime minEndDate = _parseDate(startDate.value).add(const Duration(days: 14));
+    final DateTime minEndDate =
+        _parseDate(startDate.value).add(const Duration(days: 14));
     final DateTime currentDate = _parseDate(endDate.value);
 
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: currentDate.isBefore(minEndDate) ? minEndDate : currentDate,
-      firstDate: minEndDate, // Ensure minimum selection is 2 weeks after start date
+      firstDate: minEndDate,
       lastDate: DateTime(2030),
     );
 
@@ -59,8 +56,6 @@ class ScheduleController {
     }
   }
 
-
-  // Fetch schedule data from API
   Future<void> _fetchScheduleData() async {
     try {
       isLoading.value = true;
@@ -72,10 +67,8 @@ class ScheduleController {
 
       _apiService.client.addAuthToken(token);
 
-      final response = await _apiService.getSchedule({
-        "start_date": startDate.value,
-        "end_date": endDate.value
-      });
+      final response = await _apiService.getSchedule(
+          {"start_date": startDate.value, "end_date": endDate.value});
 
       final scheduleResponse = ScheduleResponseModel.fromJson(response);
 
@@ -97,9 +90,6 @@ class ScheduleController {
     }
   }
 
-
-
-  // Parse date string to DateTime
   DateTime _parseDate(String dateStr) {
     final parts = dateStr.split('-');
     final month = _getMonthNumber(parts[0]);
@@ -108,13 +98,11 @@ class ScheduleController {
     return DateTime(year, month, day);
   }
 
-  // Format DateTime to string
   String _formatDate(DateTime date) {
     final month = _getMonthName(date.month);
     return "$month-${date.day.toString().padLeft(2, '0')}-${date.year}";
   }
 
-  // Get month number from name
   int _getMonthNumber(String monthName) {
     const months = {
       'Jan': 1,
@@ -133,7 +121,6 @@ class ScheduleController {
     return months[monthName] ?? 1;
   }
 
-  // Get month name from number
   String _getMonthName(int monthNumber) {
     const months = {
       1: 'Jan',

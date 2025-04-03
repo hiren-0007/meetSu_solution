@@ -11,18 +11,15 @@ class JobOpeningScreen extends StatefulWidget {
 }
 
 class _JobOpeningScreenState extends State<JobOpeningScreen> {
-  // Use the controller
   final JobOpeningController _controller = JobOpeningController();
   final PageController _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
-    // Listen to controller's current index changes to update page view
     _controller.currentIndex.addListener(_handleIndexChange);
   }
 
-  // Handle index changes from the controller
   void _handleIndexChange() {
     if (_pageController.hasClients) {
       _pageController.animateToPage(
@@ -35,9 +32,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
 
   @override
   void dispose() {
-    // Remove listener
     _controller.currentIndex.removeListener(_handleIndexChange);
-    // Dispose controller resources
     _controller.dispose();
     _pageController.dispose();
     super.dispose();
@@ -51,7 +46,6 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title and subtitle
             Container(
               width: double.infinity,
               margin: const EdgeInsets.fromLTRB(16, 24, 16, 16),
@@ -77,8 +71,6 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                 ],
               ),
             ),
-
-            // Job Listings
             Expanded(
               child: ValueListenableBuilder<bool>(
                 valueListenable: _controller.isLoading,
@@ -120,7 +112,6 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                         } else {
                           return Column(
                             children: [
-                              // Page view (removed the page indicator dots)
                               Expanded(
                                 child: PageView.builder(
                                   controller: _pageController,
@@ -166,7 +157,6 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Job image header - UPDATED IMAGE CONTAINER
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -176,24 +166,22 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
               borderRadius: BorderRadius.circular(15),
               child: job.imageUrl.isNotEmpty
                   ? Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(
-                  minHeight: 150,
-                  maxHeight: 250,
-                ),
-                child: Image.network(
-                  job.imageUrl,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return _buildFallbackImage();
-                  },
-                ),
-              )
+                      width: double.infinity,
+                      constraints: const BoxConstraints(
+                        minHeight: 150,
+                        maxHeight: 250,
+                      ),
+                      child: Image.network(
+                        job.imageUrl,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildFallbackImage();
+                        },
+                      ),
+                    )
                   : _buildFallbackImage(),
             ),
           ),
-
-          // Job title
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
@@ -205,8 +193,6 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
               ),
             ),
           ),
-
-          // Job details (date and location)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -256,8 +242,6 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
               ],
             ),
           ),
-
-          // Positions and salary
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: Row(
@@ -304,10 +288,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
               ],
             ),
           ),
-
           const Divider(),
-
-          // Description
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: Column(
@@ -328,7 +309,8 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                     GestureDetector(
                       onTap: () => _controller.shareJob(context, job),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor,
                           borderRadius: BorderRadius.circular(8),
@@ -369,8 +351,6 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
               ],
             ),
           ),
-
-          // Requirements
           Expanded(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -396,7 +376,9 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text("• ", style: TextStyle(fontWeight: FontWeight.bold)),
+                              const Text("• ",
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
                               Expanded(
                                 child: Text(
                                   job.requirements[index],
@@ -416,8 +398,6 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
               ),
             ),
           ),
-
-
         ],
       ),
     );

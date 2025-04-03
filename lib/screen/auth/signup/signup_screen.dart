@@ -11,12 +11,10 @@ class SignupScreen extends StatefulWidget {
 }
 
 class SignupScreenState extends State<SignupScreen> {
-  // Use the controller
   final SignupController _controller = SignupController();
 
   @override
   void dispose() {
-    // Dispose controller resources
     _controller.dispose();
     super.dispose();
   }
@@ -28,7 +26,6 @@ class SignupScreenState extends State<SignupScreen> {
         backgroundColor: AppTheme.backgroundColor,
         body: Stack(
           children: [
-            // Top design
             Positioned(
               top: 0,
               left: 0,
@@ -38,8 +35,6 @@ class SignupScreenState extends State<SignupScreen> {
                 decoration: AppTheme.headerContainerDecoration,
               ),
             ),
-
-            // Main content
             SafeArea(
               child: SingleChildScrollView(
                 child: Padding(
@@ -48,16 +43,17 @@ class SignupScreenState extends State<SignupScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 20),
-
-                      // Logo and app name
                       Center(
                         child: Column(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(15),
-                              decoration: AppTheme.appIconDecoration,
-                              child:Image.asset('assets/images/logo.png',height: 50,width: 50,)
-                            ),
+                                padding: const EdgeInsets.all(15),
+                                decoration: AppTheme.appIconDecoration,
+                                child: Image.asset(
+                                  'assets/images/logo.png',
+                                  height: 50,
+                                  width: 50,
+                                )),
                             SizedBox(height: AppTheme.smallSpacing),
                             const Text(
                               "MEETsu Solutions",
@@ -66,10 +62,7 @@ class SignupScreenState extends State<SignupScreen> {
                           ],
                         ),
                       ),
-
                       SizedBox(height: AppTheme.largeSpacing),
-
-                      // Signup card
                       Container(
                         width: double.infinity,
                         padding: EdgeInsets.all(AppTheme.cardPadding),
@@ -77,7 +70,6 @@ class SignupScreenState extends State<SignupScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Create Account text
                             const Text(
                               "Create Account",
                               style: AppTheme.headerStyle,
@@ -87,10 +79,7 @@ class SignupScreenState extends State<SignupScreen> {
                               "Sign up to get started",
                               style: AppTheme.subHeaderStyle,
                             ),
-
                             SizedBox(height: AppTheme.largeSpacing),
-
-                            // First Name field
                             TextField(
                               controller: _controller.firstNameController,
                               textCapitalization: TextCapitalization.words,
@@ -100,10 +89,7 @@ class SignupScreenState extends State<SignupScreen> {
                                 prefixIcon: Icons.person_outline,
                               ),
                             ),
-
                             SizedBox(height: AppTheme.contentSpacing),
-
-                            // Last Name field
                             TextField(
                               controller: _controller.lastNameController,
                               textCapitalization: TextCapitalization.words,
@@ -113,10 +99,7 @@ class SignupScreenState extends State<SignupScreen> {
                                 prefixIcon: Icons.person_outline,
                               ),
                             ),
-
                             SizedBox(height: AppTheme.contentSpacing),
-
-                            // Username field
                             TextField(
                               controller: _controller.usernameController,
                               keyboardType: TextInputType.emailAddress,
@@ -126,10 +109,7 @@ class SignupScreenState extends State<SignupScreen> {
                                 prefixIcon: Icons.alternate_email,
                               ),
                             ),
-
                             SizedBox(height: AppTheme.contentSpacing),
-
-                            // Password field
                             ValueListenableBuilder<bool>(
                               valueListenable: _controller.obscurePassword,
                               builder: (context, obscureText, _) {
@@ -148,21 +128,21 @@ class SignupScreenState extends State<SignupScreen> {
                                         color: AppTheme.textSecondaryColor,
                                         size: 22,
                                       ),
-                                      onPressed: _controller.togglePasswordVisibility,
+                                      onPressed:
+                                          _controller.togglePasswordVisibility,
                                     ),
                                   ),
                                 );
                               },
                             ),
-
                             SizedBox(height: AppTheme.contentSpacing),
-
-                            // Confirm Password field
                             ValueListenableBuilder<bool>(
-                              valueListenable: _controller.obscureConfirmPassword,
+                              valueListenable:
+                                  _controller.obscureConfirmPassword,
                               builder: (context, obscureText, _) {
                                 return TextField(
-                                  controller: _controller.confirmPasswordController,
+                                  controller:
+                                      _controller.confirmPasswordController,
                                   obscureText: obscureText,
                                   style: AppTheme.inputTextStyle,
                                   decoration: AppTheme.getInputDecoration(
@@ -176,35 +156,31 @@ class SignupScreenState extends State<SignupScreen> {
                                         color: AppTheme.textSecondaryColor,
                                         size: 22,
                                       ),
-                                      onPressed: _controller.toggleConfirmPasswordVisibility,
+                                      onPressed: _controller
+                                          .toggleConfirmPasswordVisibility,
                                     ),
                                   ),
                                 );
                               },
                             ),
-
-                            // Error message (if any)
                             ValueListenableBuilder<String?>(
                               valueListenable: _controller.errorMessage,
                               builder: (context, errorMessage, _) {
                                 return errorMessage != null
                                     ? Padding(
-                                  padding: const EdgeInsets.only(top: 10),
-                                  child: Text(
-                                    errorMessage,
-                                    style: const TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                )
+                                        padding: const EdgeInsets.only(top: 10),
+                                        child: Text(
+                                          errorMessage,
+                                          style: const TextStyle(
+                                            color: Colors.red,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      )
                                     : const SizedBox.shrink();
                               },
                             ),
-
                             SizedBox(height: AppTheme.largeSpacing - 10),
-
-                            // Signup Button
                             ValueListenableBuilder<bool>(
                               valueListenable: _controller.isLoading,
                               builder: (context, isLoading, _) {
@@ -212,47 +188,46 @@ class SignupScreenState extends State<SignupScreen> {
                                   onPressed: isLoading
                                       ? null
                                       : () async {
-                                    final success = await _controller.signup();
-                                    if (success && mounted) {
-                                      // Navigate to success or login screen
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Account created successfully!'),
-                                          backgroundColor: Colors.green,
-                                        ),
-                                      );
-                                      // Navigate to login screen after successful signup
-                                      Future.delayed(const Duration(seconds: 1), () {
-                                        if (mounted) {
-                                          Navigator.pop(context);
-                                        }
-                                      });
-                                    }
-                                  },
+                                          final success =
+                                              await _controller.signup();
+                                          if (success && mounted) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Account created successfully!'),
+                                                backgroundColor: Colors.green,
+                                              ),
+                                            );
+                                            Future.delayed(
+                                                const Duration(seconds: 1), () {
+                                              if (mounted) {
+                                                Navigator.pop(context);
+                                              }
+                                            });
+                                          }
+                                        },
                                   style: AppTheme.primaryButtonStyle,
                                   child: isLoading
                                       ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2,
+                                          ),
+                                        )
                                       : const Text(
-                                    "SIGN UP",
-                                    style: AppTheme.buttonTextStyle,
-                                  ),
+                                          "SIGN UP",
+                                          style: AppTheme.buttonTextStyle,
+                                        ),
                                 );
                               },
                             ),
                           ],
                         ),
                       ),
-
                       SizedBox(height: AppTheme.contentSpacing),
-
-                      // Already have an account
                       Center(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -262,7 +237,8 @@ class SignupScreenState extends State<SignupScreen> {
                               style: AppTheme.smallTextStyle,
                             ),
                             TextButton(
-                              onPressed: () => _controller.navigateToLogin(context),
+                              onPressed: () =>
+                                  _controller.navigateToLogin(context),
                               child: const Text(
                                 "Login",
                                 style: AppTheme.linkTextStyle,

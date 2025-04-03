@@ -37,7 +37,6 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
         backgroundColor: AppTheme.backgroundColor,
         body: Stack(
           children: [
-            // Top design
             Positioned(
               top: 0,
               left: 0,
@@ -47,8 +46,6 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                 decoration: AppTheme.headerContainerDecoration,
               ),
             ),
-
-            // Main content
             SafeArea(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,10 +81,7 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                       ],
                     ),
                   ),
-
                   SizedBox(height: AppTheme.smallSpacing),
-
-                  // Form Card
                   Expanded(
                     child: Container(
                       width: double.infinity,
@@ -117,7 +111,6 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Reason field
                                   TextField(
                                     controller: _controller.reasonController,
                                     decoration: AppTheme.getInputDecoration(
@@ -127,15 +120,15 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                                     maxLines: 3,
                                   ),
                                   SizedBox(height: AppTheme.contentSpacing),
-
-                                  // Date field
                                   InkWell(
-                                    onTap: () => _controller.selectDate(context),
+                                    onTap: () =>
+                                        _controller.selectDate(context),
                                     child: ValueListenableBuilder<DateTime>(
                                       valueListenable: _controller.selectedDate,
                                       builder: (context, date, _) {
                                         return InputDecorator(
-                                          decoration: AppTheme.getInputDecoration(
+                                          decoration:
+                                              AppTheme.getInputDecoration(
                                             labelText: "Date",
                                             prefixIcon: Icons.calendar_today,
                                             suffixIcon: const Icon(
@@ -152,19 +145,19 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                                     ),
                                   ),
                                   SizedBox(height: AppTheme.contentSpacing),
-
                                   SizedBox(height: AppTheme.largeSpacing),
-
-                                  // Records section
                                   Container(
                                     width: double.infinity,
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(AppTheme.smallBorderRadius),
+                                      color: AppTheme.primaryColor
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(
+                                          AppTheme.smallBorderRadius),
                                     ),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
@@ -178,7 +171,8 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                                               style: TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
-                                                color: AppTheme.textPrimaryColor,
+                                                color:
+                                                    AppTheme.textPrimaryColor,
                                               ),
                                             ),
                                             const Spacer(),
@@ -187,21 +181,22 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                                                 Icons.refresh,
                                                 color: AppTheme.primaryColor,
                                               ),
-                                              onPressed: _controller.refreshRecords,
+                                              onPressed:
+                                                  _controller.refreshRecords,
                                             ),
                                           ],
                                         ),
                                         const SizedBox(height: 12),
-
-                                        // Records table
-                                        ValueListenableBuilder<List<RequestRecord>>(
+                                        ValueListenableBuilder<
+                                            List<RequestRecord>>(
                                           valueListenable: _controller.records,
                                           builder: (context, records, _) {
                                             if (records.isEmpty) {
                                               return const Center(
                                                 child: Padding(
                                                   padding: EdgeInsets.all(16.0),
-                                                  child: Text("No records found"),
+                                                  child:
+                                                      Text("No records found"),
                                                 ),
                                               );
                                             }
@@ -210,23 +205,37 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                                               scrollDirection: Axis.horizontal,
                                               child: DataTable(
                                                 columnSpacing: 20,
-                                                headingRowColor: MaterialStateProperty.all(
+                                                headingRowColor:
+                                                    MaterialStateProperty.all(
                                                   Colors.grey[200],
                                                 ),
                                                 columns: const [
-                                                  DataColumn(label: Text("Actions")),
-                                                  DataColumn(label: Text("Amount")),
-                                                  DataColumn(label: Text("Reason")),
+                                                  DataColumn(
+                                                      label: Text("Actions")),
+                                                  DataColumn(
+                                                      label: Text("Amount")),
+                                                  DataColumn(
+                                                      label: Text("Reason")),
                                                 ],
                                                 rows: records.map((record) {
                                                   return DataRow(
                                                     cells: [
                                                       DataCell(IconButton(
-                                                        icon: const Icon(Icons.download, color: AppTheme.primaryColor, size: 20),
-                                                        onPressed: () => _controller.downloadRecord(record),
+                                                        icon: const Icon(
+                                                            Icons.download,
+                                                            color: AppTheme
+                                                                .primaryColor,
+                                                            size: 20),
+                                                        onPressed: () =>
+                                                            _controller
+                                                                .downloadRecord(
+                                                                    record),
                                                       )),
-                                                      DataCell(Text(record.amount.toString())),
-                                                      DataCell(Text(record.reason)),
+                                                      DataCell(Text(record
+                                                          .amount
+                                                          .toString())),
+                                                      DataCell(
+                                                          Text(record.reason)),
                                                     ],
                                                   );
                                                 }).toList(),
@@ -244,7 +253,6 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
 
                           SizedBox(height: AppTheme.contentSpacing),
 
-                          // Submit button
                           ValueListenableBuilder<bool>(
                             valueListenable: _controller.isLoading,
                             builder: (context, isLoading, child) {
@@ -252,25 +260,25 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                                 style: AppTheme.primaryButtonStyle,
                                 onPressed: isLoading
                                     ? null
-                                    : () => _controller.showRequestDialog(context),
+                                    : () =>
+                                        _controller.showRequestDialog(context),
                                 child: isLoading
                                     ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
                                     : const Text(
-                                  "Add Request",
-                                  style: AppTheme.buttonTextStyle,
-                                ),
+                                        "Add Request",
+                                        style: AppTheme.buttonTextStyle,
+                                      ),
                               );
                             },
                           ),
 
-                          // Error message
                           ValueListenableBuilder<String?>(
                             valueListenable: _controller.errorMessage,
                             builder: (context, error, _) {

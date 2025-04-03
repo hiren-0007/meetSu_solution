@@ -27,7 +27,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         backgroundColor: AppTheme.backgroundColor,
         body: Column(
           children: [
-            // Date Range Selector
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -71,8 +70,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   Row(
                     children: [
                       const SizedBox(width: 10),
-
-                      // Start date selector
                       Expanded(
                         child: ValueListenableBuilder<String>(
                           valueListenable: _controller.startDate,
@@ -80,7 +77,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             return GestureDetector(
                               onTap: () => _controller.selectStartDate(context),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 15),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(8),
@@ -109,10 +107,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           },
                         ),
                       ),
-
                       const SizedBox(width: 15),
-
-                      // End date selector
                       Expanded(
                         child: ValueListenableBuilder<String>(
                           valueListenable: _controller.endDate,
@@ -120,7 +115,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             return GestureDetector(
                               onTap: () => _controller.selectEndDate(context),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 15),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(8),
@@ -149,15 +145,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           },
                         ),
                       ),
-
                       const SizedBox(width: 10),
                     ],
                   ),
                 ],
               ),
             ),
-
-            // Information message
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -174,18 +167,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 ),
               ),
             ),
-
-            // Job Information Card
             ValueListenableBuilder<bool>(
               valueListenable: _controller.hasData,
               builder: (context, hasData, _) {
                 if (hasData && _controller.scheduleItems.value.isNotEmpty) {
-                  // Extract common information from the first item
                   final firstItem = _controller.scheduleItems.value.first;
                   return Container(
                     width: double.infinity,
                     margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 16),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(15),
@@ -223,10 +214,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
                         const SizedBox(height: 8),
 
-                        // Position
                         Row(
                           children: [
-                            const Icon(Icons.work, size: 16, color: AppTheme.textSecondaryColor),
+                            const Icon(Icons.work,
+                                size: 16, color: AppTheme.textSecondaryColor),
                             const SizedBox(width: 8),
                             const Text(
                               "Position: ",
@@ -245,10 +236,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
                         const SizedBox(height: 8),
 
-                        // Shift
                         Row(
                           children: [
-                            const Icon(Icons.schedule, size: 16, color: AppTheme.textSecondaryColor),
+                            const Icon(Icons.schedule,
+                                size: 16, color: AppTheme.textSecondaryColor),
                             const SizedBox(width: 8),
                             const Text(
                               "Shift: ",
@@ -267,10 +258,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
                         const SizedBox(height: 8),
 
-                        // Rate
                         Row(
                           children: [
-                            const Icon(Icons.attach_money, size: 16, color: AppTheme.textSecondaryColor),
+                            const Icon(Icons.attach_money,
+                                size: 16, color: AppTheme.textSecondaryColor),
                             const SizedBox(width: 8),
                             const Text(
                               "Rate: ",
@@ -293,8 +284,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 return const SizedBox.shrink();
               },
             ),
-
-            // Schedule table
             Expanded(
               child: ValueListenableBuilder<bool>(
                 valueListenable: _controller.isLoading,
@@ -326,23 +315,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 },
               ),
             ),
-
-            // Total Pay
             ValueListenableBuilder<List<Data>>(
               valueListenable: _controller.scheduleItems,
               builder: (context, scheduleItems, _) {
                 if (scheduleItems.isNotEmpty) {
-                  // Calculate total pay
                   double totalPay = 0;
                   for (var item in scheduleItems) {
                     if (item.totalPay != null) {
-                      // Remove the $ sign and convert to double
                       final payString = item.totalPay!.replaceAll('\$', '');
                       try {
                         totalPay += double.parse(payString);
-                      } catch (e) {
-                        // Skip if unable to parse
-                      }
+                      } catch (e) {}
                     }
                   }
 
@@ -375,8 +358,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 return const SizedBox.shrink();
               },
             ),
-
-            // Display pay check if available
             ValueListenableBuilder<String?>(
               valueListenable: _controller.payCheck,
               builder: (context, payCheck, _) {
@@ -435,9 +416,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           ),
           child: Column(
             children: [
-              // Table header
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor,
                   borderRadius: const BorderRadius.only(
@@ -504,33 +485,29 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   ],
                 ),
               ),
-
-              // Table rows (scrollable)
               Expanded(
                 child: ListView.builder(
                   itemCount: scheduleItems.length,
                   itemBuilder: (context, index) {
                     final item = scheduleItems[index];
 
-                    // Extract time from the time string if it's in the format "2025-03-07 10:00:00 - 2025-03-07 18:00:00"
                     String startTime = "00:00";
                     String endTime = "00:00";
 
                     if (item.startTime != null) {
                       final startTimeParts = item.startTime!.split(' ');
                       if (startTimeParts.length > 1) {
-                        startTime = startTimeParts[1].substring(0, 5); // Extract HH:MM
+                        startTime = startTimeParts[1].substring(0, 5);
                       }
                     }
 
                     if (item.endTime != null) {
                       final endTimeParts = item.endTime!.split(' ');
                       if (endTimeParts.length > 1) {
-                        endTime = endTimeParts[1].substring(0, 5); // Extract HH:MM
+                        endTime = endTimeParts[1].substring(0, 5);
                       }
                     }
 
-                    // Format date to show as Mar 24, 2025
                     String formattedDate = item.date ?? "N/A";
                     try {
                       if (item.date != null) {
@@ -540,19 +517,30 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           final month = dateParts[1];
                           final day = dateParts[2];
 
-                          // Convert month number to name
-                          final monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                          final monthNames = [
+                            "Jan",
+                            "Feb",
+                            "Mar",
+                            "Apr",
+                            "May",
+                            "Jun",
+                            "Jul",
+                            "Aug",
+                            "Sep",
+                            "Oct",
+                            "Nov",
+                            "Dec"
+                          ];
                           final monthName = monthNames[int.parse(month) - 1];
 
                           formattedDate = "$monthName $day, $year";
                         }
                       }
-                    } catch (e) {
-                      // Keep original date if parsing fails
-                    }
+                    } catch (e) {}
 
                     return Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 8),
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(

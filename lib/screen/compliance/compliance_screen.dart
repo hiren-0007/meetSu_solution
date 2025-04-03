@@ -11,12 +11,10 @@ class ComplianceScreen extends StatefulWidget {
 }
 
 class ComplianceScreenState extends State<ComplianceScreen> {
-  // Use the controller
   final ComplianceController _controller = ComplianceController();
 
   @override
   void dispose() {
-    // Dispose controller resources
     _controller.dispose();
     super.dispose();
   }
@@ -28,7 +26,6 @@ class ComplianceScreenState extends State<ComplianceScreen> {
         backgroundColor: AppTheme.backgroundColor,
         body: Stack(
           children: [
-            // Top design
             Positioned(
               top: 8,
               left: 7,
@@ -38,13 +35,10 @@ class ComplianceScreenState extends State<ComplianceScreen> {
                 decoration: AppTheme.headerContainerDecoration,
               ),
             ),
-
-            // Main content
             SafeArea(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Back button and title
                   Padding(
                     padding: EdgeInsets.all(AppTheme.screenPadding),
                     child: Center(
@@ -58,8 +52,6 @@ class ComplianceScreenState extends State<ComplianceScreen> {
                       ),
                     ),
                   ),
-
-                  // Logo
                   Center(
                     child: Container(
                       padding: const EdgeInsets.all(15),
@@ -71,10 +63,7 @@ class ComplianceScreenState extends State<ComplianceScreen> {
                       ),
                     ),
                   ),
-
                   SizedBox(height: AppTheme.largeSpacing),
-
-                  // Compliance reports card
                   Expanded(
                     child: Container(
                       width: double.infinity,
@@ -99,40 +88,42 @@ class ComplianceScreenState extends State<ComplianceScreen> {
 
                           SizedBox(height: AppTheme.largeSpacing),
 
-                          // Error message (if any)
                           ValueListenableBuilder<String?>(
                             valueListenable: _controller.errorMessage,
                             builder: (context, errorMessage, _) {
                               return errorMessage != null
                                   ? Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    errorMessage,
-                                    style: const TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  ElevatedButton(
-                                    onPressed: () => _controller.retryFetch(),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppTheme.primaryColor,
-                                    ),
-                                    child: const Text(
-                                      "Retry",
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                ],
-                              )
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          errorMessage,
+                                          style: const TextStyle(
+                                            color: Colors.red,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        ElevatedButton(
+                                          onPressed: () =>
+                                              _controller.retryFetch(),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                AppTheme.primaryColor,
+                                          ),
+                                          child: const Text(
+                                            "Retry",
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                      ],
+                                    )
                                   : const SizedBox.shrink();
                             },
                           ),
 
-                          // List of compliance reports
                           Expanded(
                             child: ValueListenableBuilder<bool>(
                               valueListenable: _controller.isLoading,
@@ -142,7 +133,8 @@ class ComplianceScreenState extends State<ComplianceScreen> {
                                     child: CircularProgressIndicator(),
                                   );
                                 } else {
-                                  return ValueListenableBuilder<List<ComplianceReport>>(
+                                  return ValueListenableBuilder<
+                                      List<ComplianceReport>>(
                                     valueListenable: _controller.reports,
                                     builder: (context, reports, _) {
                                       if (reports.isEmpty) {
@@ -150,7 +142,8 @@ class ComplianceScreenState extends State<ComplianceScreen> {
                                           child: Text(
                                             "No compliance reports available",
                                             style: TextStyle(
-                                              color: AppTheme.textSecondaryColor,
+                                              color:
+                                                  AppTheme.textSecondaryColor,
                                               fontSize: 16,
                                             ),
                                           ),
@@ -159,7 +152,8 @@ class ComplianceScreenState extends State<ComplianceScreen> {
 
                                       return ListView.separated(
                                         itemCount: reports.length,
-                                        separatorBuilder: (context, index) => const Divider(),
+                                        separatorBuilder: (context, index) =>
+                                            const Divider(),
                                         itemBuilder: (context, index) {
                                           final report = reports[index];
                                           return ListTile(
@@ -181,12 +175,14 @@ class ComplianceScreenState extends State<ComplianceScreen> {
                                               ),
                                               onPressed: isLoading
                                                   ? null
-                                                  : () => _controller.simpleDownloadReport(
-                                                context,
-                                                report,
-                                              ),
+                                                  : () => _controller
+                                                          .simpleDownloadReport(
+                                                        context,
+                                                        report,
+                                                      ),
                                             ),
-                                            contentPadding: const EdgeInsets.symmetric(
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
                                               horizontal: 8,
                                               vertical: 4,
                                             ),

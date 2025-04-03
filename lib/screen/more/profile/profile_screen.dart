@@ -33,7 +33,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
 
-    // Set up API client with auth token
     final token = SharedPrefsService.instance.getAccessToken();
     final apiClient = ApiClient(headers: {
       'Content-Type': 'application/json',
@@ -107,7 +106,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
                 child: Column(
                   children: [
-                    // App bar with back button and title
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppTheme.screenPadding,
@@ -118,7 +116,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           GestureDetector(
                             onTap: () => Navigator.pop(context),
                             child: Container(
-                              padding: const EdgeInsets.all(AppTheme.iconPadding),
+                              padding:
+                                  const EdgeInsets.all(AppTheme.iconPadding),
                               decoration: AppTheme.backButtonDecoration,
                               child: const Icon(
                                 Icons.arrow_back,
@@ -135,20 +134,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: AppTheme.appBarBackButtonMargin),
+                          const SizedBox(
+                              width: AppTheme.appBarBackButtonMargin),
                         ],
                       ),
                     ),
-
-                    // Profile photo or avatar
                     ValueListenableBuilder(
                       valueListenable: _controller.profileData,
                       builder: (context, profileData, _) {
-                        // Check if there's a photo URL in the profileData
                         String? photoUrl = profileData?.photoUrl;
 
                         return Container(
-                          margin: const EdgeInsets.symmetric(vertical: AppTheme.contentSpacing),
+                          margin: const EdgeInsets.symmetric(
+                              vertical: AppTheme.contentSpacing),
                           width: AppTheme.avatarSizeMedium,
                           height: AppTheme.avatarSizeMedium,
                           decoration: photoUrl != null && photoUrl.isNotEmpty
@@ -156,16 +154,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               : AppTheme.avatarWithoutPhotoDecoration,
                           child: photoUrl == null || photoUrl.isEmpty
                               ? const Icon(
-                            Icons.person,
-                            color: AppTheme.primaryColor,
-                            size: AppTheme.largeIconSize,
-                          )
+                                  Icons.person,
+                                  color: AppTheme.primaryColor,
+                                  size: AppTheme.largeIconSize,
+                                )
                               : null,
                         );
                       },
                     ),
-
-                    // Main content in white card
                     Expanded(
                       child: Container(
                         width: double.infinity,
@@ -179,19 +175,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Section title with dropdown
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                // Title - with flexible to prevent overflow
                                 Flexible(
                                   child: Text(
-                                    _selectedTab == 5 ? "Work Experience" : _tabTitles[_selectedTab],
+                                    _selectedTab == 5
+                                        ? "Work Experience"
+                                        : _tabTitles[_selectedTab],
                                     style: AppTheme.sectionTitleStyle,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                // Dropdown for tab selection
                                 DropdownButton<int>(
                                   value: _selectedTab,
                                   icon: const Icon(Icons.arrow_drop_down),
@@ -204,7 +199,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       });
                                     }
                                   },
-                                  items: List.generate(_tabTitles.length, (index) {
+                                  items:
+                                      List.generate(_tabTitles.length, (index) {
                                     return DropdownMenuItem<int>(
                                       value: index,
                                       child: Text(_tabTitles[index]),
@@ -213,17 +209,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ],
                             ),
-
                             const SizedBox(height: AppTheme.extraSmallSpacing),
-
                             Text(
                               "We'd like to know more about you",
                               style: AppTheme.sectionSubtitleStyle,
                             ),
-
                             const SizedBox(height: AppTheme.contentSpacing),
-
-                            // Content based on selected tab
                             Expanded(
                               child: _buildSelectedTabContent(),
                             ),
@@ -262,7 +253,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Login Tab
   Widget _buildLoginTab() {
     return ValueListenableBuilder(
       valueListenable: _controller.loginInfo,
@@ -276,7 +266,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildInfoField("Phone", loginInfo.phone),
               _buildInfoField("Role", loginInfo.role),
               _buildInfoField("Last Login", loginInfo.lastLogin),
-
               const SizedBox(height: AppTheme.mediumSpacing),
             ],
           ),
@@ -285,7 +274,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Aptitude Tab
   Widget _buildAptitudeTab() {
     return ValueListenableBuilder(
       valueListenable: _controller.profileData,
@@ -299,28 +287,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
         }
 
-        // Get aptitude test summary
         int totalQuestions = 0;
         int correctAnswers = 0;
 
-        // Calculate from category_wise_answer
         profileData.categoryWiseAnswer.forEach((key, value) {
           totalQuestions += value.totalQuestion;
           correctAnswers += value.correctAnswer;
         });
 
-        String testScore = totalQuestions > 0
-            ? "$correctAnswers/$totalQuestions"
-            : "0/0";
+        String testScore =
+            totalQuestions > 0 ? "$correctAnswers/$totalQuestions" : "0/0";
 
-        double scorePercentage = totalQuestions > 0
-            ? (correctAnswers / totalQuestions) * 100
-            : 0;
+        double scorePercentage =
+            totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Aptitude Summary Card
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppTheme.contentSpacing),
@@ -367,24 +350,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: AppTheme.contentSpacing - 2),
-
-            // Category-wise results section
             Text(
               "Category Breakdown",
               style: AppTheme.categoryTitleStyle,
             ),
             const SizedBox(height: AppTheme.smallSpacing),
-
-            // Category list
             SizedBox(
               height: AppTheme.tabBarHeight,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: profileData.categoryWiseAnswer.length,
                 itemBuilder: (context, index) {
-                  final entry = profileData.categoryWiseAnswer.entries.elementAt(index);
+                  final entry =
+                      profileData.categoryWiseAnswer.entries.elementAt(index);
                   final categoryKey = entry.key;
                   final category = entry.value;
 
@@ -423,10 +402,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
             ),
-
             const SizedBox(height: AppTheme.contentSpacing - 2),
-
-            // Questions and Answers Section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -441,22 +417,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
             const SizedBox(height: AppTheme.smallSpacing),
-
-            // Questions List
             Expanded(
               child: ListView.builder(
                 itemCount: profileData.aptitude.length,
                 itemBuilder: (context, index) {
                   final question = profileData.aptitude[index];
 
-                  // Get the correct and given answer indices (convert from string to int)
-                  int correctAnsIndex = int.tryParse(question.correctAnswer) ?? 1;
+                  int correctAnsIndex =
+                      int.tryParse(question.correctAnswer) ?? 1;
                   int givenAnsIndex = question.givenAnswer;
 
-                  // Check if the answer was correct
                   bool isCorrect = correctAnsIndex == givenAnsIndex;
 
-                  // Create a list of answer options
                   List<String> answerOptions = [
                     question.answer1,
                     question.answer2,
@@ -465,18 +437,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ];
 
                   return Container(
-                    margin: const EdgeInsets.only(bottom: AppTheme.contentSpacing),
+                    margin:
+                        const EdgeInsets.only(bottom: AppTheme.contentSpacing),
                     padding: const EdgeInsets.all(AppTheme.contentSpacing),
                     decoration: AppTheme.questionCardDecoration,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Question
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(AppTheme.miniSpacing + 1),
+                              padding: const EdgeInsets.all(
+                                  AppTheme.miniSpacing + 1),
                               decoration: BoxDecoration(
                                 color: AppTheme.aptitudeCardColor,
                                 shape: BoxShape.circle,
@@ -508,50 +481,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ],
                         ),
-
                         const SizedBox(height: AppTheme.smallSpacing),
-
-                        // Answer Options
                         ...List.generate(4, (i) {
-                          // Option letter (A, B, C, D)
                           String optionLetter = String.fromCharCode(65 + i);
 
-                          // Check if this is the correct answer or the given answer
                           bool isCorrectOption = correctAnsIndex == (i + 1);
                           bool isGivenOption = givenAnsIndex == (i + 1);
 
-                          // Set color based on correctness and selection
                           Color optionColor = AppTheme.transparent;
                           Color textColor = AppTheme.textPrimaryColor;
 
                           if (isGivenOption) {
                             if (isCorrect) {
-                              // Given answer is correct
                               optionColor = AppTheme.correctAnswerBgColor;
                               textColor = AppTheme.correctAnswerTextColor;
                             } else {
-                              // Given answer is wrong
                               optionColor = AppTheme.wrongAnswerBgColor;
                               textColor = AppTheme.wrongAnswerTextColor;
                             }
                           } else if (isCorrectOption && !isCorrect) {
-                            // Show correct answer when user got it wrong
                             optionColor = AppTheme.correctAnswerLightBgColor;
                             textColor = AppTheme.correctAnswerTextColor;
                           }
 
                           return Container(
                             width: double.infinity,
-                            margin: const EdgeInsets.only(bottom: AppTheme.extraSmallSpacing),
+                            margin: const EdgeInsets.only(
+                                bottom: AppTheme.extraSmallSpacing),
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppTheme.smallSpacing + 2,
                               vertical: AppTheme.extraSmallSpacing,
                             ),
                             decoration: BoxDecoration(
                               color: optionColor,
-                              borderRadius: BorderRadius.circular(AppTheme.miniRadius),
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.miniRadius),
                               border: Border.all(
-                                color: isGivenOption || (isCorrectOption && !isCorrect)
+                                color: isGivenOption ||
+                                        (isCorrectOption && !isCorrect)
                                     ? textColor.withValues(alpha: 0.5)
                                     : AppTheme.categoryCardBorderColor,
                               ),
@@ -563,8 +530,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   height: AppTheme.optionCircleSize,
                                   alignment: Alignment.center,
                                   decoration: AppTheme.optionCircleDecoration(
-                                    isGivenOption || (isCorrectOption && !isCorrect),
-                                    isGivenOption || (isCorrectOption && !isCorrect)
+                                    isGivenOption ||
+                                        (isCorrectOption && !isCorrect),
+                                    isGivenOption ||
+                                            (isCorrectOption && !isCorrect)
                                         ? textColor
                                         : AppTheme.categoryCardBorderColor,
                                   ),
@@ -573,7 +542,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     style: TextStyle(
                                       fontSize: AppTheme.textSizeExtraSmall,
                                       fontWeight: FontWeight.bold,
-                                      color: isGivenOption || (isCorrectOption && !isCorrect)
+                                      color: isGivenOption ||
+                                              (isCorrectOption && !isCorrect)
                                           ? textColor
                                           : AppTheme.textSecondaryColor,
                                     ),
@@ -585,16 +555,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     answerOptions[i],
                                     style: TextStyle(
                                       color: textColor,
-                                      fontWeight: isCorrectOption || isGivenOption
-                                          ? FontWeight.w500
-                                          : FontWeight.normal,
+                                      fontWeight:
+                                          isCorrectOption || isGivenOption
+                                              ? FontWeight.w500
+                                              : FontWeight.normal,
                                     ),
                                   ),
                                 ),
                                 if (isGivenOption)
                                   Icon(
-                                    isCorrect ? Icons.check_circle : Icons.cancel,
-                                    color: isCorrect ? AppTheme.successColor : AppTheme.errorColor,
+                                    isCorrect
+                                        ? Icons.check_circle
+                                        : Icons.cancel,
+                                    color: isCorrect
+                                        ? AppTheme.successColor
+                                        : AppTheme.errorColor,
                                     size: AppTheme.smallIconSize,
                                   ),
                               ],
@@ -613,7 +588,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Address Tab
   Widget _buildAddressTab() {
     return ValueListenableBuilder(
       valueListenable: _controller.addressInfo,
@@ -627,7 +601,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildInfoField("State/Province", addressInfo.state),
               _buildInfoField("Postal Code", addressInfo.postalCode),
               _buildInfoField("Country", addressInfo.country),
-
               const SizedBox(height: AppTheme.mediumSpacing),
             ],
           ),
@@ -636,7 +609,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Education Tab
   Widget _buildEducationTab() {
     return ValueListenableBuilder(
       valueListenable: _controller.educationList,
@@ -646,49 +618,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Expanded(
               child: educationList.isEmpty
                   ? Center(
-                child: Text(
-                  "No education information added yet",
-                  style: AppTheme.emptyStateStyle,
-                ),
-              )
+                      child: Text(
+                        "No education information added yet",
+                        style: AppTheme.emptyStateStyle,
+                      ),
+                    )
                   : ListView.builder(
-                itemCount: educationList.length,
-                itemBuilder: (context, index) {
-                  final education = educationList[index];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: AppTheme.contentSpacing),
-                    padding: const EdgeInsets.all(AppTheme.contentSpacing),
-                    decoration: AppTheme.educationCardDecoration,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          education.degree,
-                          style: AppTheme.educationDegreeStyle,
-                        ),
-                        const SizedBox(height: AppTheme.microSpacing),
-                        Text(
-                          education.institution,
-                          style: AppTheme.educationInstitutionStyle,
-                        ),
-                        const SizedBox(height: AppTheme.microSpacing),
-                        Text(
-                          "${education.startDate.isNotEmpty ? education.startDate : 'N/A'} - ${education.endDate.isNotEmpty ? education.endDate : 'N/A'}",
-                          style: AppTheme.educationDateStyle,
-                        ),
-                        if (education.grade.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: AppTheme.microSpacing),
-                            child: Text(
-                              "Grade: ${education.grade}",
-                              style: AppTheme.educationDateStyle,
-                            ),
+                      itemCount: educationList.length,
+                      itemBuilder: (context, index) {
+                        final education = educationList[index];
+                        return Container(
+                          margin: const EdgeInsets.only(
+                              bottom: AppTheme.contentSpacing),
+                          padding:
+                              const EdgeInsets.all(AppTheme.contentSpacing),
+                          decoration: AppTheme.educationCardDecoration,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                education.degree,
+                                style: AppTheme.educationDegreeStyle,
+                              ),
+                              const SizedBox(height: AppTheme.microSpacing),
+                              Text(
+                                education.institution,
+                                style: AppTheme.educationInstitutionStyle,
+                              ),
+                              const SizedBox(height: AppTheme.microSpacing),
+                              Text(
+                                "${education.startDate.isNotEmpty ? education.startDate : 'N/A'} - ${education.endDate.isNotEmpty ? education.endDate : 'N/A'}",
+                                style: AppTheme.educationDateStyle,
+                              ),
+                              if (education.grade.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: AppTheme.microSpacing),
+                                  child: Text(
+                                    "Grade: ${education.grade}",
+                                    style: AppTheme.educationDateStyle,
+                                  ),
+                                ),
+                            ],
                           ),
-                      ],
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         );
@@ -696,7 +671,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Experience Tab
   Widget _buildExperienceTab() {
     return ValueListenableBuilder(
       valueListenable: _controller.experienceList,
@@ -706,58 +680,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Expanded(
               child: experienceList.isEmpty
                   ? Center(
-                child: Text(
-                  "No experience information added yet",
-                  style: AppTheme.emptyStateStyle,
-                ),
-              )
+                      child: Text(
+                        "No experience information added yet",
+                        style: AppTheme.emptyStateStyle,
+                      ),
+                    )
                   : ListView.builder(
-                itemCount: experienceList.length,
-                itemBuilder: (context, index) {
-                  final experience = experienceList[index];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: AppTheme.contentSpacing),
-                    padding: const EdgeInsets.all(AppTheme.contentSpacing),
-                    decoration: AppTheme.experienceCardDecoration,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Company Name: ${experience.company}",
-                          style: AppTheme.experienceItemStyle,
-                        ),
-                        const SizedBox(height: AppTheme.extraSmallSpacing),
-                        Text(
-                          "Position Name: ${experience.position}",
-                          style: AppTheme.experienceItemStyle,
-                        ),
-                        const SizedBox(height: AppTheme.extraSmallSpacing),
-                        Text(
-                          "Years of Experience: ${experience.yearsOfExperience}",
-                          style: AppTheme.experienceItemStyle,
-                        ),
-                        const SizedBox(height: AppTheme.extraSmallSpacing),
-                        Text(
-                          "Start Date: ${experience.startDate}",
-                          style: AppTheme.experienceItemStyle,
-                        ),
-                        const SizedBox(height: AppTheme.extraSmallSpacing),
-                        Text(
-                          "End Date: ${experience.endDate}",
-                          style: AppTheme.experienceItemStyle,
-                        ),
-                        if (experience.supervisor.isNotEmpty) ...[
-                          const SizedBox(height: AppTheme.extraSmallSpacing),
-                          Text(
-                            "Name of Supervisor: ${experience.supervisor}",
-                            style: AppTheme.experienceItemStyle,
+                      itemCount: experienceList.length,
+                      itemBuilder: (context, index) {
+                        final experience = experienceList[index];
+                        return Container(
+                          margin: const EdgeInsets.only(
+                              bottom: AppTheme.contentSpacing),
+                          padding:
+                              const EdgeInsets.all(AppTheme.contentSpacing),
+                          decoration: AppTheme.experienceCardDecoration,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Company Name: ${experience.company}",
+                                style: AppTheme.experienceItemStyle,
+                              ),
+                              const SizedBox(
+                                  height: AppTheme.extraSmallSpacing),
+                              Text(
+                                "Position Name: ${experience.position}",
+                                style: AppTheme.experienceItemStyle,
+                              ),
+                              const SizedBox(
+                                  height: AppTheme.extraSmallSpacing),
+                              Text(
+                                "Years of Experience: ${experience.yearsOfExperience}",
+                                style: AppTheme.experienceItemStyle,
+                              ),
+                              const SizedBox(
+                                  height: AppTheme.extraSmallSpacing),
+                              Text(
+                                "Start Date: ${experience.startDate}",
+                                style: AppTheme.experienceItemStyle,
+                              ),
+                              const SizedBox(
+                                  height: AppTheme.extraSmallSpacing),
+                              Text(
+                                "End Date: ${experience.endDate}",
+                                style: AppTheme.experienceItemStyle,
+                              ),
+                              if (experience.supervisor.isNotEmpty) ...[
+                                const SizedBox(
+                                    height: AppTheme.extraSmallSpacing),
+                                Text(
+                                  "Name of Supervisor: ${experience.supervisor}",
+                                  style: AppTheme.experienceItemStyle,
+                                ),
+                              ],
+                            ],
                           ),
-                        ],
-                      ],
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         );
@@ -765,7 +746,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Credentials Tab
   Widget _buildCredentialsTab() {
     return ValueListenableBuilder(
       valueListenable: _controller.credentialInfo,
@@ -776,10 +756,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               _buildInfoField("ID Number", credentialInfo.idNumber),
               _buildInfoField("Passport", credentialInfo.passport),
-              _buildInfoField("Driver's License", credentialInfo.driversLicense),
+              _buildInfoField(
+                  "Driver's License", credentialInfo.driversLicense),
               _buildInfoField("Tax ID", credentialInfo.taxId),
               _buildInfoField("Social Security", credentialInfo.socialSecurity),
-
               const SizedBox(height: AppTheme.mediumSpacing),
             ],
           ),
@@ -788,7 +768,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Helper method for info fields
   Widget _buildInfoField(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -820,27 +799,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         const SizedBox(height: AppTheme.contentSpacing),
       ],
-    );
-  }
-
-  // Helper method for submit button with callback
-  Widget _buildSubmitButton(String text, VoidCallback onPressed) {
-    return SizedBox(
-      width: double.infinity,
-      height: AppTheme.buttonHeight,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.primaryColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.extraSmallBorderRadius),
-          ),
-        ),
-        child: Text(
-          text,
-          style: AppTheme.buttonTextStyle,
-        ),
-      ),
     );
   }
 }

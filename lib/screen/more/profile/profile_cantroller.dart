@@ -5,93 +5,85 @@ import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 
 class ProfileController {
-  // API Service
   final ApiService _apiService;
 
-  // ValueNotifiers for reactive state management
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
 
-  // Profile data ValueNotifier - using new ProfileResponseModel model
-  final ValueNotifier<ProfileResponseModel?> profileData = ValueNotifier<ProfileResponseModel?>(null);
+  final ValueNotifier<ProfileResponseModel?> profileData =
+      ValueNotifier<ProfileResponseModel?>(null);
 
-  // Section data ValueNotifiers
-  final ValueNotifier<LoginInfo> loginInfo = ValueNotifier<LoginInfo>(LoginInfo());
-  final ValueNotifier<AptitudeInfo> aptitudeInfo = ValueNotifier<AptitudeInfo>(AptitudeInfo());
-  final ValueNotifier<PersonalInfo> personalInfo = ValueNotifier<PersonalInfo>(PersonalInfo());
-  final ValueNotifier<AddressInfo> addressInfo = ValueNotifier<AddressInfo>(AddressInfo());
-  final ValueNotifier<List<EducationInfo>> educationList = ValueNotifier<List<EducationInfo>>([]);
-  final ValueNotifier<List<ExperienceInfo>> experienceList = ValueNotifier<List<ExperienceInfo>>([]);
-  final ValueNotifier<CredentialInfo> credentialInfo = ValueNotifier<CredentialInfo>(CredentialInfo());
+  final ValueNotifier<LoginInfo> loginInfo =
+      ValueNotifier<LoginInfo>(LoginInfo());
+  final ValueNotifier<AptitudeInfo> aptitudeInfo =
+      ValueNotifier<AptitudeInfo>(AptitudeInfo());
+  final ValueNotifier<PersonalInfo> personalInfo =
+      ValueNotifier<PersonalInfo>(PersonalInfo());
+  final ValueNotifier<AddressInfo> addressInfo =
+      ValueNotifier<AddressInfo>(AddressInfo());
+  final ValueNotifier<List<EducationInfo>> educationList =
+      ValueNotifier<List<EducationInfo>>([]);
+  final ValueNotifier<List<ExperienceInfo>> experienceList =
+      ValueNotifier<List<ExperienceInfo>>([]);
+  final ValueNotifier<CredentialInfo> credentialInfo =
+      ValueNotifier<CredentialInfo>(CredentialInfo());
 
   ProfileController({ApiService? apiService})
-      : _apiService = apiService ?? ApiService(
-      ApiClient(headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      })
-  );
+      : _apiService = apiService ??
+            ApiService(ApiClient(headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            }));
 
-  // Initialize the controller and load data
   void initialize() {
     isLoading.value = true;
 
-    // Get token from SharedPreferences
     final token = SharedPrefsService.instance.getAccessToken();
     if (token != null && token.isNotEmpty) {
-      // Use the public getter to access the ApiClient
       _apiService.client.addAuthToken(token);
     }
 
-    // Fetch profile data from API
     fetchProfileData();
   }
 
-  // Fetch profile data from API
   Future<void> fetchProfileData() async {
     try {
       final response = await _apiService.fetchProfile();
 
-      // Parse the profile response with your new ProfileResponseModel model
       final profile = ProfileResponseModel.fromJson(response);
       profileData.value = profile;
 
-      // Update all the section data from the profile response
       _updateSectionDataFromProfile(profile);
 
       errorMessage.value = null;
     } catch (e) {
       errorMessage.value = "Failed to load profile data: ${e.toString()}";
-      // For development, you may still want to load mock data if the API fails
       _fetchMockUserData();
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Update all section data from profile response
   void _updateSectionDataFromProfile(ProfileResponseModel profile) {
-    // Update login info
     loginInfo.value = LoginInfo(
       username: profile.data.username,
       email: profile.data.email,
       phone: profile.data.mobileNumber,
-      role: "Employee", // Default role or fetch from API
+      role: "Employee",
       lastLogin: profile.data.lastLoginAt != 0
-          ? DateTime.fromMillisecondsSinceEpoch(profile.data.lastLoginAt * 1000).toString()
+          ? DateTime.fromMillisecondsSinceEpoch(profile.data.lastLoginAt * 1000)
+              .toString()
           : "",
     );
 
-    // Update personal info
     personalInfo.value = PersonalInfo(
       fullName: "${profile.data.firstName} ${profile.data.lastName}",
       dateOfBirth: profile.data.dob,
       gender: profile.data.gender,
       maritalStatus: profile.data.maritalStatus,
-      nationality: profile.country, // Using country as nationality
+      nationality: profile.country,
     );
 
-    // Update address info
     addressInfo.value = AddressInfo(
       street: profile.data.address,
       city: profile.city,
@@ -100,7 +92,6 @@ class ProfileController {
       country: profile.country,
     );
 
-    // Calculate test scores from category_wise_answer
     int totalQuestions = 0;
     int correctAnswers = 0;
 
@@ -109,56 +100,51 @@ class ProfileController {
       correctAnswers += value.correctAnswer;
     });
 
-    String testScore = totalQuestions > 0
-        ? "${correctAnswers}/${totalQuestions}"
-        : "0/0";
+    String testScore =
+        totalQuestions > 0 ? "${correctAnswers}/${totalQuestions}" : "0/0";
 
-    // Update aptitude info
     aptitudeInfo.value = AptitudeInfo(
       testScores: testScore,
       skills: profile.data.language,
       certifications: _findCredentialByType(profile.credentials, "WHMIS 2025"),
     );
 
-    // Update education list
-    final educationItems = profile.education.map((edu) =>
-        EducationInfo(
-          degree: edu.courseName,
-          institution: edu.collegeName,
-          startDate: "", // Not available in the API
-          endDate: edu.graduateYear,
-          grade: "", // Not available in the API
-        )
-    ).toList();
+    final educationItems = profile.education
+        .map((edu) => EducationInfo(
+              degree: edu.courseName,
+              institution: edu.collegeName,
+              startDate: "",
+              endDate: edu.graduateYear,
+              grade: "",
+            ))
+        .toList();
 
     educationList.value = educationItems;
 
-    // Update experience list
-    final experienceItems = profile.experience.map((exp) =>
-        ExperienceInfo(
-          company: exp.companyName,
-          position: exp.positionName,
-          startDate: exp.startDate,
-          endDate: exp.endDate,
-          supervisor: exp.nameSupervisor,
-          responsibilities: exp.reasonForLeaving,
-          yearsOfExperience: exp.noExperience.toString(),
-        )
-    ).toList();
+    final experienceItems = profile.experience
+        .map((exp) => ExperienceInfo(
+              company: exp.companyName,
+              position: exp.positionName,
+              startDate: exp.startDate,
+              endDate: exp.endDate,
+              supervisor: exp.nameSupervisor,
+              responsibilities: exp.reasonForLeaving,
+              yearsOfExperience: exp.noExperience.toString(),
+            ))
+        .toList();
 
     experienceList.value = experienceItems;
 
-    // Update credential info - find specific document types
     credentialInfo.value = CredentialInfo(
       idNumber: profile.data.employeeId.toString(),
       passport: _findCredentialByType(profile.credentials, "Passport"),
-      driversLicense: _findCredentialByType(profile.credentials, "Driver License"),
-      taxId: "", // Not directly available in the API
+      driversLicense:
+          _findCredentialByType(profile.credentials, "Driver License"),
+      taxId: "",
       socialSecurity: profile.data.sinNo,
     );
   }
 
-  // Helper method to find credentials by document type
   String _findCredentialByType(List<Credential> credentials, String type) {
     for (var credential in credentials) {
       if (credential.document.contains(type)) {
@@ -168,9 +154,7 @@ class ProfileController {
     return "";
   }
 
-  // Fetch mock user data (simulate API call) - Keep as fallback
   void _fetchMockUserData() {
-    // Set mock data for demo purposes
     loginInfo.value = LoginInfo(
       username: "john_doe",
       email: "john.doe@example.com",
@@ -234,7 +218,8 @@ class ProfileController {
         startDate: "2018-06",
         endDate: "Present",
         supervisor: "Jane Smith",
-        responsibilities: "Lead development of Flutter applications, mentor junior developers",
+        responsibilities:
+            "Lead development of Flutter applications, mentor junior developers",
         yearsOfExperience: "5",
       ),
     ];
@@ -248,14 +233,13 @@ class ProfileController {
     );
   }
 
-  // Method to edit profile
   void editProfile(BuildContext context) {
-    // Show dialog or navigate to edit screen
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Edit Profile"),
-        content: const Text("This function will allow editing profile information."),
+        content:
+            const Text("This function will allow editing profile information."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -266,9 +250,7 @@ class ProfileController {
     );
   }
 
-  // Method to add education
   void addEducation(BuildContext context) {
-    // Show dialog to add new education entry
     final formKey = GlobalKey<FormState>();
     final degreeController = TextEditingController();
     final institutionController = TextEditingController();
@@ -288,7 +270,8 @@ class ProfileController {
               children: [
                 TextFormField(
                   controller: degreeController,
-                  decoration: const InputDecoration(labelText: "Degree/Certificate *"),
+                  decoration:
+                      const InputDecoration(labelText: "Degree/Certificate *"),
                   validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 TextFormField(
@@ -298,17 +281,20 @@ class ProfileController {
                 ),
                 TextFormField(
                   controller: startDateController,
-                  decoration: const InputDecoration(labelText: "Start Date (YYYY-MM) *"),
+                  decoration: const InputDecoration(
+                      labelText: "Start Date (YYYY-MM) *"),
                   validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 TextFormField(
                   controller: endDateController,
-                  decoration: const InputDecoration(labelText: "End Date (YYYY-MM or 'Present') *"),
+                  decoration: const InputDecoration(
+                      labelText: "End Date (YYYY-MM or 'Present') *"),
                   validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 TextFormField(
                   controller: gradeController,
-                  decoration: const InputDecoration(labelText: "Grade/GPA (optional)"),
+                  decoration:
+                      const InputDecoration(labelText: "Grade/GPA (optional)"),
                 ),
               ],
             ),
@@ -341,9 +327,7 @@ class ProfileController {
     );
   }
 
-  // Method to add experience
   void addExperience(BuildContext context) {
-    // Show dialog to add new experience entry
     final formKey = GlobalKey<FormState>();
     final companyController = TextEditingController();
     final positionController = TextEditingController();
@@ -365,36 +349,43 @@ class ProfileController {
               children: [
                 TextFormField(
                   controller: companyController,
-                  decoration: const InputDecoration(labelText: "Company Name *"),
+                  decoration:
+                      const InputDecoration(labelText: "Company Name *"),
                   validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 TextFormField(
                   controller: positionController,
-                  decoration: const InputDecoration(labelText: "Position/Title *"),
+                  decoration:
+                      const InputDecoration(labelText: "Position/Title *"),
                   validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 TextFormField(
                   controller: startDateController,
-                  decoration: const InputDecoration(labelText: "Start Date (YYYY-MM-DD) *"),
+                  decoration: const InputDecoration(
+                      labelText: "Start Date (YYYY-MM-DD) *"),
                   validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 TextFormField(
                   controller: endDateController,
-                  decoration: const InputDecoration(labelText: "End Date (YYYY-MM-DD or 'Present') *"),
+                  decoration: const InputDecoration(
+                      labelText: "End Date (YYYY-MM-DD or 'Present') *"),
                   validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 TextFormField(
                   controller: supervisorController,
-                  decoration: const InputDecoration(labelText: "Supervisor Name"),
+                  decoration:
+                      const InputDecoration(labelText: "Supervisor Name"),
                 ),
                 TextFormField(
                   controller: yearsController,
-                  decoration: const InputDecoration(labelText: "Years of Experience"),
+                  decoration:
+                      const InputDecoration(labelText: "Years of Experience"),
                   keyboardType: TextInputType.number,
                 ),
                 TextFormField(
                   controller: responsibilitiesController,
-                  decoration: const InputDecoration(labelText: "Responsibilities"),
+                  decoration:
+                      const InputDecoration(labelText: "Responsibilities"),
                   maxLines: 3,
                 ),
               ],
@@ -430,13 +421,10 @@ class ProfileController {
     );
   }
 
-  // Method to submit updated profile
   Future<bool> submitProfile() async {
     try {
       isLoading.value = true;
 
-      // Logic to update profile via API would go here
-      // For now, just simulate success after a delay
       await Future.delayed(const Duration(seconds: 1));
 
       isLoading.value = false;
@@ -448,7 +436,6 @@ class ProfileController {
     }
   }
 
-  // Clean up resources
   void dispose() {
     isLoading.dispose();
     errorMessage.dispose();
@@ -462,8 +449,6 @@ class ProfileController {
     credentialInfo.dispose();
   }
 }
-
-// Data models for different sections
 
 class LoginInfo {
   final String username;

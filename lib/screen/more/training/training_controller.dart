@@ -34,7 +34,7 @@ class TrainingController {
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
 
   final ValueNotifier<List<Training>> trainingsData =
-  ValueNotifier<List<Training>>([]);
+      ValueNotifier<List<Training>>([]);
 
   List<Training> get assignedTrainings =>
       trainingsData.value.where((t) => !t.isCompleted).toList();
@@ -44,10 +44,10 @@ class TrainingController {
 
   TrainingController({ApiService? apiService})
       : _apiService = apiService ??
-      ApiService(ApiClient(headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      })) {
+            ApiService(ApiClient(headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            })) {
     _initializeWithToken();
   }
 
@@ -74,7 +74,7 @@ class TrainingController {
       debugPrint('Assigned trainings response: $assignedResponse');
 
       final AssignedTrainingResponseModel assignedTrainings =
-      AssignedTrainingResponseModel.fromJson(assignedResponse);
+          AssignedTrainingResponseModel.fromJson(assignedResponse);
 
       if (assignedTrainings.data != null) {
         for (var item in assignedTrainings.data!) {
@@ -93,7 +93,7 @@ class TrainingController {
       debugPrint('Completed trainings response: $completedResponse');
 
       final CompletedTrainingResponseModel completedTrainings =
-      CompletedTrainingResponseModel.fromJson(completedResponse);
+          CompletedTrainingResponseModel.fromJson(completedResponse);
 
       if (completedTrainings.data != null) {
         for (var item in completedTrainings.data!) {
@@ -158,9 +158,7 @@ class TrainingController {
       isLoading.value = true;
 
       try {
-        final Map<String, dynamic> docData = {
-          'training_id': training.id
-        };
+        final Map<String, dynamic> docData = {'training_id': training.id};
 
         final response = await _apiService.trainingDoc(docData);
         debugPrint('Training document response: $response');
@@ -173,7 +171,6 @@ class TrainingController {
           documentId = response['data'][0]['document_id'].toString();
           debugPrint('Found document_id: $documentId');
         }
-
       } catch (e) {
         debugPrint('Error fetching training document: $e');
       } finally {
@@ -186,7 +183,8 @@ class TrainingController {
     }
   }
 
-  void _showTrainingDetailsDialog(BuildContext context, Training training, String? documentId) {
+  void _showTrainingDetailsDialog(
+      BuildContext context, Training training, String? documentId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -199,9 +197,11 @@ class TrainingController {
               children: [
                 _buildInfoRow("Client:", training.clientName),
                 const SizedBox(height: 8),
-                _buildInfoRow("Due Date:", "${training.dueDate.day}/${training.dueDate.month}/${training.dueDate.year}"),
+                _buildInfoRow("Due Date:",
+                    "${training.dueDate.day}/${training.dueDate.month}/${training.dueDate.year}"),
                 const SizedBox(height: 8),
-                _buildInfoRow("Status:", training.isCompleted ? "Completed" : "Pending"),
+                _buildInfoRow(
+                    "Status:", training.isCompleted ? "Completed" : "Pending"),
                 if (training.document != null) ...[
                   const SizedBox(height: 8),
                   _buildInfoRow("Document:", training.document!),
@@ -231,7 +231,6 @@ class TrainingController {
                   isLoading.value = true;
 
                   try {
-                    // Step 1: Call trainingDoc API to get document_id
                     final Map<String, dynamic> docData = {
                       'training_id': training.id
                     };
@@ -248,37 +247,41 @@ class TrainingController {
                       docId = response['data'][0]['document_id'].toString();
                       debugPrint('Found document_id: $docId');
 
-                      // Step 2: Call trainingDocView API with document_id
                       if (docId != null) {
-                        final Map<String, dynamic> viewData = {'document_id': docId};
-                        final viewResponse = await _apiService.trainingDocView(viewData);
+                        final Map<String, dynamic> viewData = {
+                          'document_id': docId
+                        };
+                        final viewResponse =
+                            await _apiService.trainingDocView(viewData);
 
                         if (viewResponse != null) {
-                          final String documentPath = viewResponse['document_path'] ?? '';
+                          final String documentPath =
+                              viewResponse['document_path'] ?? '';
 
-                          // Step 3: Create training data map to pass to PDF viewer
-                          // Include give_test flag and any other necessary data
                           final Map<String, dynamic> trainingData = {
                             'training_id': training.id,
                             'document_id': docId,
-                            'give_test': viewResponse['give_test'] ?? 0, // Get give_test from response or default to 0
+                            'give_test': viewResponse['give_test'] ?? 0,
                             'client_name': training.clientName,
                             'training_name': training.trainingName,
                           };
 
                           if (documentPath.isNotEmpty) {
                             String baseUrl = 'https://www.meetsusolutions.com';
-                            String normalizedPath = documentPath.startsWith('/') ? documentPath : '/$documentPath';
-                            String fullUrl = '$baseUrl$normalizedPath'.replaceAll(' ', '%20');
+                            String normalizedPath = documentPath.startsWith('/')
+                                ? documentPath
+                                : '/$documentPath';
+                            String fullUrl = '$baseUrl$normalizedPath'
+                                .replaceAll(' ', '%20');
 
                             debugPrint('Final PDF URL: $fullUrl');
 
-                            // Step 4: Open PDF Viewer Screen with training data
-                            Navigator.pop(context); // Close the dialog first
+                            Navigator.pop(context);
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => PdfViewerScreenAssignedScreen(
+                                builder: (context) =>
+                                    PdfViewerScreenAssignedScreen(
                                   pdfUrl: fullUrl,
                                   trainingData: trainingData,
                                 ),
@@ -301,7 +304,8 @@ class TrainingController {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text("Failed to start training: ${e.toString()}"),
+                          content:
+                              Text("Failed to start training: ${e.toString()}"),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -319,24 +323,31 @@ class TrainingController {
                   isLoading.value = true;
 
                   try {
-                    final Map<String, dynamic> viewData = {'document_id': documentId};
-                    final response = await _apiService.trainingDocView(viewData);
+                    final Map<String, dynamic> viewData = {
+                      'document_id': documentId
+                    };
+                    final response =
+                        await _apiService.trainingDocView(viewData);
 
                     if (response != null) {
-                      final String documentPath = response['document_path'] ?? '';
+                      final String documentPath =
+                          response['document_path'] ?? '';
 
                       if (documentPath.isNotEmpty) {
                         String baseUrl = 'https://www.meetsusolutions.com';
-                        String normalizedPath = documentPath.startsWith('/') ? documentPath : '/$documentPath';
-                        String fullUrl = '$baseUrl$normalizedPath'.replaceAll(' ', '%20');
+                        String normalizedPath = documentPath.startsWith('/')
+                            ? documentPath
+                            : '/$documentPath';
+                        String fullUrl =
+                            '$baseUrl$normalizedPath'.replaceAll(' ', '%20');
 
                         debugPrint('Final PDF URL: $fullUrl');
 
-                        // Open PDF Viewer Screen
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => PdfViewerScreen(pdfUrl: fullUrl),
+                            builder: (context) =>
+                                PdfViewerScreen(pdfUrl: fullUrl),
                           ),
                         );
                       }
@@ -346,7 +357,8 @@ class TrainingController {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text("Failed to open document: ${e.toString()}"),
+                          content:
+                              Text("Failed to open document: ${e.toString()}"),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -389,9 +401,9 @@ class TrainingController {
 
                   if (success) {
                     final updatedTrainings =
-                    List<Training>.from(trainingsData.value);
+                        List<Training>.from(trainingsData.value);
                     final index =
-                    updatedTrainings.indexWhere((t) => t.id == training.id);
+                        updatedTrainings.indexWhere((t) => t.id == training.id);
 
                     if (index >= 0) {
                       final updatedTraining = Training(
@@ -474,7 +486,7 @@ class TrainingController {
       return true;
     } catch (e) {
       errorMessage.value =
-      "Failed to mark training as completed: ${e.toString()}";
+          "Failed to mark training as completed: ${e.toString()}";
       return false;
     }
   }

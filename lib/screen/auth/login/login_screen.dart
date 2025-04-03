@@ -11,12 +11,10 @@ class LoginScreen extends StatefulWidget {
 }
 
 class LoginScreenState extends State<LoginScreen> {
-  // Use the controller
   final LoginController _controller = LoginController();
 
   @override
   void dispose() {
-    // Dispose controller resources
     _controller.dispose();
     super.dispose();
   }
@@ -28,7 +26,6 @@ class LoginScreenState extends State<LoginScreen> {
         backgroundColor: AppTheme.backgroundColor,
         body: Stack(
           children: [
-            // Top design
             Positioned(
               top: 0,
               left: 0,
@@ -38,8 +35,6 @@ class LoginScreenState extends State<LoginScreen> {
                 decoration: AppTheme.headerContainerDecoration,
               ),
             ),
-
-            // Main content
             SafeArea(
               child: SingleChildScrollView(
                 child: Padding(
@@ -48,15 +43,17 @@ class LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 20),
-
-                      // Logo and app name
                       Center(
                         child: Column(
                           children: [
                             Container(
                               padding: const EdgeInsets.all(15),
                               decoration: AppTheme.appIconDecoration,
-                              child:Image.asset('assets/images/logo.png',height: 50,width: 50,),
+                              child: Image.asset(
+                                'assets/images/logo.png',
+                                height: 50,
+                                width: 50,
+                              ),
                             ),
                             SizedBox(height: AppTheme.smallSpacing),
                             const Text(
@@ -66,10 +63,7 @@ class LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                       ),
-
                       SizedBox(height: AppTheme.largeSpacing + 10),
-
-                      // Login card
                       Container(
                         width: double.infinity,
                         padding: EdgeInsets.all(AppTheme.cardPadding),
@@ -77,7 +71,6 @@ class LoginScreenState extends State<LoginScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Welcome text
                             const Text(
                               "Welcome Back",
                               style: AppTheme.headerStyle,
@@ -87,10 +80,7 @@ class LoginScreenState extends State<LoginScreen> {
                               "Sign in to continue",
                               style: AppTheme.subHeaderStyle,
                             ),
-
                             SizedBox(height: AppTheme.largeSpacing),
-
-                            // Email field
                             TextField(
                               controller: _controller.emailController,
                               keyboardType: TextInputType.emailAddress,
@@ -100,10 +90,7 @@ class LoginScreenState extends State<LoginScreen> {
                                 prefixIcon: Icons.person,
                               ),
                             ),
-
                             SizedBox(height: AppTheme.contentSpacing),
-
-                            // Password field
                             ValueListenableBuilder<bool>(
                               valueListenable: _controller.obscureText,
                               builder: (context, obscureText, _) {
@@ -129,8 +116,6 @@ class LoginScreenState extends State<LoginScreen> {
                                 );
                               },
                             ),
-
-                            // Error message (if any)
                             ValueListenableBuilder<String?>(
                               valueListenable: _controller.errorMessage,
                               builder: (context, errorMessage, _) {
@@ -148,10 +133,7 @@ class LoginScreenState extends State<LoginScreen> {
                                     : const SizedBox.shrink();
                               },
                             ),
-
                             SizedBox(height: AppTheme.largeSpacing - 10),
-
-                            // Login Button
                             ValueListenableBuilder<bool>(
                               valueListenable: _controller.isLoading,
                               builder: (context, isLoading, _) {
@@ -159,19 +141,7 @@ class LoginScreenState extends State<LoginScreen> {
                                   onPressed: isLoading
                                       ? null
                                       : () async {
-                                              await _controller.login(context);
-                                          // if (success && mounted) {
-                                          //   // Navigate to home screen or main app
-                                          //   // Navigator.pushReplacementNamed(context, '/home');
-                                          //   ScaffoldMessenger.of(context)
-                                          //       .showSnackBar(
-                                          //     const SnackBar(
-                                          //       content: Text(
-                                          //           'Login successful! Navigating...'),
-                                          //       backgroundColor: Colors.green,
-                                          //     ),
-                                          //   );
-                                          // }
+                                          await _controller.login(context);
                                         },
                                   style: AppTheme.primaryButtonStyle,
                                   child: isLoading
@@ -193,10 +163,7 @@ class LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                       ),
-
                       SizedBox(height: AppTheme.largeSpacing - 10),
-
-                      // Don't have an account
                       Center(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,

@@ -30,7 +30,7 @@ class Data {
 
   Data.fromJson(Map<String, dynamic> json) {
     questionData = json['question_data'] != null
-        ? new QuestionData.fromJson(json['question_data'])
+        ? QuestionData.fromJson(json['question_data'])
         : null;
     if (json['answer'] != null) {
       answer = <Answer>[];
@@ -87,14 +87,14 @@ class QuestionData {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = this.id;
-    data['training_id'] = this.trainingId;
-    data['image'] = this.image;
-    data['question'] = this.question;
-    data['created_date'] = this.createdDate;
-    data['created_by'] = this.createdBy;
-    data['modified_date'] = this.modifiedDate;
-    data['modified_by'] = this.modifiedBy;
+    data['id'] = id;
+    data['training_id'] = trainingId;
+    data['image'] = image;
+    data['question'] = question;
+    data['created_date'] = createdDate;
+    data['created_by'] = createdBy;
+    data['modified_date'] = modifiedDate;
+    data['modified_by'] = modifiedBy;
     return data;
   }
 }
@@ -134,16 +134,16 @@ class Answer {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['question_id'] = this.questionId;
-    data['answer'] = this.answer;
-    data['is_correct'] = this.isCorrect;
-    data['sort_order'] = this.sortOrder;
-    data['created_date'] = this.createdDate;
-    data['created_by'] = this.createdBy;
-    data['modified_date'] = this.modifiedDate;
-    data['modified_by'] = this.modifiedBy;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['question_id'] = questionId;
+    data['answer'] = answer;
+    data['is_correct'] = isCorrect;
+    data['sort_order'] = sortOrder;
+    data['created_date'] = createdDate;
+    data['created_by'] = createdBy;
+    data['modified_date'] = modifiedDate;
+    data['modified_by'] = modifiedBy;
     return data;
   }
 }

@@ -16,7 +16,6 @@ class _MoreScreenState extends State<MoreScreen> {
   @override
   void initState() {
     super.initState();
-    // Call the API when the screen initializes
     _controller.fetchCheckInButtonStatus();
   }
 
@@ -42,7 +41,6 @@ class _MoreScreenState extends State<MoreScreen> {
                 decoration: AppTheme.headerContainerDecoration,
               ),
             ),
-
             SafeArea(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,7 +60,6 @@ class _MoreScreenState extends State<MoreScreen> {
                     ),
                   ),
 
-                  // App Icon
                   Center(
                     child: Container(
                       padding: const EdgeInsets.all(15),
@@ -77,7 +74,6 @@ class _MoreScreenState extends State<MoreScreen> {
 
                   SizedBox(height: AppTheme.largeSpacing),
 
-                  // Status of CheckIn Button and Error Messages
                   ValueListenableBuilder<bool>(
                     valueListenable: _controller.isLoading,
                     builder: (context, isLoading, child) {
@@ -93,20 +89,18 @@ class _MoreScreenState extends State<MoreScreen> {
                     },
                   ),
 
-                  // Error message
                   ValueListenableBuilder<String?>(
                     valueListenable: _controller.errorMessage,
                     builder: (context, errorMsg, child) {
                       if (errorMsg != null && errorMsg.isNotEmpty) {
-                        // Only show unauthorized errors in debug console, not to user
                         if (errorMsg.contains('Unauthorized')) {
                           debugPrint('Authorization error: $errorMsg');
                           return const SizedBox.shrink();
                         }
 
-                        // Show other errors to the user
                         return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 8.0),
                           child: Text(
                             errorMsg,
                             style: const TextStyle(color: Colors.red),
@@ -117,34 +111,36 @@ class _MoreScreenState extends State<MoreScreen> {
                     },
                   ),
 
-                  // Menu Card
                   Expanded(
                     child: Container(
                       width: double.infinity,
                       margin: EdgeInsets.symmetric(
                         horizontal: AppTheme.screenPadding,
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 8),
                       decoration: AppTheme.cardDecoration,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Menu Items
                           Expanded(
                             child: ValueListenableBuilder<List<MenuItem>>(
                               valueListenable: _controller.menuItemsNotifier,
                               builder: (context, menuItems, child) {
                                 return ListView.separated(
                                   itemCount: menuItems.length,
-                                  separatorBuilder: (context, index) => const Divider(height: 1),
+                                  separatorBuilder: (context, index) =>
+                                      const Divider(height: 1),
                                   itemBuilder: (context, index) {
                                     final menuItem = menuItems[index];
                                     return ListTile(
                                       leading: Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: menuItem.iconColor.withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(8),
+                                          color: menuItem.iconColor
+                                              .withValues(alpha: 0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
                                         child: Icon(
                                           menuItem.icon,
@@ -164,7 +160,8 @@ class _MoreScreenState extends State<MoreScreen> {
                                         size: 16,
                                         color: Colors.grey,
                                       ),
-                                      onTap: () => _controller.navigateTo(context, menuItem.route),
+                                      onTap: () => _controller.navigateTo(
+                                          context, menuItem.route),
                                     );
                                   },
                                 );

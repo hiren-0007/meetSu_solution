@@ -9,41 +9,36 @@ import 'package:path_provider/path_provider.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 
 class SendRequestController {
-  // Text editing controllers for form fields
   final TextEditingController reasonController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
 
-  // Signature-related controllers
-  final ValueNotifier<List<Offset?>> signaturePoints = ValueNotifier<List<Offset?>>([]);
+  final ValueNotifier<List<Offset?>> signaturePoints =
+      ValueNotifier<List<Offset?>>([]);
   final ValueNotifier<bool> isTypedSignature = ValueNotifier<bool>(true);
   final TextEditingController signatureController = TextEditingController();
 
-  // ValueNotifiers for reactive state management
-  final ValueNotifier<DateTime> selectedDate = ValueNotifier<DateTime>(DateTime.now());
+  final ValueNotifier<DateTime> selectedDate =
+      ValueNotifier<DateTime>(DateTime.now());
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
-  final ValueNotifier<List<RequestRecord>> records = ValueNotifier<List<RequestRecord>>([]);
+  final ValueNotifier<List<RequestRecord>> records =
+      ValueNotifier<List<RequestRecord>>([]);
 
-  // Date formatter
   final DateFormat _dateFormat = DateFormat('MMM-dd-yyyy');
 
-  // API Service
   final ApiService _apiService;
 
-  // Constructor with API service injection
   SendRequestController(this._apiService);
 
   void initialize() {
     refreshRecords();
   }
 
-  // Format date for display
   String formatDate(DateTime date) {
     return _dateFormat.format(date);
   }
 
-  // Select date using date picker
   Future<void> selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -57,12 +52,9 @@ class SendRequestController {
     }
   }
 
-  // Refresh records list
   void refreshRecords() {
-    // In a real implementation, you would fetch records from the API
     isLoading.value = true;
 
-    // Simulate network delay
     Future.delayed(const Duration(seconds: 1), () {
       records.value = [
         RequestRecord(
@@ -71,36 +63,29 @@ class SendRequestController {
           reason: "this is test",
           date: DateTime.now(),
         ),
-        // Add more sample records as needed
       ];
 
       isLoading.value = false;
     });
   }
 
-  // Download record (placeholder function)
   void downloadRecord(RequestRecord record) {
     debugPrint("Downloading record: ${record.id}");
   }
 
-  // Show the request dialog
   void showRequestDialog(BuildContext context) {
-    // Reset error message
     errorMessage.value = null;
 
-    // Validate main form
     if (reasonController.text.isEmpty) {
       errorMessage.value = "Please enter a reason for your request";
       return;
     }
 
-    // Reset dialog controllers
     amountController.clear();
     nameController.clear();
     signatureController.clear();
     signaturePoints.value = [];
 
-    // Show the dialog
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -112,12 +97,11 @@ class SendRequestController {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.0),
               ),
-              // Set alignment to top to prevent keyboard from pushing it up
               alignment: Alignment.center,
               child: SingleChildScrollView(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1565C0), // Deep blue background
+                    color: const Color(0xFF1565C0),
                     borderRadius: BorderRadius.circular(20.0),
                   ),
                   child: Padding(
@@ -126,7 +110,6 @@ class SendRequestController {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Deduction Amount field
                         const Text(
                           "Deduction Amount",
                           style: TextStyle(
@@ -151,8 +134,6 @@ class SendRequestController {
                           ),
                         ),
                         const SizedBox(height: 16),
-
-                        // Reason field
                         const Text(
                           "Reason",
                           style: TextStyle(
@@ -163,7 +144,7 @@ class SendRequestController {
                         const SizedBox(height: 8),
                         TextField(
                           controller: ValueNotifier(reasonController).value,
-                          enabled: false, // Use the reason from the main screen
+                          enabled: false,
                           decoration: InputDecoration(
                             hintText: "Enter Reason",
                             filled: true,
@@ -177,8 +158,6 @@ class SendRequestController {
                           ),
                         ),
                         const SizedBox(height: 16),
-
-                        // Name field
                         const Text(
                           "Print Your name",
                           style: TextStyle(
@@ -190,16 +169,12 @@ class SendRequestController {
                         TextField(
                           controller: nameController,
                           textInputAction: TextInputAction.done,
-                          // Helps with keyboard handling
                           onTap: () {
-                            // Optional: Scroll the dialog when the field is tapped
                             Future.delayed(const Duration(milliseconds: 300),
-                                    () {
-                                  if (MediaQuery.of(context).viewInsets.bottom >
-                                      0) {
-                                    // This helps with scrolling when keyboard appears
-                                  }
-                                });
+                                () {
+                              if (MediaQuery.of(context).viewInsets.bottom >
+                                  0) {}
+                            });
                           },
                           decoration: InputDecoration(
                             hintText: "Type Your Name Here",
@@ -214,8 +189,6 @@ class SendRequestController {
                           ),
                         ),
                         const SizedBox(height: 16),
-
-                        // Signature section
                         const Text(
                           "Review your signature",
                           style: TextStyle(
@@ -224,10 +197,8 @@ class SendRequestController {
                           ),
                         ),
                         const SizedBox(height: 8),
-
-                        // Signature canvas
                         Container(
-                          height: 120, // Reduced height to save space
+                          height: 120,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(10.0),
@@ -236,7 +207,6 @@ class SendRequestController {
                             valueListenable: isTypedSignature,
                             builder: (context, isTyped, _) {
                               if (isTyped) {
-                                // Show typed signature
                                 return Center(
                                   child: Text(
                                     signatureController.text,
@@ -248,25 +218,24 @@ class SendRequestController {
                                   ),
                                 );
                               } else {
-                                // Show drawn signature
                                 return GestureDetector(
                                   onPanUpdate: (details) {
                                     setState(() {
                                       RenderBox renderBox = context
                                           .findRenderObject() as RenderBox;
                                       Offset localPosition =
-                                      renderBox.globalToLocal(
-                                          details.globalPosition);
+                                          renderBox.globalToLocal(
+                                              details.globalPosition);
                                       signaturePoints.value =
-                                      List.from(signaturePoints.value)
-                                        ..add(localPosition);
+                                          List.from(signaturePoints.value)
+                                            ..add(localPosition);
                                     });
                                   },
                                   onPanEnd: (details) {
                                     setState(() {
                                       signaturePoints.value =
-                                      List.from(signaturePoints.value)
-                                        ..add(null);
+                                          List.from(signaturePoints.value)
+                                            ..add(null);
                                     });
                                   },
                                   child: CustomPaint(
@@ -280,8 +249,6 @@ class SendRequestController {
                             },
                           ),
                         ),
-
-                        // Signature buttons with warning stripes background
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 0.0),
                           child: Container(
@@ -289,24 +256,20 @@ class SendRequestController {
                               image: DecorationImage(
                                 image: NetworkImage(
                                     'https://placeholder.com/wp-content/uploads/2018/10/placeholder.png'),
-                                // Replace with your warning stripes image
                                 fit: BoxFit.cover,
                               ),
                             ),
                             child: Padding(
                               padding:
-                              const EdgeInsets.symmetric(vertical: 4.0),
+                                  const EdgeInsets.symmetric(vertical: 4.0),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  // Type button
                                   ElevatedButton(
                                     onPressed: () {
-                                      // Hide keyboard first to prevent layout issues
                                       FocusScope.of(context).unfocus();
                                       setState(() {
                                         isTypedSignature.value = true;
-                                        // Show a dialog to enter typed signature
                                         showDialog(
                                           context: context,
                                           builder: (context) => AlertDialog(
@@ -316,7 +279,7 @@ class SendRequestController {
                                               controller: signatureController,
                                               decoration: const InputDecoration(
                                                 hintText:
-                                                "Enter your signature",
+                                                    "Enter your signature",
                                               ),
                                             ),
                                             actions: [
@@ -339,15 +302,12 @@ class SendRequestController {
                                     child: const Text(
                                       "Type",
                                       style:
-                                      TextStyle(color: Color(0xFF1565C0)),
+                                          TextStyle(color: Color(0xFF1565C0)),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-
-                                  // Draw button
                                   ElevatedButton(
                                     onPressed: () {
-                                      // Hide keyboard first to prevent layout issues
                                       FocusScope.of(context).unfocus();
                                       setState(() {
                                         isTypedSignature.value = false;
@@ -362,7 +322,7 @@ class SendRequestController {
                                     child: const Text(
                                       "Draw",
                                       style:
-                                      TextStyle(color: Color(0xFF1565C0)),
+                                          TextStyle(color: Color(0xFF1565C0)),
                                     ),
                                   ),
                                 ],
@@ -370,14 +330,11 @@ class SendRequestController {
                             ),
                           ),
                         ),
-
-                        // Clear button
                         Container(
                           decoration: const BoxDecoration(
                             image: DecorationImage(
                               image: NetworkImage(
                                   'https://placeholder.com/wp-content/uploads/2018/10/placeholder.png'),
-                              // Replace with your warning stripes image
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -408,22 +365,16 @@ class SendRequestController {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 16),
-
-                        // Buttons row (Create and Cancel)
                         Container(
                           padding: const EdgeInsets.only(top: 12, bottom: 0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              // Cancel button
                               ElevatedButton(
                                 onPressed: () {
-                                  // Hide keyboard first
                                   FocusScope.of(context).unfocus();
 
-                                  // Close the dialog
                                   Navigator.pop(context);
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -441,19 +392,15 @@ class SendRequestController {
                                   ),
                                 ),
                               ),
-
-                              // Create button
                               ElevatedButton(
                                 onPressed: () {
-                                  // Hide keyboard first
                                   FocusScope.of(context).unfocus();
 
-                                  // Validate dialog inputs
                                   if (amountController.text.isEmpty) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                           content:
-                                          Text("Please enter an amount")),
+                                              Text("Please enter an amount")),
                                     );
                                     return;
                                   }
@@ -462,7 +409,7 @@ class SendRequestController {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                           content:
-                                          Text("Please enter your name")),
+                                              Text("Please enter your name")),
                                     );
                                     return;
                                   }
@@ -487,10 +434,8 @@ class SendRequestController {
                                     return;
                                   }
 
-                                  // Close the dialog
                                   Navigator.pop(context);
 
-                                  // Submit the request with the dialog data
                                   submitRequestWithSignature(context);
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -523,15 +468,13 @@ class SendRequestController {
     );
   }
 
-  // Convert signature to file
   Future<File?> getSignatureAsFile() async {
     try {
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
-      final size = const Size(300, 150); // Adjust size as needed
+      final size = const Size(300, 150);
 
       if (isTypedSignature.value) {
-        // For typed signatures, render text to canvas
         final textPainter = TextPainter(
           text: TextSpan(
             text: signatureController.text,
@@ -545,47 +488,42 @@ class SendRequestController {
         );
         textPainter.layout(maxWidth: size.width);
 
-        // Paint white background
         final bgPaint = Paint()..color = Colors.white;
         canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
 
-        // Draw text centered
         textPainter.paint(
             canvas,
-            Offset(
-                (size.width - textPainter.width) / 2,
-                (size.height - textPainter.height) / 2
-            )
-        );
+            Offset((size.width - textPainter.width) / 2,
+                (size.height - textPainter.height) / 2));
       } else {
-        // For drawn signatures
         final paint = Paint()
           ..color = Colors.black
           ..strokeCap = StrokeCap.round
           ..strokeWidth = 3.0;
 
-        // Paint white background
         final bgPaint = Paint()..color = Colors.white;
         canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
 
-        // Draw the signature
         for (int i = 0; i < signaturePoints.value.length - 1; i++) {
-          if (signaturePoints.value[i] != null && signaturePoints.value[i + 1] != null) {
-            canvas.drawLine(signaturePoints.value[i]!, signaturePoints.value[i + 1]!, paint);
-          } else if (signaturePoints.value[i] != null && signaturePoints.value[i + 1] == null) {
-            canvas.drawPoints(PointMode.points, [signaturePoints.value[i]!], paint);
+          if (signaturePoints.value[i] != null &&
+              signaturePoints.value[i + 1] != null) {
+            canvas.drawLine(signaturePoints.value[i]!,
+                signaturePoints.value[i + 1]!, paint);
+          } else if (signaturePoints.value[i] != null &&
+              signaturePoints.value[i + 1] == null) {
+            canvas.drawPoints(
+                PointMode.points, [signaturePoints.value[i]!], paint);
           }
         }
       }
 
-      // Convert to image
       final picture = recorder.endRecording();
-      final img = await picture.toImage(size.width.toInt(), size.height.toInt());
+      final img =
+          await picture.toImage(size.width.toInt(), size.height.toInt());
       final byteData = await img.toByteData(format: ImageByteFormat.png);
 
       if (byteData == null) return null;
 
-      // Write to temporary file
       final tempDir = await getTemporaryDirectory();
       final file = File('${tempDir.path}/signature.png');
       await file.writeAsBytes(byteData.buffer.asUint8List());
@@ -596,9 +534,7 @@ class SendRequestController {
     }
   }
 
-  // Submit the request with signature data to the API
   Future<void> submitRequestWithSignature(BuildContext context) async {
-    // Parse amount
     double? amount;
     try {
       amount = double.parse(amountController.text);
@@ -611,22 +547,19 @@ class SendRequestController {
       return;
     }
 
-    // Show loading state
     isLoading.value = true;
 
     try {
-      // Get user token from Shared Preferences
       final token = SharedPrefsService.instance.getAccessToken();
       if (token == null || token.isEmpty) {
-        errorMessage.value = "No authentication token found. Please log in again.";
+        errorMessage.value =
+            "No authentication token found. Please log in again.";
         isLoading.value = false;
         return;
       }
 
-      // Add Authorization Token to API Client
       _apiService.client.addAuthToken(token);
 
-      // Get signature as file
       final signatureFile = await getSignatureAsFile();
       if (signatureFile == null) {
         errorMessage.value = "Failed to create signature file";
@@ -634,27 +567,20 @@ class SendRequestController {
         return;
       }
 
-      // Create form data for the API
       final Map<String, dynamic> requestData = {
         'amount': amount.toString(),
         'reason': reasonController.text,
       };
 
-      // Call the API service with the file
       final response = await _apiService.addDeductionWithSignature(
-          requestData,
-          signatureFile,
-          'sign_name'
-      );
+          requestData, signatureFile, 'sign_name');
 
-      // Process the response
       isLoading.value = false;
 
-      // Check for success (adjust based on your API response structure)
       if (response['success'] == true || response['status'] == 'success') {
-        // Add the new record to the local list
         final newRecord = RequestRecord(
-          id: response['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
+          id: response['id']?.toString() ??
+              DateTime.now().millisecondsSinceEpoch.toString(),
           amount: amount,
           reason: reasonController.text,
           date: selectedDate.value,
@@ -662,11 +588,9 @@ class SendRequestController {
 
         records.value = [newRecord, ...records.value];
 
-        // Reset form
         reasonController.clear();
         selectedDate.value = DateTime.now();
 
-        // Show success message
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -676,8 +600,9 @@ class SendRequestController {
           );
         }
       } else {
-        // Handle API error
-        final message = response['message'] ?? response['Message'] ?? 'Unknown error occurred';
+        final message = response['message'] ??
+            response['Message'] ??
+            'Unknown error occurred';
         errorMessage.value = message;
 
         if (context.mounted) {
@@ -690,17 +615,17 @@ class SendRequestController {
         }
       }
     } catch (e) {
-      // Handle exceptions
       isLoading.value = false;
 
-      // Provide user-friendly error message based on error type
       String errorMsg;
       if (e.toString().contains("Connection closed") ||
           e.toString().contains("SocketException") ||
           e.toString().contains("Connection refused") ||
           e.toString().contains("Connection timeout")) {
-        errorMsg = "Network connection error. Please check your internet and try again.";
-      } else if (e.toString().contains("Unauthorized") || e.toString().contains("401")) {
+        errorMsg =
+            "Network connection error. Please check your internet and try again.";
+      } else if (e.toString().contains("Unauthorized") ||
+          e.toString().contains("401")) {
         errorMsg = "Your session has expired. Please log in again.";
       } else {
         errorMsg = "Failed to submit request: ${e.toString()}";
@@ -721,7 +646,6 @@ class SendRequestController {
     }
   }
 
-  // Clean up resources
   void dispose() {
     reasonController.dispose();
     amountController.dispose();
@@ -736,7 +660,6 @@ class SendRequestController {
   }
 }
 
-// Model class for request records
 class RequestRecord {
   final String id;
   final double amount;
@@ -751,7 +674,6 @@ class RequestRecord {
   });
 }
 
-// Signature painter for drawing signatures
 class SignaturePainter extends CustomPainter {
   final List<Offset?> points;
 

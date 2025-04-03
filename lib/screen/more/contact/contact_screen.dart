@@ -11,7 +11,6 @@ class ContactScreen extends StatefulWidget {
 }
 
 class _ContactScreenState extends State<ContactScreen> {
-  // Use the controller
   final ContactController _controller = ContactController();
 
   @override
@@ -22,7 +21,6 @@ class _ContactScreenState extends State<ContactScreen> {
 
   @override
   void dispose() {
-    // Dispose controller resources
     _controller.dispose();
     super.dispose();
   }
@@ -45,12 +43,10 @@ class _ContactScreenState extends State<ContactScreen> {
               ),
             ),
 
-            // Main content
             SafeArea(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Back button and title
                   Padding(
                     padding: EdgeInsets.all(AppTheme.screenPadding),
                     child: Row(
@@ -90,7 +86,6 @@ class _ContactScreenState extends State<ContactScreen> {
 
                   SizedBox(height: AppTheme.largeSpacing),
 
-                  // Contact form card
                   Expanded(
                     child: Container(
                       width: double.infinity,
@@ -102,7 +97,6 @@ class _ContactScreenState extends State<ContactScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Header
                           const Text(
                             "Get in Touch",
                             style: AppTheme.headerStyle,
@@ -112,16 +106,12 @@ class _ContactScreenState extends State<ContactScreen> {
                             "We'd love to hear from you",
                             style: AppTheme.subHeaderStyle,
                           ),
-
                           SizedBox(height: AppTheme.largeSpacing),
-
-                          // Form
                           Expanded(
                             child: SingleChildScrollView(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Subject field
                                   const Text(
                                     "Subject",
                                     style: TextStyle(
@@ -134,14 +124,10 @@ class _ContactScreenState extends State<ContactScreen> {
                                     controller: _controller.subjectController,
                                     style: AppTheme.inputTextStyle,
                                     decoration: AppTheme.getInputDecoration(
-                                      labelText: "Enter Your Subject",
-                                      prefixIcon: Icons.subject
-                                    ),
+                                        labelText: "Enter Your Subject",
+                                        prefixIcon: Icons.subject),
                                   ),
-
                                   SizedBox(height: AppTheme.contentSpacing),
-
-                                  // Query field
                                   const Text(
                                     "Query",
                                     style: TextStyle(
@@ -159,29 +145,25 @@ class _ContactScreenState extends State<ContactScreen> {
                                     ),
                                     maxLines: 5,
                                   ),
-
                                   SizedBox(height: AppTheme.contentSpacing),
-
-                                  // Error message (if any)
                                   ValueListenableBuilder<String?>(
                                     valueListenable: _controller.errorMessage,
                                     builder: (context, errorMessage, _) {
                                       return errorMessage != null
                                           ? Padding(
-                                        padding: const EdgeInsets.only(bottom: 10),
-                                        child: Text(
-                                          errorMessage,
-                                          style: const TextStyle(
-                                            color: Colors.red,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      )
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 10),
+                                              child: Text(
+                                                errorMessage,
+                                                style: const TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            )
                                           : const SizedBox.shrink();
                                     },
                                   ),
-
-                                  // Submit button
                                   Align(
                                     alignment: Alignment.centerRight,
                                     child: ValueListenableBuilder<bool>(
@@ -190,21 +172,24 @@ class _ContactScreenState extends State<ContactScreen> {
                                         return ElevatedButton(
                                           onPressed: isLoading
                                               ? null
-                                              : () => _controller.submitForm(context),
+                                              : () => _controller
+                                                  .submitForm(context),
                                           style: AppTheme.primaryButtonStyle,
                                           child: isLoading
                                               ? const SizedBox(
-                                            height: 20,
-                                            width: 20,
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 2,
-                                            ),
-                                          )
+                                                  height: 20,
+                                                  width: 20,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    color: Colors.white,
+                                                    strokeWidth: 2,
+                                                  ),
+                                                )
                                               : const Text(
-                                            "Submit",
-                                            style: AppTheme.buttonTextStyle,
-                                          ),
+                                                  "Submit",
+                                                  style:
+                                                      AppTheme.buttonTextStyle,
+                                                ),
                                         );
                                       },
                                     ),

@@ -33,78 +33,58 @@ class JobOpening {
 }
 
 class JobOpeningController {
-  // API Service
   final ApiService _apiService;
 
-  // Observable states
-  final ValueNotifier<List<JobOpening>> jobOpenings = ValueNotifier<List<JobOpening>>([]);
+  final ValueNotifier<List<JobOpening>> jobOpenings =
+      ValueNotifier<List<JobOpening>>([]);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(true);
   final ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
 
-  // Timer for auto-scrolling
   Timer? _autoScrollTimer;
 
-  // Constructor
   JobOpeningController({ApiService? apiService})
       : _apiService = apiService ?? ApiService(ApiClient()) {
-    // Fetch job openings when controller is initialized
     fetchJobOpenings();
 
-    // Setup auto-scroll timer
     _setupAutoScroll();
   }
 
-  // Set up auto-scrolling
   void _setupAutoScroll() {
-    // Auto-scroll every 5 seconds
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (jobOpenings.value.isNotEmpty) {
-        // Calculate next index
         int nextIndex = (currentIndex.value + 1) % jobOpenings.value.length;
-        // Update current index
         setCurrentIndex(nextIndex);
       }
     });
   }
 
-  // Set current index
   void setCurrentIndex(int index) {
     currentIndex.value = index;
   }
 
-  // Fetch job openings from the API
   Future<void> fetchJobOpenings() async {
     try {
       isLoading.value = true;
 
-      // Get user token from Shared Preferences
       final token = SharedPrefsService.instance.getAccessToken();
       if (token == null || token.isEmpty) {
         throw Exception("No authentication token found");
       }
 
-      // Add Authorization Token to API Client
       _apiService.client.addAuthToken(token);
 
-      // Make API Call
       final response = await _apiService.getJobAndAds();
 
-      // Convert Response to JobAndAdsResponseModel
       final jobsResponse = JobAndAdsResponseModel.fromJson(response);
 
-      // Check if jobs data is available
       if (jobsResponse.success == true &&
           jobsResponse.response != null &&
           jobsResponse.response!.jobs != null &&
           jobsResponse.response!.jobs!.isNotEmpty) {
-
-        // Convert API Jobs to our JobOpening model
         final List<JobOpening> jobs = jobsResponse.response!.jobs!.map((job) {
-          // Parse requirements from description (assuming they're separated by line breaks)
           List<String> requirements = [];
 
           if (job.positionDescription != null) {
-            // Split by line breaks and filter out empty lines
             requirements = job.positionDescription!
                 .split('\n')
                 .where((line) => line.trim().isNotEmpty)
@@ -119,19 +99,19 @@ class JobOpeningController {
             positions: job.noOfPositions ?? 1,
             salary: job.salary ?? "N/A",
             description: job.positionDescription ?? "No description available",
-            requirements: requirements.isEmpty ? ["No specific requirements listed"] : requirements,
+            requirements: requirements.isEmpty
+                ? ["No specific requirements listed"]
+                : requirements,
             imageUrl: job.imageUrl ?? "",
             shareDescription: job.shareDescription ?? "",
           );
         }).toList();
 
-        // Update the job openings list
         jobOpenings.value = jobs;
-
       } else {
-        // No jobs available
         jobOpenings.value = [];
-        debugPrint("No jobs available or API returned an error: ${jobsResponse.message}");
+        debugPrint(
+            "No jobs available or API returned an error: ${jobsResponse.message}");
       }
     } catch (e) {
       debugPrint("❌ Error fetching job openings: $e");
@@ -141,26 +121,21 @@ class JobOpeningController {
     }
   }
 
-  // Share job
   void shareJob(BuildContext context, JobOpening job) {
-    // Create the text content to share
     final String shareText = job.shareDescription.isNotEmpty
         ? job.shareDescription
         : "Check out this job opening: ${job.title}\n\nLocation: ${job.location}\nSalary: ${job.salary}\n\nhttps://meetsusolutions.com/franciso/web/site/jobs?id=${job.id}";
 
-    // Use the share_plus package to show the share dialog
     Share.share(
       shareText,
       subject: job.title,
     );
   }
 
-  // Retry fetching data
   void retryFetch() {
     fetchJobOpenings();
   }
 
-  // Dispose resources
   void dispose() {
     jobOpenings.dispose();
     isLoading.dispose();
