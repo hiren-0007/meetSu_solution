@@ -365,6 +365,8 @@ class TestController {
 
                                 // Submit the test
                                 submitTestAnswers(context);
+
+                                Navigator.pushReplacementNamed(context, '/trainings');
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
@@ -516,7 +518,6 @@ class TestController {
               backgroundColor: Colors.green,
             ),
           );
-
           // Navigate back to previous screens
           Navigator.pop(context);
           Navigator.pop(context);

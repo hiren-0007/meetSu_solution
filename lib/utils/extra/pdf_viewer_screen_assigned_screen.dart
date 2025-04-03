@@ -61,6 +61,10 @@ class _PdfViewerScreenAssignedScreenState extends State<PdfViewerScreenAssignedS
               setState(() {
                 _totalPages = details.document.pages.count;
                 debugPrint('PDF loaded with $_totalPages pages');
+
+                if (_totalPages == 1) {
+                  _showConfirmation = true;
+                }
               });
             },
           ),
