@@ -7,8 +7,11 @@ import 'package:meetsu_solutions/model/schedule/schedule_response_model.dart';
 class ScheduleController {
   final ApiService _apiService;
 
-  final ValueNotifier<String> startDate = ValueNotifier<String>("Feb-24-2025");
-  final ValueNotifier<String> endDate = ValueNotifier<String>("Mar-09-2025");
+  final ValueNotifier<String> startDate = ValueNotifier<String>(
+      _formatDateStatic(DateTime.now().subtract(const Duration(days: 14))));
+
+  final ValueNotifier<String> endDate = ValueNotifier<String>(
+      _formatDateStatic(DateTime.now()));
 
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
 
@@ -40,7 +43,7 @@ class ScheduleController {
 
   Future<void> selectEndDate(BuildContext context) async {
     final DateTime minEndDate =
-        _parseDate(startDate.value).add(const Duration(days: 14));
+    _parseDate(startDate.value).add(const Duration(days: 14));
     final DateTime currentDate = _parseDate(endDate.value);
 
     final DateTime? picked = await showDatePicker(
@@ -100,6 +103,15 @@ class ScheduleController {
 
   String _formatDate(DateTime date) {
     final month = _getMonthName(date.month);
+    return "$month-${date.day.toString().padLeft(2, '0')}-${date.year}";
+  }
+
+  static String _formatDateStatic(DateTime date) {
+    final monthNames = {
+      1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+      7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
+    };
+    final month = monthNames[date.month] ?? 'Jan';
     return "$month-${date.day.toString().padLeft(2, '0')}-${date.year}";
   }
 

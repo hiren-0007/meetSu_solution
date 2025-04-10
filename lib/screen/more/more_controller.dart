@@ -51,6 +51,12 @@ class MoreController {
       route: "/logout",
       iconColor: Colors.red,
     ),
+    MenuItem(
+      icon: Icons.delete_forever,
+      title: "Delete Account",
+      route: "/delete",
+      iconColor: Colors.red,
+    ),
   ];
 
   MoreController({ApiService? apiService})
@@ -357,6 +363,31 @@ class MoreController {
       );
     } else if (route == "/check-in") {
       handleCheckInOut(context);
+    } else if (route == "/delete") {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Delete Account"),
+            content: const Text("Are you sure you want to delete your account?"),
+            actions: [
+              TextButton(
+                child: const Text("Cancel"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text("Logout"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushReplacementNamed('/login');
+                },
+              ),
+            ],
+          );
+        },
+      );
     } else {
       Navigator.of(context).pushNamed(route);
     }
