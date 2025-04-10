@@ -176,7 +176,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     width: double.infinity,
                     margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                     padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 16),
+                        vertical: 10, horizontal: 16),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(15),
@@ -198,7 +198,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               "Company: ",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 14,
                               ),
                             ),
                             Text(
@@ -206,19 +206,19 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               style: const TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontWeight: FontWeight.w500,
-                                fontSize: 15,
+                                fontSize: 14,
                               ),
                             ),
                           ],
                         ),
 
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 5),
 
                         Row(
                           children: [
                             const Icon(Icons.work,
-                                size: 16, color: AppTheme.textSecondaryColor),
-                            const SizedBox(width: 8),
+                                size: 15, color: AppTheme.textSecondaryColor),
+                            const SizedBox(width: 6),
                             const Text(
                               "Position: ",
                               style: TextStyle(
@@ -234,13 +234,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           ],
                         ),
 
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
 
                         Row(
                           children: [
                             const Icon(Icons.schedule,
-                                size: 16, color: AppTheme.textSecondaryColor),
-                            const SizedBox(width: 8),
+                                size: 15, color: AppTheme.textSecondaryColor),
+                            const SizedBox(width: 6),
                             const Text(
                               "Shift: ",
                               style: TextStyle(
@@ -256,13 +256,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           ],
                         ),
 
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
 
                         Row(
                           children: [
                             const Icon(Icons.attach_money,
-                                size: 16, color: AppTheme.textSecondaryColor),
-                            const SizedBox(width: 8),
+                                size: 15, color: AppTheme.textSecondaryColor),
+                            const SizedBox(width: 6),
                             const Text(
                               "Rate: ",
                               style: TextStyle(
