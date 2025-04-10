@@ -99,16 +99,16 @@ class MoreController {
       if (shouldShowCheckIn) {
         final updatedMenuItems = List<MenuItem>.from(menuItemsNotifier.value);
 
-        final buttonTitle = isAlreadyCheckedIn ? "Check Out" : "Check In";
+        final buttonTitle = isAlreadyCheckedIn ? "Clock Out" : "Clock In";
 
         final checkItemIndex = updatedMenuItems.indexWhere(
-            (item) => item.title == "Check In" || item.title == "Check Out");
+            (item) => item.title == "Clock In" || item.title == "Clock Out");
 
         if (checkItemIndex != -1) {
           updatedMenuItems[checkItemIndex] = MenuItem(
             icon: Icons.location_on,
             title: buttonTitle,
-            route: "/check-in",
+            route: "/clock-in",
             iconColor: Colors.blue,
           );
         } else {
@@ -121,7 +121,7 @@ class MoreController {
                 MenuItem(
                   icon: Icons.location_on,
                   title: buttonTitle,
-                  route: "/check-in",
+                  route: "/clock-in",
                   iconColor: Colors.blue,
                 ));
           }
@@ -131,7 +131,7 @@ class MoreController {
       } else {
         final updatedMenuItems = menuItemsNotifier.value
             .where(
-                (item) => item.title != "Check In" && item.title != "Check Out")
+                (item) => item.title != "Clock In" && item.title != "Clock Out")
             .toList();
 
         menuItemsNotifier.value = updatedMenuItems;
@@ -173,7 +173,7 @@ class MoreController {
       if (!serviceEnabled) {
         _showLocationMessage(
             context,
-            'Location services are disabled. Please enable them to check in.',
+            'Location services are disabled. Please enable them to Clock In.',
             Colors.orange);
         return;
       }
@@ -184,7 +184,7 @@ class MoreController {
         if (permission == LocationPermission.denied) {
           _showLocationMessage(
               context,
-              'Location permissions are denied. Please grant them to check in.',
+              'Location permissions are denied. Please grant them to Clock In.',
               Colors.orange);
           return;
         }
@@ -211,7 +211,7 @@ class MoreController {
       if (distanceInMeters > 50) {
         _showLocationMessage(
             context,
-            'You are out of location. You must be within 50 meters of the designated area to check in.',
+            'You are out of location. You must be within 50 meters of the designated area to Clock In.',
             Colors.red);
         isLoading.value = false;
         return;
@@ -231,14 +231,14 @@ class MoreController {
       if (response['success'] == true) {
         isCheckedIn.value = true;
 
-        _updateCheckButton("Check Out");
+        _updateCheckButton("Clock Out");
 
         _showLocationMessage(context,
             response['message'] ?? 'Successfully checked in!', Colors.green);
       } else {
         _showLocationMessage(
             context,
-            response['message'] ?? 'Failed to check in. Please try again.',
+            response['message'] ?? 'Failed to Clock In. Please try again.',
             Colors.red);
       }
     } catch (e) {
@@ -268,7 +268,7 @@ class MoreController {
       if (distanceInMeters > 50) {
         _showLocationMessage(
             context,
-            'You are out of location. You must be within 50 meters of the designated area to check in.',
+            'You are out of location. You must be within 50 meters of the designated area to Clock In.',
             Colors.red);
         isLoading.value = false;
         return;
@@ -288,14 +288,14 @@ class MoreController {
       if (response['success'] == true) {
         isCheckedIn.value = false;
 
-        _updateCheckButton("Check In");
+        _updateCheckButton("Clock In");
 
         _showLocationMessage(context,
             response['message'] ?? 'Successfully checked out!', Colors.green);
       } else {
         _showLocationMessage(
             context,
-            response['message'] ?? 'Failed to check out. Please try again.',
+            response['message'] ?? 'Failed to Clock Out. Please try again.',
             Colors.red);
       }
     } catch (e) {
@@ -311,13 +311,13 @@ class MoreController {
     final updatedMenuItems = List<MenuItem>.from(menuItemsNotifier.value);
 
     final checkItemIndex = updatedMenuItems.indexWhere(
-        (item) => item.title == "Check In" || item.title == "Check Out");
+        (item) => item.title == "Clock In" || item.title == "Clock Out");
 
     if (checkItemIndex != -1) {
       updatedMenuItems[checkItemIndex] = MenuItem(
         icon: Icons.location_on,
         title: newTitle,
-        route: "/check-in",
+        route: "/clock-in",
         iconColor: Colors.blue,
       );
 
@@ -361,7 +361,7 @@ class MoreController {
           );
         },
       );
-    } else if (route == "/check-in") {
+    } else if (route == "/clock-in") {
       handleCheckInOut(context);
     } else if (route == "/delete") {
       showDialog(
