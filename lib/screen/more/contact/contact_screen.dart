@@ -3,6 +3,8 @@ import 'package:meetsu_solutions/screen/more/contact/contact_controller.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 
+import '../../../services/pref/shared_prefs_service.dart';
+
 class ContactScreen extends StatefulWidget {
   const ContactScreen({super.key});
 
@@ -50,21 +52,51 @@ class _ContactScreenState extends State<ContactScreen> {
                   Padding(
                     padding: EdgeInsets.all(AppTheme.screenPadding),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back_ios,
+                        // Back arrow on the left
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: const Icon(
+                            Icons.arrow_back,
                             color: Colors.white,
+                            size: 24,
                           ),
-                          onPressed: () => _controller.navigateBack(context),
                         ),
-                        const SizedBox(width: 8),
+
+                        // Title in the center
                         const Text(
-                          "Contact Us",
+                          "Contact Us", // Replace with your screen title
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
+                          ),
+                        ),
+
+                        // Username in pill container on the right
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            SharedPrefsService.instance.getUsername() ?? "User",
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ],

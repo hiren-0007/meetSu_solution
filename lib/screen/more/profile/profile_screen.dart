@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
 import 'package:meetsu_solutions/screen/more/profile/personalinfo/personal_info_sreen.dart';
 import 'package:meetsu_solutions/screen/more/profile/profile_cantroller.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 import '../../../model/profile/profile_response_model.dart';
 import '../../../utils/theme/app_theme.dart';
@@ -19,7 +21,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   late final ProfileController _controller;
   int _selectedTab = 0;
-
+  String? username;
   final List<String> _tabTitles = [
     "Login Info",
     "Aptitude",
@@ -46,6 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     _controller = ProfileController(apiService: ApiService(apiClient));
     _controller.initialize();
+    username = SharedPrefsService.instance.getUsername();
   }
 
   @override
@@ -135,21 +138,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(
-                              width: AppTheme.appBarBackButtonMargin),
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                right: 16.0, top: 8.0, bottom: 8.0),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12.0, vertical: 6.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(15.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    username ?? "User",
+                                    style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     ValueListenableBuilder(
                       valueListenable: _controller.profileData,
                       builder: (context, profileData, _) {
-                        String? photoUrl = profileData?.photoUrl;
+                        String? photoUrl =
+                            "https://meetsusolutions.com/${profileData?.photoUrl}";
 
                         return Container(
                           margin: const EdgeInsets.symmetric(
                               vertical: AppTheme.contentSpacing),
-                          width: AppTheme.avatarSizeMedium,
-                          height: AppTheme.avatarSizeMedium,
+                          width: AppTheme.tabIconHeight,
+                          height: AppTheme.tabIconHeight,
                           decoration: photoUrl != null && photoUrl.isNotEmpty
                               ? AppTheme.avatarWithPhotoDecoration(photoUrl)
                               : AppTheme.avatarWithoutPhotoDecoration,
@@ -240,7 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       case 1:
         return _buildAptitudeTab();
       case 2:
-        return  _buildPersonalInfoTab();
+        return _buildPersonalInfoTab();
       case 3:
         return _buildAddressTab();
       case 4:
@@ -254,73 +288,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  String buildCredentialUrl(String baseImagePath) {
+    // If it's already a full URL, return it as is
+    if (baseImagePath.startsWith('http')) {
+      return baseImagePath;
+    }
+
+    // Use the base URL
+    const String baseUrl = 'https://www.meetsusolutions.com';
+
+    // Get credential path from profileData
+    String credentialPath = '';
+    if (_controller.profileData.value != null) {
+      credentialPath = _controller.profileData.value!.credentialUrl;
+    } else {
+      // Default path
+      credentialPath = '/applicant/web/uploads/applicant_credential/big/';
+    }
+
+    // Make sure credentialPath starts with / and doesn't end with /
+    if (!credentialPath.startsWith('/')) {
+      credentialPath = '/$credentialPath';
+    }
+    if (credentialPath.endsWith('/')) {
+      credentialPath = credentialPath.substring(0, credentialPath.length - 1);
+    }
+
+    // Make sure baseImagePath doesn't start with /
+    String imagePath = baseImagePath;
+    if (imagePath.startsWith('/')) {
+      imagePath = imagePath.substring(1);
+    }
+
+    // Build the final URL correctly
+    return '$baseUrl$credentialPath/$imagePath';
+  }
+
   Widget _buildLoginTab() {
     return ValueListenableBuilder(
       valueListenable: _controller.loginInfo,
       builder: (context, loginInfo, _) {
-        // Get photo URL from profileData
-        return ValueListenableBuilder(
-            valueListenable: _controller.profileData,
-            builder: (context, profileData, _) {
-              String? photoUrl = profileData?.photoUrl;
-
-              return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Profile image at the top
-                    Center(
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: photoUrl != null && photoUrl.isNotEmpty
-                            ? ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: Image.network(
-                            photoUrl,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                      : null,
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(
-                                Icons.person,
-                                size: 50,
-                                color: Colors.grey,
-                              );
-                            },
-                          ),
-                        )
-                            : const Icon(
-                          Icons.person,
-                          size: 50,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: AppTheme.contentSpacing),
-                    _buildInfoField("Username", loginInfo.username),
-                    _buildInfoField("Email", loginInfo.email),
-                    _buildInfoField("Phone", loginInfo.phone),
-                    _buildInfoField("Role", loginInfo.role),
-                    _buildInfoField("Last Login", loginInfo.lastLogin),
-                    const SizedBox(height: AppTheme.mediumSpacing),
-                  ],
-                ),
-              );
-            }
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildInfoField("Username", loginInfo.username),
+              _buildInfoField("Email", loginInfo.email),
+              _buildInfoField("Phone", loginInfo.phone),
+              _buildInfoField("Role", loginInfo.role),
+              _buildInfoField("Last Login", loginInfo.lastLogin),
+              const SizedBox(height: AppTheme.mediumSpacing),
+            ],
+          ),
         );
       },
     );
@@ -348,8 +367,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           correctAnswers += value.correctAnswer;
         });
 
-        String testScore = totalQuestions > 0 ? "$correctAnswers/$totalQuestions" : "0/0";
-        double scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+        String testScore =
+            totalQuestions > 0 ? "$correctAnswers/$totalQuestions" : "0/0";
+        double scorePercentage =
+            totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,7 +433,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 scrollDirection: Axis.horizontal,
                 itemCount: profileData.categoryWiseAnswer.length,
                 itemBuilder: (context, index) {
-                  final entry = profileData.categoryWiseAnswer.entries.elementAt(index);
+                  final entry =
+                      profileData.categoryWiseAnswer.entries.elementAt(index);
                   final categoryKey = entry.key;
                   final category = entry.value;
 
@@ -472,7 +494,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 itemBuilder: (context, index) {
                   final question = profileData.aptitude[index];
 
-                  int correctAnsIndex = int.tryParse(question.correctAnswer) ?? 1;
+                  int correctAnsIndex =
+                      int.tryParse(question.correctAnswer) ?? 1;
                   int givenAnsIndex = question.givenAnswer;
 
                   bool isCorrect = correctAnsIndex == givenAnsIndex;
@@ -485,7 +508,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ];
 
                   return Container(
-                    margin: const EdgeInsets.only(bottom: AppTheme.contentSpacing),
+                    margin:
+                        const EdgeInsets.only(bottom: AppTheme.contentSpacing),
                     padding: const EdgeInsets.all(AppTheme.contentSpacing),
                     decoration: AppTheme.questionCardDecoration,
                     child: Column(
@@ -495,7 +519,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(AppTheme.miniSpacing + 1),
+                              padding: const EdgeInsets.all(
+                                  AppTheme.miniSpacing + 1),
                               decoration: BoxDecoration(
                                 color: AppTheme.aptitudeCardColor,
                                 shape: BoxShape.circle,
@@ -552,16 +577,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           return Container(
                             width: double.infinity,
-                            margin: const EdgeInsets.only(bottom: AppTheme.extraSmallSpacing),
+                            margin: const EdgeInsets.only(
+                                bottom: AppTheme.extraSmallSpacing),
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppTheme.smallSpacing + 2,
                               vertical: AppTheme.extraSmallSpacing,
                             ),
                             decoration: BoxDecoration(
                               color: optionColor,
-                              borderRadius: BorderRadius.circular(AppTheme.miniRadius),
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.miniRadius),
                               border: Border.all(
-                                color: isGivenOption || (isCorrectOption && !isCorrect)
+                                color: isGivenOption ||
+                                        (isCorrectOption && !isCorrect)
                                     ? textColor.withOpacity(0.5)
                                     : AppTheme.categoryCardBorderColor,
                               ),
@@ -575,12 +603,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: isGivenOption || (isCorrectOption && !isCorrect)
+                                      color: isGivenOption ||
+                                              (isCorrectOption && !isCorrect)
                                           ? textColor
                                           : AppTheme.categoryCardBorderColor,
                                       width: 1.5,
                                     ),
-                                    color: isGivenOption || (isCorrectOption && !isCorrect)
+                                    color: isGivenOption ||
+                                            (isCorrectOption && !isCorrect)
                                         ? Colors.transparent
                                         : Colors.transparent,
                                   ),
@@ -589,7 +619,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     style: TextStyle(
                                       fontSize: AppTheme.textSizeExtraSmall,
                                       fontWeight: FontWeight.bold,
-                                      color: isGivenOption || (isCorrectOption && !isCorrect)
+                                      color: isGivenOption ||
+                                              (isCorrectOption && !isCorrect)
                                           ? textColor
                                           : AppTheme.textSecondaryColor,
                                     ),
@@ -601,15 +632,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     answerOptions[i],
                                     style: TextStyle(
                                       color: textColor,
-                                      fontWeight: isCorrectOption || isGivenOption
-                                          ? FontWeight.w500
-                                          : FontWeight.normal,
+                                      fontWeight:
+                                          isCorrectOption || isGivenOption
+                                              ? FontWeight.w500
+                                              : FontWeight.normal,
                                     ),
                                   ),
                                 ),
                                 if (isGivenOption)
                                   Icon(
-                                    isCorrect ? Icons.check_circle : Icons.cancel,
+                                    isCorrect
+                                        ? Icons.check_circle
+                                        : Icons.cancel,
                                     color: isCorrect
                                         ? AppTheme.successColor
                                         : AppTheme.errorColor,
@@ -642,7 +676,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               final street = profileData?.data.address ?? addressInfo.street;
               final city = profileData?.city ?? addressInfo.city;
               final state = profileData?.province ?? addressInfo.state;
-              final postalCode = profileData?.data.postalCode ?? addressInfo.postalCode;
+              final postalCode =
+                  profileData?.data.postalCode ?? addressInfo.postalCode;
               final country = profileData?.country ?? addressInfo.country;
 
               return SingleChildScrollView(
@@ -658,8 +693,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               );
-            }
-        );
+            });
       },
     );
   }
@@ -672,100 +706,130 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         // Also use educationList ValueNotifier as a fallback
         return ValueListenableBuilder(
-            valueListenable: _controller.educationList,
-            builder: (context, controllerEducationList, _) {
-              final displayList = educationList.isNotEmpty ?
-              educationList :
-              controllerEducationList;
+          valueListenable: _controller.educationList,
+          builder: (context, controllerEducationList, _) {
+            final displayList = educationList.isNotEmpty
+                ? educationList
+                : controllerEducationList;
 
-              return Column(
-                children: [
-                  Expanded(
-                    child: displayList.isEmpty
-                        ? Center(
-                      child: Text(
-                        "No education information added yet",
-                        style: AppTheme.emptyStateStyle,
-                      ),
-                    )
-                        : ListView.builder(
-                      itemCount: displayList.length,
-                      itemBuilder: (context, index) {
-                        // Handle both Education model from API and EducationInfo from controller
-                        final education = displayList[index];
-
-                        // Extract data based on which model we're dealing with
-                        final String degree = education is Education ?
-                        education.courseName :
-                        (education as EducationInfo).degree;
-
-                        final String institution = education is Education ?
-                        education.collegeName :
-                        (education as EducationInfo).institution;
-
-                        final String startDate = education is Education ?
-                        "" : // API model doesn't have startDate
-                        (education as EducationInfo).startDate;
-
-                        final String endDate = education is Education ?
-                        education.graduateYear :
-                        (education as EducationInfo).endDate;
-
-                        final String grade = education is Education ?
-                        "" : // API model doesn't have grade
-                        (education as EducationInfo).grade;
-
-                        return Container(
-                          margin: const EdgeInsets.only(
-                              bottom: AppTheme.contentSpacing),
-                          padding:
-                          const EdgeInsets.all(AppTheme.contentSpacing),
-                          decoration: AppTheme.educationCardDecoration,
+            return Column(
+              children: [
+                Expanded(
+                  child: displayList.isEmpty
+                      ? Center(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(
-                                degree,
-                                style: AppTheme.educationDegreeStyle,
+                              Icon(
+                                Icons.school_outlined,
+                                size: 48,
+                                color: Colors.grey.withOpacity(0.6),
                               ),
-                              const SizedBox(height: AppTheme.microSpacing),
+                              const SizedBox(height: 16),
                               Text(
-                                institution,
-                                style: AppTheme.educationInstitutionStyle,
+                                "No education information added yet",
+                                style: AppTheme.emptyStateStyle,
                               ),
-                              const SizedBox(height: AppTheme.microSpacing),
-                              Text(
-                                "${startDate.isNotEmpty ? startDate : 'N/A'} - ${endDate.isNotEmpty ? endDate : 'N/A'}",
-                                style: AppTheme.educationDateStyle,
-                              ),
-                              if (grade.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: AppTheme.microSpacing),
-                                  child: Text(
-                                    "Grade: $grade",
-                                    style: AppTheme.educationDateStyle,
-                                  ),
-                                ),
                             ],
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: AppTheme.contentSpacing),
-                  ElevatedButton.icon(
-                    onPressed: () => _controller.addEducation(context),
-                    icon: const Icon(Icons.add),
-                    label: const Text("Add Education"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
-                ],
-              );
-            }
+                        )
+                      : ListView.builder(
+                          itemCount: displayList.length,
+                          itemBuilder: (context, index) {
+                            // Handle both Education model from API and EducationInfo from controller
+                            final education = displayList[index];
+
+                            // Extract data based on which model we're dealing with
+                            final String degree = education is Education
+                                ? education.courseName
+                                : (education as EducationInfo).degree;
+
+                            final String institution = education is Education
+                                ? education.collegeName
+                                : (education as EducationInfo).institution;
+
+                            final String startDate = education is Education
+                                ? ""
+                                : // API model doesn't have startDate
+                                (education as EducationInfo).startDate;
+
+                            final String endDate = education is Education
+                                ? education.graduateYear
+                                : (education as EducationInfo).endDate;
+
+                            final String grade = education is Education
+                                ? ""
+                                : // API model doesn't have grade
+                                (education as EducationInfo).grade;
+
+                            return Card(
+                              elevation: 3,
+                              margin: const EdgeInsets.only(
+                                  bottom: AppTheme.contentSpacing,
+                                  left: 2,
+                                  right: 2),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.all(
+                                    AppTheme.contentSpacing),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Colors.white,
+                                      Colors.blue.withOpacity(0.05),
+                                    ],
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildLabeledField(
+                                      label: education is Education
+                                          ? "Course Name"
+                                          : "Degree",
+                                      value: degree,
+                                      icon: Icons.school,
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    _buildLabeledField(
+                                      label: "Institution",
+                                      value: institution,
+                                      icon: Icons.account_balance,
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    _buildLabeledField(
+                                      label: "Duration",
+                                      value:
+                                          "${startDate.isNotEmpty ? startDate : 'N/A'} - ${endDate.isNotEmpty ? endDate : 'N/A'}",
+                                      icon: Icons.calendar_today,
+                                    ),
+
+                                    // Grade field with label (if available)
+                                    if (grade.isNotEmpty) ...[
+                                      const SizedBox(height: 12),
+                                      _buildLabeledField(
+                                        label: "Grade",
+                                        value: grade,
+                                        icon: Icons.grade,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -781,128 +845,213 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return ValueListenableBuilder(
             valueListenable: _controller.experienceList,
             builder: (context, controllerExperienceList, _) {
-              final displayList = experienceList.isNotEmpty ?
-              experienceList :
-              controllerExperienceList;
+              final displayList = experienceList.isNotEmpty
+                  ? experienceList
+                  : controllerExperienceList;
 
               return Column(
                 children: [
                   Expanded(
                     child: displayList.isEmpty
                         ? Center(
-                      child: Text(
-                        "No experience information added yet",
-                        style: AppTheme.emptyStateStyle,
-                      ),
-                    )
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.work_outline,
+                                  size: 48,
+                                  color: Colors.grey.withOpacity(0.6),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  "No experience information added yet",
+                                  style: AppTheme.emptyStateStyle,
+                                ),
+                              ],
+                            ),
+                          )
                         : ListView.builder(
-                      itemCount: displayList.length,
-                      itemBuilder: (context, index) {
-                        // Handle both Experience model from API and ExperienceInfo from controller
-                        final experience = displayList[index];
+                            itemCount: displayList.length,
+                            itemBuilder: (context, index) {
+                              // Handle both Experience model from API and ExperienceInfo from controller
+                              final experience = displayList[index];
 
-                        // Extract data based on which model we're dealing with
-                        final String company = experience is Experience ?
-                        experience.companyName :
-                        (experience as ExperienceInfo).company;
+                              // Extract data based on which model we're dealing with
+                              final String company = experience is Experience
+                                  ? experience.companyName
+                                  : (experience as ExperienceInfo).company;
 
-                        final String position = experience is Experience ?
-                        experience.positionName :
-                        (experience as ExperienceInfo).position;
+                              final String position = experience is Experience
+                                  ? experience.positionName
+                                  : (experience as ExperienceInfo).position;
 
-                        final String startDate = experience is Experience ?
-                        experience.startDate :
-                        (experience as ExperienceInfo).startDate;
+                              final String startDate = experience is Experience
+                                  ? experience.startDate
+                                  : (experience as ExperienceInfo).startDate;
 
-                        final String endDate = experience is Experience ?
-                        experience.endDate :
-                        (experience as ExperienceInfo).endDate;
+                              final String endDate = experience is Experience
+                                  ? experience.endDate
+                                  : (experience as ExperienceInfo).endDate;
 
-                        final String supervisor = experience is Experience ?
-                        experience.nameSupervisor :
-                        (experience as ExperienceInfo).supervisor;
+                              final String supervisor = experience is Experience
+                                  ? experience.nameSupervisor
+                                  : (experience as ExperienceInfo).supervisor;
 
-                        final String responsibilities = experience is Experience ?
-                        experience.reasonForLeaving :
-                        (experience as ExperienceInfo).responsibilities;
+                              final String responsibilities =
+                                  experience is Experience
+                                      ? experience.reasonForLeaving
+                                      : (experience as ExperienceInfo)
+                                          .responsibilities;
 
-                        final String yearsOfExperience = experience is Experience ?
-                        experience.noExperience.toString() :
-                        (experience as ExperienceInfo).yearsOfExperience;
+                              final String yearsOfExperience =
+                                  experience is Experience
+                                      ? experience.noExperience.toString()
+                                      : (experience as ExperienceInfo)
+                                          .yearsOfExperience;
 
-                        return Container(
-                          margin: const EdgeInsets.only(
-                              bottom: AppTheme.contentSpacing),
-                          padding:
-                          const EdgeInsets.all(AppTheme.contentSpacing),
-                          decoration: AppTheme.experienceCardDecoration,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Company Name: $company",
-                                style: AppTheme.experienceItemStyle,
-                              ),
-                              const SizedBox(
-                                  height: AppTheme.extraSmallSpacing),
-                              Text(
-                                "Position Name: $position",
-                                style: AppTheme.experienceItemStyle,
-                              ),
-                              const SizedBox(
-                                  height: AppTheme.extraSmallSpacing),
-                              Text(
-                                "Years of Experience: $yearsOfExperience",
-                                style: AppTheme.experienceItemStyle,
-                              ),
-                              const SizedBox(
-                                  height: AppTheme.extraSmallSpacing),
-                              Text(
-                                "Start Date: $startDate",
-                                style: AppTheme.experienceItemStyle,
-                              ),
-                              const SizedBox(
-                                  height: AppTheme.extraSmallSpacing),
-                              Text(
-                                "End Date: $endDate",
-                                style: AppTheme.experienceItemStyle,
-                              ),
-                              if (supervisor.isNotEmpty) ...[
-                                const SizedBox(
-                                    height: AppTheme.extraSmallSpacing),
-                                Text(
-                                  "Name of Supervisor: $supervisor",
-                                  style: AppTheme.experienceItemStyle,
+                              return Card(
+                                elevation: 3,
+                                margin: const EdgeInsets.only(
+                                    bottom: AppTheme.contentSpacing,
+                                    left: 2,
+                                    right: 2),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                              ],
-                              if (responsibilities.isNotEmpty) ...[
-                                const SizedBox(
-                                    height: AppTheme.extraSmallSpacing),
-                                Text(
-                                  "Responsibilities/Reason for Leaving: $responsibilities",
-                                  style: AppTheme.experienceItemStyle,
+                                child: Container(
+                                  padding: const EdgeInsets.all(
+                                      AppTheme.contentSpacing),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Colors.white,
+                                        Colors.blue.withOpacity(0.05),
+                                      ],
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Company and Position at the top
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: AppTheme.primaryColor
+                                                  .withOpacity(0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: const Icon(
+                                              Icons.business,
+                                              color: AppTheme.primaryColor,
+                                              size: 24,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Text(
+                                                  "Company Name",
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  company,
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color:
+                                                        AppTheme.primaryColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const Divider(height: 24),
+
+                                      // Position
+                                      _buildLabeledField(
+                                        icon: Icons.work,
+                                        label: "Position Name",
+                                        value: position,
+                                      ),
+                                      const SizedBox(height: 12),
+
+                                      // Years of Experience
+                                      _buildLabeledField(
+                                        icon: Icons.timer,
+                                        label: "Years of Experience",
+                                        value: yearsOfExperience,
+                                      ),
+                                      const SizedBox(height: 12),
+
+                                      // Employment Duration
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: _buildLabeledField(
+                                              icon: Icons.calendar_today,
+                                              label: "Start Date",
+                                              value: startDate,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: _buildLabeledField(
+                                              icon: Icons.event,
+                                              label: "End Date",
+                                              value: endDate,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      if (supervisor.isNotEmpty) ...[
+                                        const SizedBox(height: 12),
+                                        _buildLabeledField(
+                                          icon: Icons.supervisor_account,
+                                          label: "Name of Supervisor",
+                                          value: supervisor,
+                                        ),
+                                      ],
+
+                                      if (responsibilities.isNotEmpty) ...[
+                                        const SizedBox(height: 12),
+                                        _buildLabeledField(
+                                          icon: Icons.description,
+                                          label:
+                                              "Responsibilities/Reason for Leaving",
+                                          value: responsibilities,
+                                          isMultiLine: true,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ),
-                              ],
-                            ],
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: AppTheme.contentSpacing),
-                  ElevatedButton.icon(
-                    onPressed: () => _controller.addExperience(context),
-                    icon: const Icon(Icons.add),
-                    label: const Text("Add Experience"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      foregroundColor: Colors.white,
-                    ),
                   ),
                 ],
               );
-            }
-        );
+            });
       },
     );
   }
@@ -912,72 +1061,207 @@ class _ProfileScreenState extends State<ProfileScreen> {
       valueListenable: _controller.profileData,
       builder: (context, profileData, _) {
         return ValueListenableBuilder(
-            valueListenable: _controller.credentialInfo,
-            builder: (context, credentialInfo, _) {
-              // Extract credential information from both sources
-              String idNumber = "";
-              String passport = "";
-              String driversLicense = "";
-              String taxId = credentialInfo.taxId;
-              String socialSecurity = "";
+          valueListenable: _controller.credentialInfo,
+          builder: (context, credentialInfo, _) {
+            // Extract credential information from both sources
+            String idNumber = "";
+            String passport = "";
+            String driversLicense = "";
+            String taxId = credentialInfo.taxId;
+            String socialSecurity = "";
+            String whmisCredential = "";
 
-              // First try to get data from the profileData
+            // First try to get data from the profileData
+            if (profileData != null) {
+              idNumber = profileData.data.employeeId.toString();
+              socialSecurity = profileData.data.sinNo;
+
+              // Find credentials by type from the credentials list
+              if (profileData.credentials.isNotEmpty) {
+                for (var credential in profileData.credentials) {
+                  if (credential.document.contains("Passport")) {
+                    passport = credential.image;
+                  } else if (credential.document.contains("Driver License")) {
+                    driversLicense = credential.image;
+                  } else if (credential.document.contains("WHMIS 2025")) {
+                    whmisCredential = credential.image;
+                  }
+                }
+              }
+            } else {
+              // Fallback to credentialInfo if profileData is null
+              idNumber = credentialInfo.idNumber;
+              passport = credentialInfo.passport;
+              driversLicense = credentialInfo.driversLicense;
+              socialSecurity = credentialInfo.socialSecurity;
               if (profileData != null) {
-                idNumber = profileData.data.employeeId.toString();
-                socialSecurity = profileData.data.sinNo;
-
                 // Find credentials by type from the credentials list
                 if (profileData.credentials.isNotEmpty) {
                   for (var credential in profileData.credentials) {
-                    if (credential.document.contains("Passport")) {
-                      passport = credential.image;
-                    } else if (credential.document.contains("Driver License")) {
-                      driversLicense = credential.image;
+                    if (credential.document.contains("WHMIS 2025")) {
+                      whmisCredential = credential.image;
+                      break;
                     }
                   }
                 }
               } else {
-                // Fallback to credentialInfo if profileData is null
-                idNumber = credentialInfo.idNumber;
-                passport = credentialInfo.passport;
-                driversLicense = credentialInfo.driversLicense;
-                socialSecurity = credentialInfo.socialSecurity;
+                whmisCredential = _controller.aptitudeInfo.value.certifications;
               }
-
-              return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildInfoField("ID Number", idNumber),
-                    _buildInfoField("Passport", passport),
-                    _buildInfoField("Driver's License", driversLicense),
-                    _buildInfoField("Tax ID", taxId),
-                    _buildInfoField("Social Security", socialSecurity),
-
-                    // Display other credentials if available
-                    if (profileData?.credentials != null &&
-                        profileData!.credentials.isNotEmpty) ...[
-                      const SizedBox(height: AppTheme.contentSpacing),
-                      Text(
-                        "Other Credentials",
-                        style: AppTheme.sectionTitleStyle,
-                      ),
-                      const SizedBox(height: AppTheme.smallSpacing),
-                      ...profileData.credentials
-                          .where((c) => !c.document.contains("Passport") &&
-                          !c.document.contains("Driver License"))
-                          .map((credential) => _buildInfoField(
-                          credential.document,
-                          credential.image
-                      )),
-                    ],
-                    const SizedBox(height: AppTheme.mediumSpacing),
-                  ],
-                ),
-              );
             }
+
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoField("ID Number", idNumber),
+
+                  // Replace the simple info field with a view button for Passport
+                  _buildCredentialWithViewButton(context, "Passport", passport),
+
+                  // You could do the same for Driver's License if needed
+                  _buildCredentialWithViewButton(
+                      context, "Driver's License", driversLicense),
+
+                  _buildInfoField("Tax ID", taxId),
+                  _buildInfoField("Social Security", socialSecurity),
+
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "WHMIS 2025 Certificate",
+                        style: AppTheme.infoFieldLabelStyle,
+                      ),
+                      const SizedBox(height: AppTheme.extraSmallSpacing),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.contentSpacing,
+                          vertical: AppTheme.smallSpacing + 2,
+                        ),
+                        decoration: AppTheme.infoFieldDecoration,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                whmisCredential.isEmpty
+                                    ? "Not provided"
+                                    : "Certificate Available",
+                                style: AppTheme.infoFieldValueStyle,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                            if (whmisCredential.isNotEmpty)
+                              ElevatedButton(
+                                onPressed: () => _viewPdfCredential(
+                                    context,
+                                    buildCredentialUrl(whmisCredential),
+                                    "WHMIS 2025 Certificate"),
+                                child: Text("View"),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.primaryColor,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppTheme.contentSpacing),
+                    ],
+                  ),
+
+                  // Display other credentials if available
+                  if (profileData?.credentials != null &&
+                      profileData!.credentials.isNotEmpty) ...[
+                    const SizedBox(height: AppTheme.contentSpacing),
+                    Text(
+                      "Other Credentials",
+                      style: AppTheme.sectionTitleStyle,
+                    ),
+                    const SizedBox(height: AppTheme.smallSpacing),
+                    ...profileData.credentials
+                        .where((c) =>
+                            !c.document.contains("Passport") &&
+                            !c.document.contains("Driver License") &&
+                            !c.document.contains("WHMIS 2025"))
+                        .map((credential) => _buildCredentialWithViewButton(
+                              context,
+                              credential.document,
+                              credential.image,
+                            )),
+                  ],
+                  const SizedBox(height: AppTheme.mediumSpacing),
+                ],
+              ),
+            );
+          },
         );
       },
+    );
+  }
+
+  Widget _buildCredentialWithViewButton(
+      BuildContext context, String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTheme.infoFieldLabelStyle,
+        ),
+        const SizedBox(height: AppTheme.extraSmallSpacing),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.contentSpacing,
+            vertical: AppTheme.smallSpacing + 2,
+          ),
+          decoration: AppTheme.infoFieldDecoration,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
+                  value.isEmpty ? "Not provided" : "Document Available",
+                  style: AppTheme.infoFieldValueStyle,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+              if (value.isNotEmpty)
+                ElevatedButton(
+                  onPressed: () => _viewPdfCredential(
+                      context, buildCredentialUrl(value), label),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text("View"),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppTheme.contentSpacing),
+      ],
+    );
+  }
+
+  void _viewPdfCredential(BuildContext context, String url, String title) {
+    print('Opening PDF URL: $url');
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: Text(title),
+            backgroundColor: AppTheme.primaryColor,
+          ),
+          body: SfPdfViewer.network(url),
+        ),
+      ),
     );
   }
 
@@ -994,17 +1278,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 : personalInfo.fullName;
 
             final firstName = profileData?.data.firstName ??
-                (personalInfo.fullName.isNotEmpty ? personalInfo.fullName.split(' ').first : "");
+                (personalInfo.fullName.isNotEmpty
+                    ? personalInfo.fullName.split(' ').first
+                    : "");
 
             final lastName = profileData?.data.lastName ??
-                (personalInfo.fullName.isNotEmpty && personalInfo.fullName.split(' ').length > 1
+                (personalInfo.fullName.isNotEmpty &&
+                        personalInfo.fullName.split(' ').length > 1
                     ? personalInfo.fullName.split(' ').sublist(1).join(' ')
                     : "");
 
             final gender = profileData?.data.gender ?? personalInfo.gender;
-            final dateOfBirth = profileData?.data.dob ?? personalInfo.dateOfBirth;
-            final maritalStatus = profileData?.data.maritalStatus ?? personalInfo.maritalStatus;
-            final nationality = profileData?.country ?? personalInfo.nationality;
+            final dateOfBirth =
+                profileData?.data.dob ?? personalInfo.dateOfBirth;
+            final maritalStatus =
+                profileData?.data.maritalStatus ?? personalInfo.maritalStatus;
+            final nationality =
+                profileData?.country ?? personalInfo.nationality;
 
             // Get contact and emergency information
             final mobileNumber = profileData?.data.mobileNumber ?? "";
@@ -1015,65 +1305,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final emergencyName = profileData?.data.emergencyName ?? "";
             final emergencyPhone = profileData?.data.emergencyPhone ?? "";
             final emergencyEmail = profileData?.data.emergencyEmail ?? "";
-            final emergencyRelationship = profileData?.data.emergencyRelationship ?? "";
+            final emergencyRelationship =
+                profileData?.data.emergencyRelationship ?? "";
             final emergencyLanguage = profileData?.data.emergencyLanguage ?? "";
 
             final referredBy = profileData?.data.referredBy ?? "";
-            final referredRelationship = profileData?.data.referredRelationship ?? "";
-
-            // Photo URL for profile image
-            final photoUrl = profileData?.photoUrl;
+            final referredRelationship =
+                profileData?.data.referredRelationship ?? "";
 
             return SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppTheme.smallSpacing),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.smallSpacing),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Profile Image
-                    Center(
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: photoUrl != null && photoUrl.isNotEmpty
-                            ? ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: Image.network(
-                            photoUrl,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                      : null,
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(
-                                Icons.person,
-                                size: 50,
-                                color: Colors.grey,
-                              );
-                            },
-                          ),
-                        )
-                            : const Icon(
-                          Icons.person,
-                          size: 50,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: AppTheme.contentSpacing),
-
                     // Basic Personal Info Section
                     Text(
                       "Basic Information",
@@ -1123,22 +1369,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: AppTheme.smallSpacing),
                     _buildInfoField("Referred By", referredBy),
-                    _buildInfoField("Referred Relationship", referredRelationship),
+                    _buildInfoField(
+                        "Referred Relationship", referredRelationship),
 
-                    const SizedBox(height: AppTheme.mediumSpacing),
-
-                    // Edit Button
-                    Center(
-                      child: ElevatedButton.icon(
-                        onPressed: () => _controller.editProfile(context),
-                        icon: const Icon(Icons.edit),
-                        label: const Text("Edit Personal Info"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: AppTheme.contentSpacing),
                   ],
                 ),
@@ -1180,6 +1413,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         const SizedBox(height: AppTheme.contentSpacing),
+      ],
+    );
+  }
+
+  Widget _buildLabeledField({
+    required IconData icon,
+    required String label,
+    required String value,
+    bool isMultiLine = false,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: AppTheme.primaryColor,
+            size: 18,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value.isEmpty ? 'Not specified' : value,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                  height: isMultiLine ? 1.3 : 1.0,
+                ),
+                maxLines: isMultiLine ? 3 : 1,
+                overflow:
+                    isMultiLine ? TextOverflow.ellipsis : TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

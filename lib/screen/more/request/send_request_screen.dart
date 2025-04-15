@@ -5,6 +5,8 @@ import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 
+import '../../../services/pref/shared_prefs_service.dart';
+
 class SendRequestScreen extends StatefulWidget {
   const SendRequestScreen({super.key});
 
@@ -77,7 +79,30 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 40),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            SharedPrefsService.instance.getUsername() ?? "User",
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),

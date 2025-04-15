@@ -111,6 +111,7 @@ class AppTheme {
   static const double buttonHeightLarge = 55.0;
   static const double appBarBackButtonMargin = 40.0;
   static const double tabBarHeight = 120.0;
+  static const double tabIconHeight = 100.0;
 
   // Text Sizes
   static const double textSizeLarge = 26.0;

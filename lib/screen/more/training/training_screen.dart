@@ -3,6 +3,8 @@ import 'package:meetsu_solutions/screen/more/training/training_controller.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 
+import '../../../services/pref/shared_prefs_service.dart';
+
 class TrainingScreen extends StatefulWidget {
   const TrainingScreen({super.key});
 
@@ -74,7 +76,30 @@ class _TrainingScreenState extends State<TrainingScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 24),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            SharedPrefsService.instance.getUsername() ?? "User",
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
