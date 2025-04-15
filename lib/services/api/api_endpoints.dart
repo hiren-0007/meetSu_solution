@@ -8,6 +8,8 @@ class ApiEndpoints {
 
   static const String jobAndAds = 'job/get-jobopenings-ads?page=0&limit=100&job_or_ads=0&webmob=0';
 
+  static const String jobShare = 'flutter/share-link';
+
   static const String compliance = 'flutter/compliance';
 
   static const String contactUs  = 'flutter/contact';

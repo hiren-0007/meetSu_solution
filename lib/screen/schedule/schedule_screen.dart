@@ -67,10 +67,32 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
+                  // Updated Row with wider date containers and better spacing
                   Row(
                     children: [
-                      const SizedBox(width: 10),
+                      // Previous button
+                      GestureDetector(
+                        onTap: () => _controller.navigateToPreviousPeriod(),
+                        child: Container(
+                          width: 40, // Fixed width
+                          height: 40, // Fixed height for square button
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.chevron_left,
+                              size: 24,
+                              color: AppTheme.primaryColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Start Date Picker - Wider container
                       Expanded(
+                        flex: 3, // More space for date text
                         child: ValueListenableBuilder<String>(
                           valueListenable: _controller.startDate,
                           builder: (context, startDate, _) {
@@ -78,7 +100,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               onTap: () => _controller.selectStartDate(context),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 15),
+                                    vertical: 8, horizontal: 12),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(8),
@@ -92,7 +114,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                           color: AppTheme.textPrimaryColor,
                                           fontSize: 14,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center, // Center text
                                       ),
                                     ),
                                     const Icon(
@@ -107,8 +129,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 15),
+                      const SizedBox(width: 8),
+                      // End Date Picker - Wider container
                       Expanded(
+                        flex: 3, // More space for date text
                         child: ValueListenableBuilder<String>(
                           valueListenable: _controller.endDate,
                           builder: (context, endDate, _) {
@@ -116,7 +140,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               onTap: () => _controller.selectEndDate(context),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 15),
+                                    vertical: 8, horizontal: 12),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(8),
@@ -130,7 +154,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                           color: AppTheme.textPrimaryColor,
                                           fontSize: 14,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center, // Center text
                                       ),
                                     ),
                                     const Icon(
@@ -145,7 +169,26 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
+                      // Next button
+                      GestureDetector(
+                        onTap: () => _controller.navigateToNextPeriod(),
+                        child: Container(
+                          width: 40, // Fixed width
+                          height: 40, // Fixed height for square button
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.chevron_right,
+                              size: 24,
+                              color: AppTheme.primaryColor,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -172,114 +215,126 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               builder: (context, hasData, _) {
                 if (hasData && _controller.scheduleItems.value.isNotEmpty) {
                   final firstItem = _controller.scheduleItems.value.first;
-                  return Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withValues(alpha: 0.2),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Company
-                        Row(
-                          children: [
-                            const Text(
-                              "Company: ",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                  return
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withValues(alpha: 0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // First row: Company and Position
+                          Row(
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "Company: ",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "${firstItem.company ?? 'N/A'}",
+                                      style: TextStyle(
+                                        color: AppTheme.primaryColor,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            Text(
-                              firstItem.company ?? "N/A",
-                              style: const TextStyle(
-                                color: AppTheme.primaryColor,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
+                              Spacer(flex: 1),
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "Position: ",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "${firstItem.position ?? 'N/A'}",
+                                      style: TextStyle(
+                                        color: AppTheme.textSecondaryColor,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 5),
-
-                        Row(
-                          children: [
-                            const Icon(Icons.work,
-                                size: 15, color: AppTheme.textSecondaryColor),
-                            const SizedBox(width: 6),
-                            const Text(
-                              "Position: ",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          // Second row: Shift and Rate
+                          Row(
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "Shift: ",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "${firstItem.shift ?? 'N/A'}",
+                                      style: TextStyle(
+                                        color: AppTheme.textSecondaryColor,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            Text(
-                              firstItem.position ?? "N/A",
-                              style: const TextStyle(
-                                color: AppTheme.textSecondaryColor,
+                              Spacer(flex: 1),
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "Rate: ",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "${firstItem.rate ?? 'N/A'}/hr",
+                                      style: TextStyle(
+                                        color: AppTheme.textSecondaryColor,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 6),
-
-                        Row(
-                          children: [
-                            const Icon(Icons.schedule,
-                                size: 15, color: AppTheme.textSecondaryColor),
-                            const SizedBox(width: 6),
-                            const Text(
-                              "Shift: ",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Text(
-                              firstItem.shift ?? "N/A",
-                              style: const TextStyle(
-                                color: AppTheme.textSecondaryColor,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 6),
-
-                        Row(
-                          children: [
-                            const Icon(Icons.attach_money,
-                                size: 15, color: AppTheme.textSecondaryColor),
-                            const SizedBox(width: 6),
-                            const Text(
-                              "Rate: ",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Text(
-                              "${firstItem.rate ?? 'N/A'}/hr",
-                              style: const TextStyle(
-                                color: AppTheme.textSecondaryColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
                 }
                 return const SizedBox.shrink();
               },

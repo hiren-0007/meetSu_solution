@@ -51,12 +51,12 @@ class MoreController {
       route: "/logout",
       iconColor: Colors.red,
     ),
-    MenuItem(
-      icon: Icons.delete_forever,
-      title: "Delete Account",
-      route: "/delete",
-      iconColor: Colors.red,
-    ),
+    // MenuItem(
+    //   icon: Icons.delete_forever,
+    //   title: "Delete Account",
+    //   route: "/delete",
+    //   iconColor: Colors.red,
+    // ),
   ];
 
   MoreController({ApiService? apiService})

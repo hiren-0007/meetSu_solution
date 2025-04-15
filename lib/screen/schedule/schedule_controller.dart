@@ -151,6 +151,37 @@ class ScheduleController {
     return months[monthNumber] ?? 'Jan';
   }
 
+  void navigateToPreviousPeriod() {
+    final currentStartDate = _parseDate(startDate.value);
+
+    final newStartDate = currentStartDate.subtract(const Duration(days: 14));
+    final newEndDate = _parseDate(endDate.value).subtract(const Duration(days: 14));
+
+    startDate.value = _formatDate(newStartDate);
+    endDate.value = _formatDate(newEndDate);
+
+    _fetchScheduleData();
+  }
+
+  void navigateToNextPeriod() {
+    final currentEndDate = _parseDate(endDate.value);
+
+    final today = DateTime.now();
+
+    if (currentEndDate.add(const Duration(days: 14)).isAfter(today)) {
+      endDate.value = _formatDate(today);
+      startDate.value = _formatDate(today.subtract(const Duration(days: 14)));
+    } else {
+      final newStartDate = _parseDate(startDate.value).add(const Duration(days: 14));
+      final newEndDate = currentEndDate.add(const Duration(days: 14));
+
+      startDate.value = _formatDate(newStartDate);
+      endDate.value = _formatDate(newEndDate);
+    }
+
+    _fetchScheduleData();
+  }
+
   void dispose() {
     startDate.dispose();
     endDate.dispose();

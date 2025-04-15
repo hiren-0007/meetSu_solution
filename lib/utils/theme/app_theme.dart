@@ -6,6 +6,7 @@ class AppTheme {
   static const Color primaryLightColor = Color(0xFF00B0FF);
   static const Color backgroundColor = Color(0xFFF5F7FA);
   static const Color cardColor = Colors.white;
+  static const Color blackColor = Colors.black;
   static const Color cardColorRed = Colors.red;
   static const Color textPrimaryColor = Color(0xFF333333);
   static const Color textSecondaryColor = Color(0xFF757575);

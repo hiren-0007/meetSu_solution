@@ -121,15 +121,109 @@ class JobOpeningController {
     }
   }
 
-  void shareJob(BuildContext context, JobOpening job) {
-    final String shareText = job.shareDescription.isNotEmpty
-        ? job.shareDescription
-        : "Check out this job opening: ${job.title}\n\nLocation: ${job.location}\nSalary: ${job.salary}\n\nhttps://meetsusolutions.com/franciso/web/site/jobs?id=${job.id}";
+  // Complete shareJob method with authentication token handling
+  Future<void> shareJob(BuildContext context, JobOpening job) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+      );
 
-    Share.share(
-      shareText,
-      subject: job.title,
-    );
+      // Get the authentication token
+      final token = SharedPrefsService.instance.getAccessToken();
+      if (token == null || token.isEmpty) {
+        throw Exception("No authentication token found");
+      }
+
+      // Add token to API client
+      _apiService.client.addAuthToken(token);
+
+      // Print for debugging
+      print('Attempting to share job with ID: ${job.id}');
+
+      // Use the exact same parameter format as in Postman
+      Map<String, dynamic> requestData = {
+        'id': job.id.toString(), // Convert to string to match form-data format
+        'job_or_ad': '1',       // Use string as form-data sends strings
+        'medium': 'Test'        // Exactly match what worked in Postman
+      };
+
+      // Print the request data for debugging
+      print('Request data: $requestData');
+
+      // Call the API (ApiService now uses form-data for this endpoint)
+      final response = await _apiService.getJobShare(requestData);
+
+      // Close the loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
+
+      print('API Response: $response');
+
+      // Check if the response is successful
+      if (response['success'] == true) {
+        // Extract the link from the response
+        String? shareLink;
+
+        if (response['link'] != null) {
+          shareLink = response['link'];
+        } else if (response['response'] != null && response['response']['link'] != null) {
+          shareLink = response['response']['link'];
+        } else if (response.containsKey('Link')) {
+          shareLink = response['Link'];
+        }
+
+        if (shareLink != null && shareLink.isNotEmpty) {
+          print('Share link: $shareLink');
+          await Share.share(shareLink, subject: job.title);
+          return;
+        }
+      }
+
+      // If we reach here, either the API call failed or we couldn't find a link
+      // Use the fallback sharing text
+      final String shareText = job.shareDescription.isNotEmpty
+          ? job.shareDescription
+          : "Check out this job opening: ${job.title}\n\nLocation: ${job.location}\nSalary: ${job.salary}\n\nhttps://meetsusolutions.com/frontend/web/site/jobs?id=${job.id}";
+
+      await Share.share(shareText, subject: job.title);
+
+      // Show a message to the user
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Using default share text"),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      // Close the loading dialog if it's showing
+      if (Navigator.canPop(context)) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
+      print('Error during job sharing: $e');
+
+      // Fallback to default share text
+      final String shareText = job.shareDescription.isNotEmpty
+          ? job.shareDescription
+          : "Check out this job opening: ${job.title}\n\nLocation: ${job.location}\nSalary: ${job.salary}\n\nhttps://meetsusolutions.com/frontend/web/site/jobs?id=${job.id}";
+
+      await Share.share(shareText, subject: job.title);
+
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void retryFetch() {

@@ -13,7 +13,6 @@ class ApiClient {
 
   ApiClient({Map<String, String>? headers})
       : _headers = headers ?? {
-    'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
 
@@ -49,32 +48,61 @@ class ApiClient {
     }
   }
 
-  // Generic POST request
-  Future<Map<String, dynamic>> post(String endpoint, {dynamic body}) async {
+  // Generic POST request - now with option for form data
+  Future<Map<String, dynamic>> post(String endpoint, {dynamic body, bool useFormData = false}) async {
     try {
       debugPrint('Making POST request to: ${baseUrlNew + endpoint}');
       debugPrint('Request body: $body');
+      debugPrint('Using form-data: $useFormData');
 
       final uri = Uri.parse(baseUrlNew + endpoint);
 
-      final client = http.Client();
-      try {
-        final request = http.Request('POST', uri);
-        request.headers.addAll(_headers);
-        request.body = jsonEncode(body);
+      if (useFormData) {
+        // Use form-data approach
+        final request = http.MultipartRequest('POST', uri);
 
-        final streamedResponse = await client.send(request)
-            .timeout(_connectionTimeout);
+        // Add headers (excluding Content-Type which will be set automatically)
+        Map<String, String> headers = Map.from(_headers);
+        headers.remove('Content-Type');
+        request.headers.addAll(headers);
 
-        final response = await http.Response.fromStream(streamedResponse)
-            .timeout(_receiveTimeout);
+        // Add form fields
+        if (body != null) {
+          body.forEach((key, value) {
+            request.fields[key] = value.toString();
+          });
+        }
 
-        // debugPrint('Response status: ${response.statusCode}');
-        // debugPrint('Response body: ${response.body}');
+        final client = http.Client();
+        try {
+          final streamedResponse = await client.send(request)
+              .timeout(_connectionTimeout);
 
-        return _handleResponse(response);
-      } finally {
-        client.close();
+          final response = await http.Response.fromStream(streamedResponse)
+              .timeout(_receiveTimeout);
+
+          return _handleResponse(response);
+        } finally {
+          client.close();
+        }
+      } else {
+        // Use original JSON approach
+        final client = http.Client();
+        try {
+          final request = http.Request('POST', uri);
+          request.headers.addAll({..._headers, 'Content-Type': 'application/json'});
+          request.body = jsonEncode(body);
+
+          final streamedResponse = await client.send(request)
+              .timeout(_connectionTimeout);
+
+          final response = await http.Response.fromStream(streamedResponse)
+              .timeout(_receiveTimeout);
+
+          return _handleResponse(response);
+        } finally {
+          client.close();
+        }
       }
     } catch (e) {
       debugPrint('POST request error: $e');
@@ -90,7 +118,7 @@ class ApiClient {
       final client = http.Client();
       try {
         final request = http.Request('PUT', uri);
-        request.headers.addAll(_headers);
+        request.headers.addAll({..._headers, 'Content-Type': 'application/json'});
         request.body = jsonEncode(body);
 
         final streamedResponse = await client.send(request)
