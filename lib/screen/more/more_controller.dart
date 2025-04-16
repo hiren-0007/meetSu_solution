@@ -61,10 +61,10 @@ class MoreController {
 
   MoreController({ApiService? apiService})
       : _apiService = apiService ??
-            ApiService(ApiClient(headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            })),
+      ApiService(ApiClient(headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      })),
         menuItemsNotifier = ValueNotifier<List<MenuItem>>([]) {
     menuItemsNotifier.value = List.from(_initialMenuItems);
   }
@@ -102,7 +102,7 @@ class MoreController {
         final buttonTitle = isAlreadyCheckedIn ? "Clock Out" : "Clock In";
 
         final checkItemIndex = updatedMenuItems.indexWhere(
-            (item) => item.title == "Clock In" || item.title == "Clock Out");
+                (item) => item.title == "Clock In" || item.title == "Clock Out");
 
         if (checkItemIndex != -1) {
           updatedMenuItems[checkItemIndex] = MenuItem(
@@ -113,7 +113,7 @@ class MoreController {
           );
         } else {
           final trainingIndex =
-              updatedMenuItems.indexWhere((item) => item.title == "Trainings");
+          updatedMenuItems.indexWhere((item) => item.title == "Trainings");
 
           if (trainingIndex != -1) {
             updatedMenuItems.insert(
@@ -147,7 +147,7 @@ class MoreController {
         errorMessage.value = "Authentication error: ${e.toString()}";
       } else {
         errorMessage.value =
-            "Failed to fetch check-in button status: ${e.toString()}";
+        "Failed to fetch check-in button status: ${e.toString()}";
       }
     } finally {
       isLoading.value = false;
@@ -158,66 +158,22 @@ class MoreController {
     if (isCheckedIn.value) {
       await performCheckOut(context);
     } else {
-      await performLocationCheckIn(context);
+      await performCheckIn(context);
     }
 
     await fetchCheckInButtonStatus();
   }
 
-  Future<void> performLocationCheckIn(BuildContext context) async {
+  Future<void> performCheckIn(BuildContext context) async {
     isLoading.value = true;
     errorMessage.value = null;
 
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        _showLocationMessage(
-            context,
-            'Location services are disabled. Please enable them to Clock In.',
-            Colors.orange);
-        return;
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          _showLocationMessage(
-              context,
-              'Location permissions are denied. Please grant them to Clock In.',
-              Colors.orange);
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        _showLocationMessage(
-            context,
-            'Location permissions are permanently denied. Please enable them in settings.',
-            Colors.red);
-        return;
-      }
+      await _initializeWithToken();
 
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-
-      const double targetLatitude = 43.595310;
-      const double targetLongitude = -79.640579;
-
-      double distanceInMeters = Geolocator.distanceBetween(position.latitude,
-          position.longitude, targetLatitude, targetLongitude);
-
-      if (distanceInMeters > 50) {
-        _showLocationMessage(
-            context,
-            'You are out of location. You must be within 50 meters of the designated area to Clock In.',
-            Colors.red);
-        isLoading.value = false;
-        return;
-      }
-
-      await _initializeWithToken();
 
       Map<String, dynamic> checkInData = {
         'latitude': position.latitude.toString(),
@@ -228,19 +184,35 @@ class MoreController {
 
       debugPrint('Check-in API response: $response');
 
-      if (response['success'] == true) {
-        isCheckedIn.value = true;
+      if (response.containsKey('show_checkout')) {
+        isCheckedIn.value = response['show_checkout'] == true;
 
-        _updateCheckButton("Clock Out");
-
-        _showLocationMessage(context,
-            response['message'] ?? 'Successfully checked in!', Colors.green);
-      } else {
-        _showLocationMessage(
-            context,
-            response['message'] ?? 'Failed to Clock In. Please try again.',
-            Colors.red);
+        if (isCheckedIn.value) {
+          _updateCheckButton("Clock Out");
+        } else {
+          _updateCheckButton("Clock In");
+        }
       }
+
+      String message = '';
+      if (response.containsKey('message1') && response['message1'] != null) {
+        message = response['message1'];
+      }
+      if (response.containsKey('message2') && response['message2'] != null) {
+        message = message.isNotEmpty
+            ? '$message ${response['message2']}'
+            : response['message2'];
+      }
+
+      if (message.isEmpty) {
+        message = 'Clock-in request completed';
+      }
+
+      _showLocationMessage(
+          context,
+          message,
+          response['success'] == true ? Colors.green : Colors.red);
+
     } catch (e) {
       debugPrint('Error during check-in process: $e');
       _showLocationMessage(
@@ -255,26 +227,11 @@ class MoreController {
     errorMessage.value = null;
 
     try {
+      await _initializeWithToken();
+
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-
-      const double targetLatitude = 43.595310;
-      const double targetLongitude = -79.640579;
-
-      double distanceInMeters = Geolocator.distanceBetween(position.latitude,
-          position.longitude, targetLatitude, targetLongitude);
-
-      if (distanceInMeters > 50) {
-        _showLocationMessage(
-            context,
-            'You are out of location. You must be within 50 meters of the designated area to Clock In.',
-            Colors.red);
-        isLoading.value = false;
-        return;
-      }
-
-      await _initializeWithToken();
 
       Map<String, dynamic> checkOutData = {
         'latitude': position.latitude.toString(),
@@ -285,19 +242,35 @@ class MoreController {
 
       debugPrint('Check-out API response: $response');
 
-      if (response['success'] == true) {
-        isCheckedIn.value = false;
+      if (response.containsKey('show_checkout')) {
+        isCheckedIn.value = response['show_checkout'] == true;
 
-        _updateCheckButton("Clock In");
-
-        _showLocationMessage(context,
-            response['message'] ?? 'Successfully checked out!', Colors.green);
-      } else {
-        _showLocationMessage(
-            context,
-            response['message'] ?? 'Failed to Clock Out. Please try again.',
-            Colors.red);
+        if (!isCheckedIn.value) {
+          _updateCheckButton("Clock In");
+        } else {
+          _updateCheckButton("Clock Out");
+        }
       }
+
+      String message = '';
+      if (response.containsKey('message1') && response['message1'] != null) {
+        message = response['message1'];
+      }
+      if (response.containsKey('message2') && response['message2'] != null) {
+        message = message.isNotEmpty
+            ? '$message ${response['message2']}'
+            : response['message2'];
+      }
+
+      if (message.isEmpty) {
+        message = 'Clock-out request completed';
+      }
+
+      _showLocationMessage(
+          context,
+          message,
+          response['success'] == true ? Colors.green : Colors.red);
+
     } catch (e) {
       debugPrint('Error during checkout process: $e');
       _showLocationMessage(
@@ -311,7 +284,7 @@ class MoreController {
     final updatedMenuItems = List<MenuItem>.from(menuItemsNotifier.value);
 
     final checkItemIndex = updatedMenuItems.indexWhere(
-        (item) => item.title == "Clock In" || item.title == "Clock Out");
+            (item) => item.title == "Clock In" || item.title == "Clock Out");
 
     if (checkItemIndex != -1) {
       updatedMenuItems[checkItemIndex] = MenuItem(
@@ -378,7 +351,7 @@ class MoreController {
                 },
               ),
               TextButton(
-                child: const Text("Logout"),
+                child: const Text("Delete"),
                 onPressed: () {
                   Navigator.of(context).pop();
                   Navigator.of(context).pushReplacementNamed('/login');
