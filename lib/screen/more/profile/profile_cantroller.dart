@@ -11,29 +11,29 @@ class ProfileController {
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
 
   final ValueNotifier<ProfileResponseModel?> profileData =
-      ValueNotifier<ProfileResponseModel?>(null);
+  ValueNotifier<ProfileResponseModel?>(null);
 
   final ValueNotifier<LoginInfo> loginInfo =
-      ValueNotifier<LoginInfo>(LoginInfo());
+  ValueNotifier<LoginInfo>(LoginInfo());
   final ValueNotifier<AptitudeInfo> aptitudeInfo =
-      ValueNotifier<AptitudeInfo>(AptitudeInfo());
+  ValueNotifier<AptitudeInfo>(AptitudeInfo());
   final ValueNotifier<PersonalInfo> personalInfo =
-      ValueNotifier<PersonalInfo>(PersonalInfo());
+  ValueNotifier<PersonalInfo>(PersonalInfo());
   final ValueNotifier<AddressInfo> addressInfo =
-      ValueNotifier<AddressInfo>(AddressInfo());
+  ValueNotifier<AddressInfo>(AddressInfo());
   final ValueNotifier<List<EducationInfo>> educationList =
-      ValueNotifier<List<EducationInfo>>([]);
+  ValueNotifier<List<EducationInfo>>([]);
   final ValueNotifier<List<ExperienceInfo>> experienceList =
-      ValueNotifier<List<ExperienceInfo>>([]);
+  ValueNotifier<List<ExperienceInfo>>([]);
   final ValueNotifier<CredentialInfo> credentialInfo =
-      ValueNotifier<CredentialInfo>(CredentialInfo());
+  ValueNotifier<CredentialInfo>(CredentialInfo());
 
   ProfileController({ApiService? apiService})
       : _apiService = apiService ??
-            ApiService(ApiClient(headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            }));
+      ApiService(ApiClient(headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }));
 
   void initialize() {
     isLoading.value = true;
@@ -67,29 +67,29 @@ class ProfileController {
   void _updateSectionDataFromProfile(ProfileResponseModel profile) {
     loginInfo.value = LoginInfo(
       username: profile.data.username,
-      email: profile.data.email,
-      phone: profile.data.mobileNumber,
+      email: profile.data.email ?? "",
+      phone: profile.data.mobileNumber ?? "",
       role: "Employee",
       lastLogin: profile.data.lastLoginAt != 0
           ? DateTime.fromMillisecondsSinceEpoch(profile.data.lastLoginAt * 1000)
-              .toString()
+          .toString()
           : "",
     );
 
     personalInfo.value = PersonalInfo(
       fullName: "${profile.data.firstName} ${profile.data.lastName}",
-      dateOfBirth: profile.data.dob,
-      gender: profile.data.gender,
-      maritalStatus: profile.data.maritalStatus,
-      nationality: profile.country,
+      dateOfBirth: profile.data.dob ?? "",
+      gender: profile.data.gender ?? "",
+      maritalStatus: profile.data.maritalStatus ?? "",
+      nationality: profile.country ?? "",
     );
 
     addressInfo.value = AddressInfo(
-      street: profile.data.address,
-      city: profile.city,
-      state: profile.province,
-      postalCode: profile.data.postalCode,
-      country: profile.country,
+      street: profile.data.address ?? "",
+      city: profile.city ?? "",
+      state: profile.province ?? "",
+      postalCode: profile.data.postalCode ?? "",
+      country: profile.country ?? "",
     );
 
     int totalQuestions = 0;
@@ -101,36 +101,36 @@ class ProfileController {
     });
 
     String testScore =
-        totalQuestions > 0 ? "${correctAnswers}/${totalQuestions}" : "0/0";
+    totalQuestions > 0 ? "${correctAnswers}/${totalQuestions}" : "0/0";
 
     aptitudeInfo.value = AptitudeInfo(
       testScores: testScore,
-      skills: profile.data.language,
+      skills: profile.data.language ?? "",
       certifications: _findCredentialByType(profile.credentials, "WHMIS 2025"),
     );
 
     final educationItems = profile.education
         .map((edu) => EducationInfo(
-              degree: edu.courseName,
-              institution: edu.collegeName,
-              startDate: "",
-              endDate: edu.graduateYear,
-              grade: "",
-            ))
+      degree: edu.courseName ?? "",
+      institution: edu.collegeName ?? "",
+      startDate: "",
+      endDate: edu.graduateYear ?? "",
+      grade: "",
+    ))
         .toList();
 
     educationList.value = educationItems;
 
     final experienceItems = profile.experience
         .map((exp) => ExperienceInfo(
-              company: exp.companyName,
-              position: exp.positionName,
-              startDate: exp.startDate,
-              endDate: exp.endDate,
-              supervisor: exp.nameSupervisor,
-              responsibilities: exp.reasonForLeaving,
-              yearsOfExperience: exp.noExperience.toString(),
-            ))
+      company: exp.companyName ?? "",
+      position: exp.positionName ?? "",
+      startDate: exp.startDate ?? "",
+      endDate: exp.endDate ?? "",
+      supervisor: exp.nameSupervisor ?? "",
+      responsibilities: exp.reasonForLeaving ?? "",
+      yearsOfExperience: exp.noExperience?.toString() ?? "",
+    ))
         .toList();
 
     experienceList.value = experienceItems;
@@ -139,16 +139,16 @@ class ProfileController {
       idNumber: profile.data.employeeId.toString(),
       passport: _findCredentialByType(profile.credentials, "Passport"),
       driversLicense:
-          _findCredentialByType(profile.credentials, "Driver License"),
+      _findCredentialByType(profile.credentials, "Driver License"),
       taxId: "",
-      socialSecurity: profile.data.sinNo,
+      socialSecurity: profile.data.sinNo ?? "",
     );
   }
 
   String _findCredentialByType(List<Credential> credentials, String type) {
     for (var credential in credentials) {
-      if (credential.document.contains(type)) {
-        return credential.image;
+      if (credential.document?.contains(type) == true) {
+        return credential.image ?? "";
       }
     }
     return "";
@@ -219,7 +219,7 @@ class ProfileController {
         endDate: "Present",
         supervisor: "Jane Smith",
         responsibilities:
-            "Lead development of Flutter applications, mentor junior developers",
+        "Lead development of Flutter applications, mentor junior developers",
         yearsOfExperience: "5",
       ),
     ];
@@ -239,7 +239,7 @@ class ProfileController {
       builder: (context) => AlertDialog(
         title: const Text("Edit Profile"),
         content:
-            const Text("This function will allow editing profile information."),
+        const Text("This function will allow editing profile information."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -271,7 +271,7 @@ class ProfileController {
                 TextFormField(
                   controller: degreeController,
                   decoration:
-                      const InputDecoration(labelText: "Degree/Certificate *"),
+                  const InputDecoration(labelText: "Degree/Certificate *"),
                   validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 TextFormField(
@@ -294,7 +294,7 @@ class ProfileController {
                 TextFormField(
                   controller: gradeController,
                   decoration:
-                      const InputDecoration(labelText: "Grade/GPA (optional)"),
+                  const InputDecoration(labelText: "Grade/GPA (optional)"),
                 ),
               ],
             ),
@@ -350,13 +350,13 @@ class ProfileController {
                 TextFormField(
                   controller: companyController,
                   decoration:
-                      const InputDecoration(labelText: "Company Name *"),
+                  const InputDecoration(labelText: "Company Name *"),
                   validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 TextFormField(
                   controller: positionController,
                   decoration:
-                      const InputDecoration(labelText: "Position/Title *"),
+                  const InputDecoration(labelText: "Position/Title *"),
                   validator: (value) => value!.isEmpty ? "Required" : null,
                 ),
                 TextFormField(
@@ -374,18 +374,18 @@ class ProfileController {
                 TextFormField(
                   controller: supervisorController,
                   decoration:
-                      const InputDecoration(labelText: "Supervisor Name"),
+                  const InputDecoration(labelText: "Supervisor Name"),
                 ),
                 TextFormField(
                   controller: yearsController,
                   decoration:
-                      const InputDecoration(labelText: "Years of Experience"),
+                  const InputDecoration(labelText: "Years of Experience"),
                   keyboardType: TextInputType.number,
                 ),
                 TextFormField(
                   controller: responsibilitiesController,
                   decoration:
-                      const InputDecoration(labelText: "Responsibilities"),
+                  const InputDecoration(labelText: "Responsibilities"),
                   maxLines: 3,
                 ),
               ],

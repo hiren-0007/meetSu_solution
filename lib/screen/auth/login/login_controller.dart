@@ -8,6 +8,8 @@ import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/map/LocationService.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 
+import '../../../services/firebase/firebase_messaging_service.dart';
+
 class LoginController {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -51,6 +53,10 @@ class LoginController {
         await SharedPrefsService.instance.saveLoginResponse(loginResponse);
 
         await SharedPrefsService.instance.saveUsername(username);
+
+        final firebaseMessagingService = FirebaseMessagingService();
+        await firebaseMessagingService.sendTokenToServerAfterLogin();
+
 
         if (loginResponse.isTempLogin == 1) {
           debugPrint("Temporary login detected, user should change password");

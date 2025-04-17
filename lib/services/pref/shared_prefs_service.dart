@@ -9,6 +9,9 @@ class SharedPrefsService {
   // Keys for storing data
   static const String _accessTokenKey = 'access_token';
   static const String _isTempLoginKey = 'is_temp_login';
+  static const String _usernameKey = 'username';
+  static const String _fcmTokenKey = 'fcm_token';
+  static const String _userIdKey = 'user_id';
 
   // Private constructor
   SharedPrefsService._();
@@ -30,6 +33,52 @@ class SharedPrefsService {
     return _instance!;
   }
 
+  /// Static methods for direct access without using the instance
+  static Future<bool> setString(String key, String value) async {
+    if (!_initialized) {
+      throw StateError('SharedPrefsService not initialized. Call init() first.');
+    }
+    return await _prefs.setString(key, value);
+  }
+
+  static String? getString(String key) {
+    if (!_initialized) {
+      throw StateError('SharedPrefsService not initialized. Call init() first.');
+    }
+    return _prefs.getString(key);
+  }
+
+  /// Saves the FCM token for push notifications
+  static Future<bool> saveFcmToken(String token) async {
+    if (!_initialized) {
+      throw StateError('SharedPrefsService not initialized. Call init() first.');
+    }
+    return await _prefs.setString(_fcmTokenKey, token);
+  }
+
+  /// Gets the FCM token
+  static String? getFcmToken() {
+    if (!_initialized) {
+      throw StateError('SharedPrefsService not initialized. Call init() first.');
+    }
+    return _prefs.getString(_fcmTokenKey);
+  }
+
+  /// Saves the user ID
+  static Future<bool> saveUserId(String userId) async {
+    if (!_initialized) {
+      throw StateError('SharedPrefsService not initialized. Call init() first.');
+    }
+    return await _prefs.setString(_userIdKey, userId);
+  }
+
+  /// Gets the user ID
+  static String? getUserId() {
+    if (!_initialized) {
+      throw StateError('SharedPrefsService not initialized. Call init() first.');
+    }
+    return _prefs.getString(_userIdKey);
+  }
 
   /// Saves the access token to shared preferences
   Future<bool> saveAccessToken(String token) async {
@@ -81,9 +130,6 @@ class SharedPrefsService {
   Future<bool> clear() async {
     return await _prefs.clear();
   }
-
-  // Add these methods to SharedPrefsService
-  static const String _usernameKey = 'username';
 
   Future<bool> saveUsername(String username) async {
     return await _prefs.setString(_usernameKey, username);

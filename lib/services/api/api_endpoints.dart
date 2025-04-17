@@ -39,4 +39,6 @@ class ApiEndpoints {
   static const String checkIn = 'flutter/checkin';
 
   static const String checkOut = 'flutter/checkout';
+
+  static const String fcmToken = 'flutter/user-token';
 }

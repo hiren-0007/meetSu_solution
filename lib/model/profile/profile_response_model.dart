@@ -1,32 +1,32 @@
 class ProfileResponseModel {
   final ProfileData data;
-  final String city;
-  final String province;
-  final String country;
-  final String resumeUrl;
+  final String? city;
+  final String? province;
+  final String? country;
+  final String? resumeUrl;
   final List<Education> education;
   final List<Experience> experience;
-  final String credentialUrl;
+  final String? credentialUrl;
   final List<Credential> credentials;
   final Map<String, CategoryWiseAnswer> categoryWiseAnswer;
   final List<AptitudeQuestion> aptitude;
-  final String photoUrl;
-  final String googleMapKey;
+  final String? photoUrl;
+  final String? googleMapKey;
 
   ProfileResponseModel({
     required this.data,
-    required this.city,
-    required this.province,
-    required this.country,
-    required this.resumeUrl,
+    this.city,
+    this.province,
+    this.country,
+    this.resumeUrl,
     required this.education,
     required this.experience,
-    required this.credentialUrl,
+    this.credentialUrl,
     required this.credentials,
     required this.categoryWiseAnswer,
     required this.aptitude,
-    required this.photoUrl,
-    required this.googleMapKey,
+    this.photoUrl,
+    this.googleMapKey,
   });
 
   factory ProfileResponseModel.fromJson(Map<String, dynamic> json) {
@@ -34,7 +34,7 @@ class ProfileResponseModel {
     List<Education> educationList = [];
     if (json['education'] != null) {
       educationList = List<Education>.from(
-        json['education'].map((e) => Education.fromJson(e)),
+        (json['education'] as List).map((e) => Education.fromJson(e)),
       );
     }
 
@@ -42,7 +42,7 @@ class ProfileResponseModel {
     List<Experience> experienceList = [];
     if (json['experience'] != null) {
       experienceList = List<Experience>.from(
-        json['experience'].map((e) => Experience.fromJson(e)),
+        (json['experience'] as List).map((e) => Experience.fromJson(e)),
       );
     }
 
@@ -50,7 +50,7 @@ class ProfileResponseModel {
     List<Credential> credentialsList = [];
     if (json['credentials'] != null) {
       credentialsList = List<Credential>.from(
-        json['credentials'].map((e) => Credential.fromJson(e)),
+        (json['credentials'] as List).map((e) => Credential.fromJson(e)),
       );
     }
 
@@ -58,32 +58,37 @@ class ProfileResponseModel {
     List<AptitudeQuestion> aptitudeList = [];
     if (json['aptitude'] != null) {
       aptitudeList = List<AptitudeQuestion>.from(
-        json['aptitude'].map((e) => AptitudeQuestion.fromJson(e)),
+        (json['aptitude'] as List).map((e) => AptitudeQuestion.fromJson(e)),
       );
     }
 
     // Parse category wise answers
     Map<String, CategoryWiseAnswer> categoryAnswers = {};
-    if (json['category_wise_answer'] != null) {
-      json['category_wise_answer'].forEach((key, value) {
-        categoryAnswers[key] = CategoryWiseAnswer.fromJson(value);
+    if (json['category_wise_answer'] != null && json['category_wise_answer'] is Map) {
+      (json['category_wise_answer'] as Map).forEach((key, value) {
+        if (value != null) {
+          categoryAnswers[key.toString()] = CategoryWiseAnswer.fromJson({
+            ...value as Map<String, dynamic>,
+            'category': key.toString(), // Add the category key
+          });
+        }
       });
     }
 
     return ProfileResponseModel(
       data: ProfileData.fromJson(json['data']),
-      city: json['city'] ?? '',
-      province: json['province'] ?? '',
-      country: json['country'] ?? '',
-      resumeUrl: json['resume_url'] ?? '',
+      city: json['city']?.toString(),
+      province: json['province']?.toString(),
+      country: json['country']?.toString(),
+      resumeUrl: json['resume_url']?.toString(),
       education: educationList,
       experience: experienceList,
-      credentialUrl: json['credential_url'] ?? '',
+      credentialUrl: json['credential_url']?.toString(),
       credentials: credentialsList,
       categoryWiseAnswer: categoryAnswers,
       aptitude: aptitudeList,
-      photoUrl: json['photo_url'] ?? '',
-      googleMapKey: json['google_map_key'] ?? '',
+      photoUrl: json['photo_url']?.toString(),
+      googleMapKey: json['google_map_key']?.toString(),
     );
   }
 
@@ -114,64 +119,64 @@ class ProfileData {
   final String firstName;
   final String lastName;
   final String? photo;
-  final String homeNumber;
-  final String mobileNumber;
-  final String email;
-  final String passwordHash;
-  final String authKey;
-  final String accessToken;
-  final String pushToken;
+  final String? homeNumber;
+  final String? mobileNumber;
+  final String? email;
+  final String? passwordHash;
+  final String? authKey;
+  final String? accessToken;
+  final String? pushToken;
   final int tokenDeviceType;
-  final String address;
-  final String address2;
-  final String postalCode;
-  final int city;
-  final int province;
-  final int country;
-  final String resume;
+  final String? address;
+  final String? address2;
+  final String? postalCode;
+  final dynamic city; // Keep as dynamic
+  final dynamic province; // Keep as dynamic
+  final dynamic country; // Keep as dynamic
+  final String? resume;
   final String? authorize;
-  final String dob;
-  final String gender;
-  final String maritalStatus;
-  final String language;
-  final String sinExpiry;
-  final String? sinStatus;
-  final String sinNo;
+  final String? dob;
+  final String? gender;
+  final String? maritalStatus;
+  final String? language;
+  final String? sinExpiry;
+  final dynamic sinStatus;
+  final String? sinNo;
   final int defaultPosition;
-  final String? applicantStatus;
-  final String applyDate;
+  final dynamic applicantStatus;
+  final String? applyDate;
   final String? acceptedDate;
   final int applyPosition;
-  final String availableDate;
-  final String startDate;
+  final String? availableDate;
+  final String? startDate;
   final String? endDate;
   final int origin;
-  final String emergencyName;
-  final String emergencyPhone;
-  final String emergencyEmail;
-  final String emergencyRelationship;
-  final String emergencyLanguage;
-  final String referredBy;
-  final String referredRelationship;
-  final String workInCanada;
-  final String? note;
+  final String? emergencyName;
+  final String? emergencyPhone;
+  final String? emergencyEmail;
+  final String? emergencyRelationship;
+  final String? emergencyLanguage;
+  final String? referredBy;
+  final String? referredRelationship;
+  final String? workInCanada;
+  final dynamic note;
   final int mailSent;
-  final String? confirmedAt;
-  final String? unconfirmedEmail;
+  final dynamic confirmedAt;
+  final dynamic unconfirmedEmail;
   final int blockedAt;
-  final String? registrationIp;
+  final dynamic registrationIp;
   final int flags;
   final int registerType;
   final int testPercentage;
-  final String createdAt;
-  final String updatedAt;
+  final String? createdAt;
+  final String? updatedAt;
   final int lastLoginAt;
-  final String status;
-  final String isOnDuty;
+  final String? status;
+  final String? isOnDuty;
   final int score;
-  final String scheduleType;
-  final String? overrideHours;
-  final String? overrideStartTime;
+  final String? scheduleType;
+  final dynamic overrideHours;
+  final dynamic overrideStartTime;
 
   ProfileData({
     required this.id,
@@ -181,46 +186,46 @@ class ProfileData {
     required this.firstName,
     required this.lastName,
     this.photo,
-    required this.homeNumber,
-    required this.mobileNumber,
-    required this.email,
-    required this.passwordHash,
-    required this.authKey,
-    required this.accessToken,
-    required this.pushToken,
+    this.homeNumber,
+    this.mobileNumber,
+    this.email,
+    this.passwordHash,
+    this.authKey,
+    this.accessToken,
+    this.pushToken,
     required this.tokenDeviceType,
-    required this.address,
-    required this.address2,
-    required this.postalCode,
+    this.address,
+    this.address2,
+    this.postalCode,
     required this.city,
     required this.province,
     required this.country,
-    required this.resume,
+    this.resume,
     this.authorize,
-    required this.dob,
-    required this.gender,
-    required this.maritalStatus,
-    required this.language,
-    required this.sinExpiry,
+    this.dob,
+    this.gender,
+    this.maritalStatus,
+    this.language,
+    this.sinExpiry,
     this.sinStatus,
-    required this.sinNo,
+    this.sinNo,
     required this.defaultPosition,
     this.applicantStatus,
-    required this.applyDate,
+    this.applyDate,
     this.acceptedDate,
     required this.applyPosition,
-    required this.availableDate,
-    required this.startDate,
+    this.availableDate,
+    this.startDate,
     this.endDate,
     required this.origin,
-    required this.emergencyName,
-    required this.emergencyPhone,
-    required this.emergencyEmail,
-    required this.emergencyRelationship,
-    required this.emergencyLanguage,
-    required this.referredBy,
-    required this.referredRelationship,
-    required this.workInCanada,
+    this.emergencyName,
+    this.emergencyPhone,
+    this.emergencyEmail,
+    this.emergencyRelationship,
+    this.emergencyLanguage,
+    this.referredBy,
+    this.referredRelationship,
+    this.workInCanada,
     this.note,
     required this.mailSent,
     this.confirmedAt,
@@ -230,13 +235,13 @@ class ProfileData {
     required this.flags,
     required this.registerType,
     required this.testPercentage,
-    required this.createdAt,
-    required this.updatedAt,
+    this.createdAt,
+    this.updatedAt,
     required this.lastLoginAt,
-    required this.status,
-    required this.isOnDuty,
+    this.status,
+    this.isOnDuty,
     required this.score,
-    required this.scheduleType,
+    this.scheduleType,
     this.overrideHours,
     this.overrideStartTime,
   });
@@ -250,62 +255,62 @@ class ProfileData {
       firstName: json['first_name'] ?? '',
       lastName: json['last_name'] ?? '',
       photo: json['photo'],
-      homeNumber: json['home_number'] ?? '',
-      mobileNumber: json['mobile_number'] ?? '',
-      email: json['email'] ?? '',
-      passwordHash: json['password_hash'] ?? '',
-      authKey: json['auth_key'] ?? '',
-      accessToken: json['access_token'] ?? '',
-      pushToken: json['push_token'] ?? '',
+      homeNumber: json['home_number']?.toString(),
+      mobileNumber: json['mobile_number']?.toString(),
+      email: json['email']?.toString(),
+      passwordHash: json['password_hash']?.toString(),
+      authKey: json['auth_key']?.toString(),
+      accessToken: json['access_token']?.toString(),
+      pushToken: json['push_token']?.toString(),
       tokenDeviceType: json['token_device_type'] ?? 0,
-      address: json['address'] ?? '',
-      address2: json['address_2'] ?? '',
-      postalCode: json['postal_code'] ?? '',
-      city: json['city'] ?? 0,
+      address: json['address']?.toString(),
+      address2: json['address_2']?.toString(),
+      postalCode: json['postal_code']?.toString(),
+      city: json['city'], // Keep as dynamic
       province: json['province'] ?? 0,
       country: json['country'] ?? 0,
-      resume: json['resume'] ?? '',
-      authorize: json['authorize'],
-      dob: json['dob'] ?? '',
-      gender: json['gender'] ?? '',
-      maritalStatus: json['marital_status'] ?? '',
-      language: json['language'] ?? '',
-      sinExpiry: json['sin_expiry'] ?? '',
+      resume: json['resume']?.toString(),
+      authorize: json['authorize']?.toString(),
+      dob: json['dob']?.toString(),
+      gender: json['gender']?.toString(),
+      maritalStatus: json['marital_status']?.toString(),
+      language: json['language']?.toString(),
+      sinExpiry: json['sin_expiry']?.toString(),
       sinStatus: json['sin_status'],
-      sinNo: json['sin_no'] ?? '',
+      sinNo: json['sin_no']?.toString(),
       defaultPosition: json['default_position'] ?? 0,
       applicantStatus: json['applicant_status'],
-      applyDate: json['apply_date'] ?? '',
-      acceptedDate: json['accepted_date'],
+      applyDate: json['apply_date']?.toString(),
+      acceptedDate: json['accepted_date']?.toString(),
       applyPosition: json['apply_position'] ?? 0,
-      availableDate: json['available_date'] ?? '',
-      startDate: json['start_date'] ?? '',
-      endDate: json['end_date'],
+      availableDate: json['available_date']?.toString(),
+      startDate: json['start_date']?.toString(),
+      endDate: json['end_date']?.toString(),
       origin: json['origin'] ?? 0,
-      emergencyName: json['emergency_name'] ?? '',
-      emergencyPhone: json['emergency_phone'] ?? '',
-      emergencyEmail: json['emergency_email'] ?? '',
-      emergencyRelationship: json['emergency_relationship'] ?? '',
-      emergencyLanguage: json['emergency_language'] ?? '',
-      referredBy: json['referred_by'] ?? '',
-      referredRelationship: json['referred_relationship'] ?? '',
-      workInCanada: json['work_in_canada'] ?? '',
+      emergencyName: json['emergency_name']?.toString(),
+      emergencyPhone: json['emergency_phone']?.toString(),
+      emergencyEmail: json['emergency_email']?.toString(),
+      emergencyRelationship: json['emergency_relationship']?.toString(),
+      emergencyLanguage: json['emergency_language']?.toString(),
+      referredBy: json['referred_by']?.toString(),
+      referredRelationship: json['referred_relationship']?.toString(),
+      workInCanada: json['work_in_canada']?.toString(),
       note: json['note'],
       mailSent: json['mail_sent'] ?? 0,
-      confirmedAt: json['confirmed_at'],
-      unconfirmedEmail: json['unconfirmed_email'],
+      confirmedAt: json['confirmed_at']?.toString(),
+      unconfirmedEmail: json['unconfirmed_email']?.toString(),
       blockedAt: json['blocked_at'] ?? 0,
       registrationIp: json['registration_ip'],
       flags: json['flags'] ?? 0,
       registerType: json['register_type'] ?? 0,
       testPercentage: json['test_percentage'] ?? 0,
-      createdAt: json['created_at'] ?? '',
-      updatedAt: json['updated_at'] ?? '',
+      createdAt: json['created_at']?.toString(),
+      updatedAt: json['updated_at']?.toString(),
       lastLoginAt: json['last_login_at'] ?? 0,
-      status: json['status'] ?? '',
-      isOnDuty: json['is_on_duty'] ?? '',
+      status: json['status']?.toString(),
+      isOnDuty: json['is_on_duty']?.toString(),
       score: json['score'] ?? 0,
-      scheduleType: json['schedule_type'] ?? '',
+      scheduleType: json['schedule_type']?.toString(),
       overrideHours: json['override_hours'],
       overrideStartTime: json['override_start_time'],
     );
@@ -385,25 +390,25 @@ class ProfileData {
 class Education {
   final int id;
   final int applicantId;
-  final String collegeName;
-  final String courseName;
-  final String graduateYear;
+  final String? collegeName;
+  final String? courseName;
+  final String? graduateYear;
 
   Education({
     required this.id,
     required this.applicantId,
-    required this.collegeName,
-    required this.courseName,
-    required this.graduateYear,
+    this.collegeName,
+    this.courseName,
+    this.graduateYear,
   });
 
   factory Education.fromJson(Map<String, dynamic> json) {
     return Education(
       id: json['id'] ?? 0,
       applicantId: json['applicant_id'] ?? 0,
-      collegeName: json['college_name'] ?? '',
-      courseName: json['course_name'] ?? '',
-      graduateYear: json['graduate_year'] ?? '',
+      collegeName: json['college_name']?.toString(),
+      courseName: json['course_name']?.toString(),
+      graduateYear: json['graduate_year']?.toString(),
     );
   }
 
@@ -421,31 +426,31 @@ class Education {
 class Experience {
   final int id;
   final int applicantId;
-  final String companyName;
-  final String positionName;
-  final String? expiryDate;
-  final int noExperience;
-  final String startDate;
-  final String endDate;
-  final String nameSupervisor;
-  final String reasonForLeaving;
+  final String? companyName;
+  final String? positionName;
+  final dynamic expiryDate;
+  final dynamic noExperience; // Keep as dynamic to handle double values
+  final String? startDate;
+  final String? endDate;
+  final String? nameSupervisor;
+  final String? reasonForLeaving;
   final int authorize;
-  final String referanceEmail;
-  final String? referanceRemark;
+  final String? referanceEmail;
+  final dynamic referanceRemark;
 
   Experience({
     required this.id,
     required this.applicantId,
-    required this.companyName,
-    required this.positionName,
+    this.companyName,
+    this.positionName,
     this.expiryDate,
     required this.noExperience,
-    required this.startDate,
-    required this.endDate,
-    required this.nameSupervisor,
-    required this.reasonForLeaving,
+    this.startDate,
+    this.endDate,
+    this.nameSupervisor,
+    this.reasonForLeaving,
     required this.authorize,
-    required this.referanceEmail,
+    this.referanceEmail,
     this.referanceRemark,
   });
 
@@ -453,16 +458,16 @@ class Experience {
     return Experience(
       id: json['id'] ?? 0,
       applicantId: json['applicant_id'] ?? 0,
-      companyName: json['company_name'] ?? '',
-      positionName: json['position_name'] ?? '',
+      companyName: json['company_name']?.toString(),
+      positionName: json['position_name']?.toString(),
       expiryDate: json['expiry_date'],
-      noExperience: json['no_experience'] ?? 0,
-      startDate: json['start_date'] ?? '',
-      endDate: json['end_date'] ?? '',
-      nameSupervisor: json['name_supervisor'] ?? '',
-      reasonForLeaving: json['reason_for_leaving'] ?? '',
+      noExperience: json['no_experience'], // Keep as dynamic
+      startDate: json['start_date']?.toString(),
+      endDate: json['end_date']?.toString(),
+      nameSupervisor: json['name_supervisor']?.toString(),
+      reasonForLeaving: json['reason_for_leaving']?.toString(),
       authorize: json['authorize'] ?? 0,
-      referanceEmail: json['referance_email'] ?? '',
+      referanceEmail: json['referance_email']?.toString(),
       referanceRemark: json['referance_remark'],
     );
   }
@@ -487,18 +492,18 @@ class Experience {
 }
 
 class Credential {
-  final String image;
-  final String document;
+  final String? image;
+  final String? document;
 
   Credential({
-    required this.image,
-    required this.document,
+    this.image,
+    this.document,
   });
 
   factory Credential.fromJson(Map<String, dynamic> json) {
     return Credential(
-      image: json['image'] ?? '',
-      document: json['document'] ?? '',
+      image: json['image']?.toString(),
+      document: json['document']?.toString(),
     );
   }
 
@@ -514,18 +519,24 @@ class CategoryWiseAnswer {
   final String category;
   final int totalQuestion;
   final int correctAnswer;
+  final int wrongAnswer;
+  final int totalPoints;
 
   CategoryWiseAnswer({
     required this.category,
     required this.totalQuestion,
     required this.correctAnswer,
+    this.wrongAnswer = 0,
+    this.totalPoints = 0,
   });
 
   factory CategoryWiseAnswer.fromJson(Map<String, dynamic> json) {
     return CategoryWiseAnswer(
-      category: json['category'] ?? '',
+      category: json['category']?.toString() ?? '',
       totalQuestion: json['total_question'] ?? 0,
       correctAnswer: json['correct_answer'] ?? 0,
+      wrongAnswer: json['wrong_answer'] ?? 0,
+      totalPoints: json['total_points'] ?? 0,
     );
   }
 
@@ -534,43 +545,45 @@ class CategoryWiseAnswer {
       'category': category,
       'total_question': totalQuestion,
       'correct_answer': correctAnswer,
+      'wrong_answer': wrongAnswer,
+      'total_points': totalPoints,
     };
   }
 }
 
 class AptitudeQuestion {
   final String id;
-  final String category;
-  final String question;
-  final String answer1;
-  final String answer2;
-  final String answer3;
-  final String answer4;
-  final String correctAnswer;
+  final String? category;
+  final String? question;
+  final String? answer1;
+  final String? answer2;
+  final String? answer3;
+  final String? answer4;
+  final String? correctAnswer;
   final int givenAnswer;
 
   AptitudeQuestion({
     required this.id,
-    required this.category,
-    required this.question,
-    required this.answer1,
-    required this.answer2,
-    required this.answer3,
-    required this.answer4,
-    required this.correctAnswer,
+    this.category,
+    this.question,
+    this.answer1,
+    this.answer2,
+    this.answer3,
+    this.answer4,
+    this.correctAnswer,
     required this.givenAnswer,
   });
 
   factory AptitudeQuestion.fromJson(Map<String, dynamic> json) {
     return AptitudeQuestion(
-      id: json['id'] ?? '',
-      category: json['category'] ?? '',
-      question: json['question'] ?? '',
-      answer1: json['answer1'] ?? '',
-      answer2: json['answer2'] ?? '',
-      answer3: json['answer3'] ?? '',
-      answer4: json['answer4'] ?? '',
-      correctAnswer: json['correct_answer'] ?? '',
+      id: json['id']?.toString() ?? '',
+      category: json['category']?.toString(),
+      question: json['question']?.toString(),
+      answer1: json['answer1']?.toString(),
+      answer2: json['answer2']?.toString(),
+      answer3: json['answer3']?.toString(),
+      answer4: json['answer4']?.toString(),
+      correctAnswer: json['correct_answer']?.toString(),
       givenAnswer: json['given_answer'] ?? 0,
     );
   }

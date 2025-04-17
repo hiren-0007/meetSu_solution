@@ -121,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onTap: () => Navigator.pop(context),
                             child: Container(
                               padding:
-                                  const EdgeInsets.all(AppTheme.iconPadding),
+                              const EdgeInsets.all(AppTheme.iconPadding),
                               decoration: AppTheme.backButtonDecoration,
                               child: const Icon(
                                 Icons.arrow_back,
@@ -149,7 +149,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 borderRadius: BorderRadius.circular(15.0),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.1),
+                                    color: Colors.black.withOpacity(0.1),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
@@ -176,8 +176,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ValueListenableBuilder(
                       valueListenable: _controller.profileData,
                       builder: (context, profileData, _) {
-                        String? photoUrl =
-                            "https://meetsusolutions.com/${profileData?.photoUrl}";
+                        String? photoUrl = profileData?.photoUrl != null
+                            ? "https://meetsusolutions.com/${profileData?.photoUrl}"
+                            : null;
 
                         return Container(
                           margin: const EdgeInsets.symmetric(
@@ -189,10 +190,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               : AppTheme.avatarWithoutPhotoDecoration,
                           child: photoUrl == null || photoUrl.isEmpty
                               ? const Icon(
-                                  Icons.person,
-                                  color: AppTheme.primaryColor,
-                                  size: AppTheme.largeIconSize,
-                                )
+                            Icons.person,
+                            color: AppTheme.primaryColor,
+                            size: AppTheme.largeIconSize,
+                          )
                               : null,
                         );
                       },
@@ -235,7 +236,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     }
                                   },
                                   items:
-                                      List.generate(_tabTitles.length, (index) {
+                                  List.generate(_tabTitles.length, (index) {
                                     return DropdownMenuItem<int>(
                                       value: index,
                                       child: Text(_tabTitles[index]),
@@ -300,7 +301,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Get credential path from profileData
     String credentialPath = '';
     if (_controller.profileData.value != null) {
-      credentialPath = _controller.profileData.value!.credentialUrl;
+      credentialPath = _controller.profileData.value!.credentialUrl ?? '';
     } else {
       // Default path
       credentialPath = '/applicant/web/uploads/applicant_credential/big/';
@@ -368,9 +369,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
 
         String testScore =
-            totalQuestions > 0 ? "$correctAnswers/$totalQuestions" : "0/0";
+        totalQuestions > 0 ? "$correctAnswers/$totalQuestions" : "0/0";
         double scorePercentage =
-            totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+        totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,7 +435,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 itemCount: profileData.categoryWiseAnswer.length,
                 itemBuilder: (context, index) {
                   final entry =
-                      profileData.categoryWiseAnswer.entries.elementAt(index);
+                  profileData.categoryWiseAnswer.entries.elementAt(index);
                   final categoryKey = entry.key;
                   final category = entry.value;
 
@@ -495,21 +496,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   final question = profileData.aptitude[index];
 
                   int correctAnsIndex =
-                      int.tryParse(question.correctAnswer) ?? 1;
+                      int.tryParse(question.correctAnswer ?? "1") ?? 1;
                   int givenAnsIndex = question.givenAnswer;
 
                   bool isCorrect = correctAnsIndex == givenAnsIndex;
 
                   List<String> answerOptions = [
-                    question.answer1,
-                    question.answer2,
-                    question.answer3,
-                    question.answer4,
+                    question.answer1 ?? "",
+                    question.answer2 ?? "",
+                    question.answer3 ?? "",
+                    question.answer4 ?? "",
                   ];
 
                   return Container(
                     margin:
-                        const EdgeInsets.only(bottom: AppTheme.contentSpacing),
+                    const EdgeInsets.only(bottom: AppTheme.contentSpacing),
                     padding: const EdgeInsets.all(AppTheme.contentSpacing),
                     decoration: AppTheme.questionCardDecoration,
                     child: Column(
@@ -539,12 +540,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    question.question,
+                                    question.question ?? "No question available",
                                     style: AppTheme.questionStyle,
                                   ),
                                   const SizedBox(height: AppTheme.microSpacing),
                                   Text(
-                                    "Category: ${question.category}",
+                                    "Category: ${question.category ?? 'Unknown'}",
                                     style: AppTheme.questionCategoryStyle,
                                   ),
                                 ],
@@ -586,10 +587,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             decoration: BoxDecoration(
                               color: optionColor,
                               borderRadius:
-                                  BorderRadius.circular(AppTheme.miniRadius),
+                              BorderRadius.circular(AppTheme.miniRadius),
                               border: Border.all(
                                 color: isGivenOption ||
-                                        (isCorrectOption && !isCorrect)
+                                    (isCorrectOption && !isCorrect)
                                     ? textColor.withOpacity(0.5)
                                     : AppTheme.categoryCardBorderColor,
                               ),
@@ -604,13 +605,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     shape: BoxShape.circle,
                                     border: Border.all(
                                       color: isGivenOption ||
-                                              (isCorrectOption && !isCorrect)
+                                          (isCorrectOption && !isCorrect)
                                           ? textColor
                                           : AppTheme.categoryCardBorderColor,
                                       width: 1.5,
                                     ),
                                     color: isGivenOption ||
-                                            (isCorrectOption && !isCorrect)
+                                        (isCorrectOption && !isCorrect)
                                         ? Colors.transparent
                                         : Colors.transparent,
                                   ),
@@ -620,7 +621,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       fontSize: AppTheme.textSizeExtraSmall,
                                       fontWeight: FontWeight.bold,
                                       color: isGivenOption ||
-                                              (isCorrectOption && !isCorrect)
+                                          (isCorrectOption && !isCorrect)
                                           ? textColor
                                           : AppTheme.textSecondaryColor,
                                     ),
@@ -633,9 +634,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     style: TextStyle(
                                       color: textColor,
                                       fontWeight:
-                                          isCorrectOption || isGivenOption
-                                              ? FontWeight.w500
-                                              : FontWeight.normal,
+                                      isCorrectOption || isGivenOption
+                                          ? FontWeight.w500
+                                          : FontWeight.normal,
                                     ),
                                   ),
                                 ),
@@ -717,115 +718,115 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Expanded(
                   child: displayList.isEmpty
                       ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.school_outlined,
+                          size: 48,
+                          color: Colors.grey.withOpacity(0.6),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          "No education information added yet",
+                          style: AppTheme.emptyStateStyle,
+                        ),
+                      ],
+                    ),
+                  )
+                      : ListView.builder(
+                    itemCount: displayList.length,
+                    itemBuilder: (context, index) {
+                      // Handle both Education model from API and EducationInfo from controller
+                      final education = displayList[index];
+
+                      // Extract data based on which model we're dealing with
+                      final String degree = education is Education
+                          ? education.courseName ?? ""
+                          : (education as EducationInfo).degree;
+
+                      final String institution = education is Education
+                          ? education.collegeName ?? ""
+                          : (education as EducationInfo).institution;
+
+                      final String startDate = education is Education
+                          ? ""
+                          : // API model doesn't have startDate
+                      (education as EducationInfo).startDate;
+
+                      final String endDate = education is Education
+                          ? education.graduateYear ?? ""
+                          : (education as EducationInfo).endDate;
+
+                      final String grade = education is Education
+                          ? ""
+                          : // API model doesn't have grade
+                      (education as EducationInfo).grade;
+
+                      return Card(
+                        elevation: 3,
+                        margin: const EdgeInsets.only(
+                            bottom: AppTheme.contentSpacing,
+                            left: 2,
+                            right: 2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(
+                              AppTheme.contentSpacing),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.white,
+                                Colors.blue.withOpacity(0.05),
+                              ],
+                            ),
+                          ),
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                Icons.school_outlined,
-                                size: 48,
-                                color: Colors.grey.withOpacity(0.6),
+                              _buildLabeledField(
+                                label: education is Education
+                                    ? "Course Name"
+                                    : "Degree",
+                                value: degree,
+                                icon: Icons.school,
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                "No education information added yet",
-                                style: AppTheme.emptyStateStyle,
+                              const SizedBox(height: 12),
+
+                              _buildLabeledField(
+                                label: "Institution",
+                                value: institution,
+                                icon: Icons.account_balance,
                               ),
+                              const SizedBox(height: 12),
+
+                              _buildLabeledField(
+                                label: "Duration",
+                                value:
+                                "${startDate.isNotEmpty ? startDate : 'N/A'} - ${endDate.isNotEmpty ? endDate : 'N/A'}",
+                                icon: Icons.calendar_today,
+                              ),
+
+                              // Grade field with label (if available)
+                              if (grade.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                _buildLabeledField(
+                                  label: "Grade",
+                                  value: grade,
+                                  icon: Icons.grade,
+                                ),
+                              ],
                             ],
                           ),
-                        )
-                      : ListView.builder(
-                          itemCount: displayList.length,
-                          itemBuilder: (context, index) {
-                            // Handle both Education model from API and EducationInfo from controller
-                            final education = displayList[index];
-
-                            // Extract data based on which model we're dealing with
-                            final String degree = education is Education
-                                ? education.courseName
-                                : (education as EducationInfo).degree;
-
-                            final String institution = education is Education
-                                ? education.collegeName
-                                : (education as EducationInfo).institution;
-
-                            final String startDate = education is Education
-                                ? ""
-                                : // API model doesn't have startDate
-                                (education as EducationInfo).startDate;
-
-                            final String endDate = education is Education
-                                ? education.graduateYear
-                                : (education as EducationInfo).endDate;
-
-                            final String grade = education is Education
-                                ? ""
-                                : // API model doesn't have grade
-                                (education as EducationInfo).grade;
-
-                            return Card(
-                              elevation: 3,
-                              margin: const EdgeInsets.only(
-                                  bottom: AppTheme.contentSpacing,
-                                  left: 2,
-                                  right: 2),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Container(
-                                padding: const EdgeInsets.all(
-                                    AppTheme.contentSpacing),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Colors.white,
-                                      Colors.blue.withOpacity(0.05),
-                                    ],
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _buildLabeledField(
-                                      label: education is Education
-                                          ? "Course Name"
-                                          : "Degree",
-                                      value: degree,
-                                      icon: Icons.school,
-                                    ),
-                                    const SizedBox(height: 12),
-
-                                    _buildLabeledField(
-                                      label: "Institution",
-                                      value: institution,
-                                      icon: Icons.account_balance,
-                                    ),
-                                    const SizedBox(height: 12),
-
-                                    _buildLabeledField(
-                                      label: "Duration",
-                                      value:
-                                          "${startDate.isNotEmpty ? startDate : 'N/A'} - ${endDate.isNotEmpty ? endDate : 'N/A'}",
-                                      icon: Icons.calendar_today,
-                                    ),
-
-                                    // Grade field with label (if available)
-                                    if (grade.isNotEmpty) ...[
-                                      const SizedBox(height: 12),
-                                      _buildLabeledField(
-                                        label: "Grade",
-                                        value: grade,
-                                        icon: Icons.grade,
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
                         ),
+                      );
+                    },
+                  ),
                 ),
               ],
             );
@@ -837,222 +838,222 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildExperienceTab() {
     return ValueListenableBuilder(
-      valueListenable: _controller.profileData,
-      builder: (context, profileData, _) {
-        final experienceList = profileData?.experience ?? [];
+        valueListenable: _controller.profileData,
+        builder: (context, profileData, _) {
+      final experienceList = profileData?.experience ?? [];
 
-        // Also use experienceList ValueNotifier as a fallback
-        return ValueListenableBuilder(
-            valueListenable: _controller.experienceList,
-            builder: (context, controllerExperienceList, _) {
-              final displayList = experienceList.isNotEmpty
-                  ? experienceList
-                  : controllerExperienceList;
+      // Also use experienceList ValueNotifier as a fallback
+      return ValueListenableBuilder(
+          valueListenable: _controller.experienceList,
+          builder: (context, controllerExperienceList, _) {
+        final displayList = experienceList.isNotEmpty
+            ? experienceList
+            : controllerExperienceList;
 
-              return Column(
-                children: [
-                  Expanded(
-                    child: displayList.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.work_outline,
-                                  size: 48,
-                                  color: Colors.grey.withOpacity(0.6),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  "No experience information added yet",
-                                  style: AppTheme.emptyStateStyle,
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: displayList.length,
-                            itemBuilder: (context, index) {
-                              // Handle both Experience model from API and ExperienceInfo from controller
-                              final experience = displayList[index];
+        return Column(
+          children: [
+        Expanded(
+        child: displayList.isEmpty
+        ? Center(
+        child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.work_outline,
+              size: 48,
+              color: Colors.grey.withOpacity(0.6),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              "No experience information added yet",
+              style: AppTheme.emptyStateStyle,
+            ),
+          ],
+        ),
+    )
+        : ListView.builder(
+    itemCount: displayList.length,
+    itemBuilder: (context, index) {
+    // Handle both Experience model from API and ExperienceInfo from controller
+    final experience = displayList[index];
 
-                              // Extract data based on which model we're dealing with
-                              final String company = experience is Experience
-                                  ? experience.companyName
-                                  : (experience as ExperienceInfo).company;
+    // Extract data based on which model we're dealing with
+    final String company = experience is Experience
+    ? experience.companyName ?? ""
+        : (experience as ExperienceInfo).company;
 
-                              final String position = experience is Experience
-                                  ? experience.positionName
-                                  : (experience as ExperienceInfo).position;
+    final String position = experience is Experience
+    ? experience.positionName ?? ""
+        : (experience as ExperienceInfo).position;
 
-                              final String startDate = experience is Experience
-                                  ? experience.startDate
-                                  : (experience as ExperienceInfo).startDate;
+    final String startDate = experience is Experience
+    ? experience.startDate ?? ""
+        : (experience as ExperienceInfo).startDate;
 
-                              final String endDate = experience is Experience
-                                  ? experience.endDate
-                                  : (experience as ExperienceInfo).endDate;
+    final String endDate = experience is Experience
+    ? experience.endDate ?? ""
+        : (experience as ExperienceInfo).endDate;
 
-                              final String supervisor = experience is Experience
-                                  ? experience.nameSupervisor
-                                  : (experience as ExperienceInfo).supervisor;
+    final String supervisor = experience is Experience
+    ? experience.nameSupervisor ?? ""
+        : (experience as ExperienceInfo).supervisor;
 
-                              final String responsibilities =
-                                  experience is Experience
-                                      ? experience.reasonForLeaving
-                                      : (experience as ExperienceInfo)
-                                          .responsibilities;
+    final String responsibilities =
+    experience is Experience
+        ? experience.reasonForLeaving ?? ""
+        : (experience as ExperienceInfo)
+        .responsibilities;
 
-                              final String yearsOfExperience =
-                                  experience is Experience
-                                      ? experience.noExperience.toString()
-                                      : (experience as ExperienceInfo)
-                                          .yearsOfExperience;
+    final String yearsOfExperience =
+    experience is Experience
+        ? experience.noExperience?.toString() ?? ""
+        : (experience as ExperienceInfo)
+        .yearsOfExperience;
 
-                              return Card(
-                                elevation: 3,
-                                margin: const EdgeInsets.only(
-                                    bottom: AppTheme.contentSpacing,
-                                    left: 2,
-                                    right: 2),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Container(
-                                  padding: const EdgeInsets.all(
-                                      AppTheme.contentSpacing),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        Colors.white,
-                                        Colors.blue.withOpacity(0.05),
-                                      ],
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Company and Position at the top
-                                      Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(8),
-                                            decoration: BoxDecoration(
-                                              color: AppTheme.primaryColor
-                                                  .withOpacity(0.1),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: const Icon(
-                                              Icons.business,
-                                              color: AppTheme.primaryColor,
-                                              size: 24,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                const Text(
-                                                  "Company Name",
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.grey,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 2),
-                                                Text(
-                                                  company,
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color:
-                                                        AppTheme.primaryColor,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const Divider(height: 24),
-
-                                      // Position
-                                      _buildLabeledField(
-                                        icon: Icons.work,
-                                        label: "Position Name",
-                                        value: position,
-                                      ),
-                                      const SizedBox(height: 12),
-
-                                      // Years of Experience
-                                      _buildLabeledField(
-                                        icon: Icons.timer,
-                                        label: "Years of Experience",
-                                        value: yearsOfExperience,
-                                      ),
-                                      const SizedBox(height: 12),
-
-                                      // Employment Duration
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: _buildLabeledField(
-                                              icon: Icons.calendar_today,
-                                              label: "Start Date",
-                                              value: startDate,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: _buildLabeledField(
-                                              icon: Icons.event,
-                                              label: "End Date",
-                                              value: endDate,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-
-                                      if (supervisor.isNotEmpty) ...[
-                                        const SizedBox(height: 12),
-                                        _buildLabeledField(
-                                          icon: Icons.supervisor_account,
-                                          label: "Name of Supervisor",
-                                          value: supervisor,
-                                        ),
-                                      ],
-
-                                      if (responsibilities.isNotEmpty) ...[
-                                        const SizedBox(height: 12),
-                                        _buildLabeledField(
-                                          icon: Icons.description,
-                                          label:
-                                              "Responsibilities/Reason for Leaving",
-                                          value: responsibilities,
-                                          isMultiLine: true,
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+    return Card(
+      elevation: 3,
+      margin: const EdgeInsets.only(
+          bottom: AppTheme.contentSpacing,
+          left: 2,
+          right: 2),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(
+            AppTheme.contentSpacing),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white,
+              Colors.blue.withOpacity(0.05),
+            ],
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment:
+          CrossAxisAlignment.start,
+          children: [
+            // Company and Position at the top
+            Row(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor
+                        .withOpacity(0.1),
+                    borderRadius:
+                    BorderRadius.circular(8),
                   ),
-                ],
-              );
-            });
-      },
+                  child: const Icon(
+                    Icons.business,
+                    color: AppTheme.primaryColor,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Company Name",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        company,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color:
+                          AppTheme.primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 24),
+
+            // Position
+            _buildLabeledField(
+              icon: Icons.work,
+              label: "Position Name",
+              value: position,
+            ),
+            const SizedBox(height: 12),
+
+            // Years of Experience
+            _buildLabeledField(
+              icon: Icons.timer,
+              label: "Years of Experience",
+              value: yearsOfExperience,
+            ),
+            const SizedBox(height: 12),
+
+            // Employment Duration
+            Row(
+              children: [
+                Expanded(
+                  child: _buildLabeledField(
+                    icon: Icons.calendar_today,
+                    label: "Start Date",
+                    value: startDate,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildLabeledField(
+                    icon: Icons.event,
+                    label: "End Date",
+                    value: endDate,
+                  ),
+                ),
+              ],
+            ),
+
+            if (supervisor.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildLabeledField(
+                icon: Icons.supervisor_account,
+                label: "Name of Supervisor",
+                value: supervisor,
+              ),
+            ],
+
+            if (responsibilities.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildLabeledField(
+                icon: Icons.description,
+                label:
+                "Responsibilities/Reason for Leaving",
+                value: responsibilities,
+                isMultiLine: true,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+    },
+        ),
+        ),
+          ],
+        );
+          });
+        },
     );
   }
 
@@ -1074,17 +1075,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // First try to get data from the profileData
             if (profileData != null) {
               idNumber = profileData.data.employeeId.toString();
-              socialSecurity = profileData.data.sinNo;
+              socialSecurity = profileData.data.sinNo ?? "";
 
               // Find credentials by type from the credentials list
               if (profileData.credentials.isNotEmpty) {
                 for (var credential in profileData.credentials) {
-                  if (credential.document.contains("Passport")) {
-                    passport = credential.image;
-                  } else if (credential.document.contains("Driver License")) {
-                    driversLicense = credential.image;
-                  } else if (credential.document.contains("WHMIS 2025")) {
-                    whmisCredential = credential.image;
+                  if (credential.document?.contains("Passport") == true) {
+                    passport = credential.image ?? "";
+                  } else if (credential.document?.contains("Driver License") == true) {
+                    driversLicense = credential.image ?? "";
+                  } else if (credential.document?.contains("WHMIS 2025") == true) {
+                    whmisCredential = credential.image ?? "";
                   }
                 }
               }
@@ -1094,19 +1095,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               passport = credentialInfo.passport;
               driversLicense = credentialInfo.driversLicense;
               socialSecurity = credentialInfo.socialSecurity;
-              if (profileData != null) {
-                // Find credentials by type from the credentials list
-                if (profileData.credentials.isNotEmpty) {
-                  for (var credential in profileData.credentials) {
-                    if (credential.document.contains("WHMIS 2025")) {
-                      whmisCredential = credential.image;
-                      break;
-                    }
-                  }
-                }
-              } else {
-                whmisCredential = _controller.aptitudeInfo.value.certifications;
-              }
+              whmisCredential = _controller.aptitudeInfo.value.certifications;
             }
 
             return SingleChildScrollView(
@@ -1183,14 +1172,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: AppTheme.smallSpacing),
                     ...profileData.credentials
                         .where((c) =>
-                            !c.document.contains("Passport") &&
-                            !c.document.contains("Driver License") &&
-                            !c.document.contains("WHMIS 2025"))
+                    !(c.document?.contains("Passport") == true) &&
+                        !(c.document?.contains("Driver License") == true) &&
+                        !(c.document?.contains("WHMIS 2025") == true))
                         .map((credential) => _buildCredentialWithViewButton(
-                              context,
-                              credential.document,
-                              credential.image,
-                            )),
+                      context,
+                      credential.document ?? "Unknown Document",
+                      credential.image ?? "",
+                    )),
                   ],
                   const SizedBox(height: AppTheme.mediumSpacing),
                 ],
@@ -1284,7 +1273,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             final lastName = profileData?.data.lastName ??
                 (personalInfo.fullName.isNotEmpty &&
-                        personalInfo.fullName.split(' ').length > 1
+                    personalInfo.fullName.split(' ').length > 1
                     ? personalInfo.fullName.split(' ').sublist(1).join(' ')
                     : "");
 
@@ -1462,7 +1451,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 maxLines: isMultiLine ? 3 : 1,
                 overflow:
-                    isMultiLine ? TextOverflow.ellipsis : TextOverflow.ellipsis,
+                isMultiLine ? TextOverflow.ellipsis : TextOverflow.ellipsis,
               ),
             ],
           ),

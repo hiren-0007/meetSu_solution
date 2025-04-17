@@ -135,6 +135,11 @@ class ApiService {
     return await _client.post(ApiEndpoints.checkOut, body: userData);
   }
 
+  //FCM Token related APIs
+  Future<Map<String, dynamic>> fcmToken(Map<String, dynamic> userData) async {
+    return await _client.post(ApiEndpoints.fcmToken, body: userData, useFormData: true);
+  }
+
   //Submit Test related APIs
   Future<Map<String, dynamic>> submitTest(Map<String, dynamic> userData, {File? signatureFile}) async {
     if (signatureFile != null) {

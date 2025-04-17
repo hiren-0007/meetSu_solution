@@ -67,19 +67,19 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       // Get emergency contact info
       final data = profileData?.data;
       if (data != null) {
-        _mobileController.text = data.mobileNumber;
-        _homeNoController.text = data.homeNumber;
-        _simNoController.text = data.sinNo;
-        _simExpiryController.text = data.sinExpiry;
+        _mobileController.text = data.mobileNumber!;
+        _homeNoController.text = data.homeNumber!;
+        _simNoController.text = data.sinNo!;
+        _simExpiryController.text = data.sinExpiry!;
 
-        _emergencyNameController.text = data.emergencyName;
-        _emergencyPhoneController.text = data.emergencyPhone;
-        _emergencyEmailController.text = data.emergencyEmail;
-        _relationshipController.text = data.emergencyRelationship;
-        _languageController.text = data.emergencyLanguage;
+        _emergencyNameController.text = data.emergencyName!;
+        _emergencyPhoneController.text = data.emergencyPhone!;
+        _emergencyEmailController.text = data.emergencyEmail!;
+        _relationshipController.text = data.emergencyRelationship!;
+        _languageController.text = data.emergencyLanguage!;
 
-        _referredByController.text = data.referredBy;
-        _referredRelationshipController.text = data.referredRelationship;
+        _referredByController.text = data.referredBy!;
+        _referredRelationshipController.text = data.referredRelationship!;
       }
     } else {
       // Default values if no controller is provided
