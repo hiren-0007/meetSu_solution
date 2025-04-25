@@ -1,4 +1,3 @@
-// Create a new file: lib/services/firebase/firebase_messaging_service.dart
 import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
@@ -19,25 +18,41 @@ class FirebaseMessagingService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
 
-  // Initialize the Firebase Messaging service
+  // Future<void> initialize() async {
+  //   await Firebase.initializeApp();
+  //   await setupFirebaseMessaging();
+  // }
+
   Future<void> initialize() async {
-    await Firebase.initializeApp();
-    await setupFirebaseMessaging();
+    try {
+      // This should be called only once in your app
+      await Firebase.initializeApp();
+      print('Firebase initialized in service');
+      await setupFirebaseMessaging();
+    } catch (e) {
+      print('Error initializing Firebase in service: $e');
+    }
   }
 
-  // Background message handler
+  Future<void> initializeWithoutFirebase() async {
+    try {
+      // Skip initialization as it should be done in main.dart
+      await setupFirebaseMessaging();
+      print('Firebase Messaging setup complete');
+    } catch (e) {
+      print('Error setting up Firebase Messaging: $e');
+    }
+  }
+
   static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     await Firebase.initializeApp();
     print('💥 Background Message: ${message.messageId}');
   }
 
-  // In FirebaseMessagingService class
   Future<void> saveAndSendTokenToServer(String? token) async {
     if (token != null) {
-      // First save locally
       await SharedPrefsService.saveFcmToken(token);
 
-      // Only send to server if user is logged in
       final accessToken = SharedPrefsService.instance.getAccessToken();
       if (accessToken == null || accessToken.isEmpty) {
         print('Cannot send FCM token: No access token available');
@@ -45,21 +60,17 @@ class FirebaseMessagingService {
       }
 
       try {
-        // Create API client and service with auth token
         final apiClient = ApiClient();
-        apiClient.addAuthToken(accessToken);  // or addAuthToken() depending on your implementation
+        apiClient.addAuthToken(accessToken);
         final apiService = ApiService(apiClient);
 
-        // Determine device type dynamically
         final deviceType = Platform.isAndroid ? '1' : Platform.isIOS ? '2' : '3';
 
-        // Create the request body
         final tokenData = {
           'token': token,
           'device_type': deviceType
         };
 
-        // Call your actual FCM token API endpoint
         final response = await apiService.fcmToken(tokenData);
 
         if (response['success'] == true) {
@@ -149,8 +160,18 @@ class FirebaseMessagingService {
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
 
+    // Add iOS-specific notification settings
+    const DarwinInitializationSettings initializationSettingsIOS =
+    DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+
+    // Update to include iOS settings
     const InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
     );
 
     await flutterLocalNotificationsPlugin.initialize(
@@ -174,7 +195,9 @@ class FirebaseMessagingService {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
 
-      if (notification != null && android != null) {
+      // Check for notification from Firebase
+      if (notification != null) {
+        // Show notification with iOS support
         flutterLocalNotificationsPlugin.show(
           notification.hashCode,
           notification.title,
@@ -187,8 +210,13 @@ class FirebaseMessagingService {
               priority: Priority.high,
               channelShowBadge: true,
             ),
+            iOS: const DarwinNotificationDetails(
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
+            ),
           ),
-          payload: jsonEncode(message.data), // Move payload parameter here
+          payload: jsonEncode(message.data),
         );
       }
     });
@@ -213,4 +241,8 @@ class FirebaseMessagingService {
     final token = await SharedPrefsService.getFcmToken();
     await saveAndSendTokenToServer(token);
   }
+
+  // Future<void> initializeWithoutFirebase() async {
+  //   await setupFirebaseMessaging();
+  // }
 }

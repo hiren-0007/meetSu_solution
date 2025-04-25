@@ -20,9 +20,16 @@ void main() async {
   // Initialize connectivity service
   ConnectivityService().initialize();
 
-  // Initialize Firebase and FCM
-  await Firebase.initializeApp();
-  await FirebaseMessagingService().initialize();
+  try {
+    // Initialize Firebase only once with options
+    await Firebase.initializeApp();
+    print('Firebase core initialized successfully');
+
+    // Initialize Firebase Messaging
+    await FirebaseMessagingService().initializeWithoutFirebase();
+  } catch (e) {
+    print('Firebase initialization error: $e');
+  }
 
   runApp(const JobPortalApp());
 }
@@ -50,7 +57,7 @@ class JobPortalApp extends StatelessWidget {
           '/quiz-result': (context) => const QuizResultScreen(),
           '/login': (context) => LoginScreen(),
         },
-        navigatorKey: GlobalKey<NavigatorState>(), // Add this for navigation from notification
+        navigatorKey: GlobalKey<NavigatorState>(),
       ),
     );
   }
