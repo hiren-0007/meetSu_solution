@@ -71,33 +71,14 @@ class ApiService {
     );
   }
 
-  // Weather related APIs
-  Future<Map<String, dynamic>> getWeather() async {
-    return await _client.get(ApiEndpoints.getWeather);
-  }
-
-  // // Add parameters to the getWeather method
-  // Future<Map<String, dynamic>> getWeather({double? lat, double? long}) async {
-  //   Map<String, dynamic>? queryParams;
-  //
-  //   if (lat != null && long != null) {
-  //     queryParams = {
-  //       'lat': lat.toString(),
-  //       'long': long.toString(),
-  //     };
-  //   }
-  //
-  //   return await _client.get(ApiEndpoints.getWeather, queryParams: queryParams);
-  // }
-
-// Add method to get location data
-  Future<Map<String, dynamic>> getWeatherLocation() async {
-    return await _client.get(ApiEndpoints.getWeatherEpicode);
-  }
-
   //Quote related APIs
   Future<Map<String, dynamic>> getQuote() async {
     return await _client.fetchQuote();
+  }
+
+  // Weather related APis
+  Future<Map<String, dynamic>> getWeather(Map<String, dynamic> locationData) async {
+    return await _client.post(ApiEndpoints.getWeather, body: locationData);
   }
 
   //Training Doc related APIs
@@ -152,5 +133,9 @@ class ApiService {
     } else {
       return await _client.post(ApiEndpoints.submitTest, body: userData);
     }
+  }
+
+  Future<Map<String, dynamic>> getUserLogout() async {
+    return await _client.get(ApiEndpoints.userLogout);
   }
 }

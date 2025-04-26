@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../services/api/api_client.dart';
+import '../../services/api/api_service.dart';
+import '../../services/pref/shared_prefs_service.dart';
+
 class HomeController {
   final ValueNotifier<int> selectedIndex = ValueNotifier<int>(0);
 
@@ -55,11 +59,42 @@ class HomeController {
     debugPrint("Navigate to settings screen");
   }
 
-  void logout(BuildContext context) {
-    debugPrint("Logging out user");
+  Future<void> logout(BuildContext context) async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final apiService = ApiService(ApiClient());
+      final token = SharedPrefsService.instance.getAccessToken();
+      if (token != null && token.isNotEmpty) {
+        apiService.client.addAuthToken(token);
+      }
+
+      await apiService.getUserLogout();
+
+      await SharedPrefsService.instance.clear();
+
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context).pop();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error during logout: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  // Dispose resources
   void dispose() {
     selectedIndex.dispose();
   }

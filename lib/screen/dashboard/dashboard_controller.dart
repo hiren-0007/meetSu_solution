@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:meetsu_solutions/model/job&ads/job_and_ads_response_model.dart';
 import 'dart:async';
@@ -78,11 +79,12 @@ class DashboardController {
 
     debugPrint("🔄 Initializing Dashboard...");
 
-    Future.wait([
-      fetchWeatherData(),
-      fetchQuoteData(),
-      fetchAdsData(),
-    ]).then((_) {
+    fetchWeatherData().then((_) {
+      return Future.wait([
+        fetchQuoteData(),
+        fetchAdsData(),
+      ]);
+    }).then((_) {
       isLoading.value = false;
       debugPrint("✅ Dashboard fully initialized");
     }).catchError((error) {
@@ -104,84 +106,6 @@ class DashboardController {
 
   void setCurrentIndex(int index) {
     currentIndex.value = index;
-  }
-
-  Future<void> fetchWeatherData() async {
-    try {
-      debugPrint("🌤️ Fetching weather data...");
-
-      Map<String, dynamic>? locationData;
-      try {
-        locationData = await _apiService.getWeatherLocation();
-        debugPrint("📍 Location data: ${jsonEncode(locationData)}");
-      } catch (e) {
-        debugPrint("⚠️ Could not fetch location data: $e");
-      }
-
-      double? lat, long;
-      if (locationData != null &&
-          locationData['success'] == true &&
-          locationData['response'] != null) {
-        final response = locationData['response'];
-
-        debugPrint("📍 Raw lat value: ${response['lat']}");
-        debugPrint("📍 Raw long value: ${response['long']}");
-
-        try {
-          lat = double.tryParse("${response['lat']}");
-          long = double.tryParse("${response['long']}");
-          debugPrint("📍 Parsed coordinates: lat=$lat, long=$long");
-        } catch (e) {
-          debugPrint("❌ Error parsing coordinates: $e");
-        }
-      }
-
-      if (lat == null || long == null) {
-        debugPrint("⚠️ No valid coordinates found, using defaults");
-        lat = 43.595336;
-        long = -79.648579;
-      }
-
-      Map<String, String> params = {
-        'lat': lat.toString(),
-        'long': long.toString(),
-      };
-      debugPrint("📍 Sending parameters: $params");
-
-      final baseUrl = 'https://meetsusolutions.com/api/web/';
-      final endpoint = 'flutter/weather';
-      final uri =
-          Uri.parse('$baseUrl$endpoint').replace(queryParameters: params);
-      debugPrint("🔍 Final URL being called: $uri");
-
-      final response = await _apiService.getWeather();
-      debugPrint("📥 Weather API Response: ${jsonEncode(response)}");
-
-      if (response['success'] == true && response['response'] != null) {
-      } else {
-        debugPrint("❌ Invalid weather response format: $response");
-
-        try {
-          temperature.value = "21°C";
-          date.value = DateFormat("MMM dd, yyyy").format(DateTime.now());
-          iconLink.value =
-              "https://weather.hereapi.com/static/weather/icon/1.png";
-
-          final weather = WeatherResponseModel(
-              temperature: temperature.value,
-              date: date.value,
-              icon: iconLink.value);
-
-          getWeatherData.value = weather;
-          debugPrint("⚠️ Using fallback weather data as API failed");
-        } catch (e) {
-          debugPrint("❌ Error setting fallback weather: $e");
-        }
-      }
-    } catch (e) {
-      debugPrint("❌ Weather API Error: $e");
-      errorMessage.value = "Failed to load weather data: ${e.toString()}";
-    }
   }
 
   Future<void> fetchQuoteData() async {
@@ -260,6 +184,114 @@ class DashboardController {
     }
   }
 
+  Future<Position?> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      debugPrint('Location services are disabled.');
+      return null;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        debugPrint('Location permissions are denied');
+        return null;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      debugPrint('Location permissions are permanently denied');
+      return null;
+    }
+
+    try {
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 5),
+      );
+    } catch (e) {
+      debugPrint('Error getting location: $e');
+      return await Geolocator.getLastKnownPosition();
+    }
+  }
+
+  Future<void> fetchWeatherData() async {
+    try {
+      debugPrint("🌤️ Fetching weather data...");
+
+      final position = await _getCurrentLocation();
+
+      if (position == null) {
+        debugPrint("❌ Unable to get location. Using default coordinates.");
+        //fetchWeatherWithCoordinates("23.021582", "72.668335");
+        return;
+      }
+
+      final latitude = position.latitude.toStringAsFixed(6);
+      final longitude = position.longitude.toStringAsFixed(6);
+
+      debugPrint("📍 Got location: Lat: $latitude, Long: $longitude");
+
+      fetchWeatherWithCoordinates(latitude, longitude);
+
+    } catch (e) {
+      debugPrint("❌ Error in weather fetch flow: $e");
+      date.value = DateFormat("MMM dd, yyyy").format(DateTime.now());
+    }
+  }
+
+  Future<void> fetchWeatherWithCoordinates(String latitude, String longitude) async {
+    try {
+      final token = SharedPrefsService.instance.getAccessToken();
+      if (token == null || token.isEmpty) {
+        debugPrint("❌ No authentication token found for weather API");
+        return;
+      }
+
+      _apiService.client.addAuthToken(token);
+
+      final locationData = {
+        'latitude': latitude,
+        'longitude': longitude,
+      };
+
+      final response = await _apiService.getWeather(locationData);
+      debugPrint("📥 Weather API Response: $response");
+
+      if (response != null) {
+        if (response.containsKey('temperature')) {
+          final temp = response['temperature'];
+          final tempString = temp is double ? temp.toStringAsFixed(2) : temp.toString();
+
+          temperature.value = "${tempString}°C";
+
+          final modifiedResponse = Map<String, dynamic>.from(response);
+          modifiedResponse['temperature'] = tempString;
+
+          getWeatherData.value = WeatherResponseModel.fromJson(modifiedResponse);
+
+          if (response.containsKey('icon') && response['icon'] != null) {
+            iconLink.value = response['icon'];
+          }
+
+          debugPrint("✅ Weather Updated: ${temperature.value}");
+        } else {
+          debugPrint("⚠️ Weather API response missing temperature: $response");
+        }
+      }
+
+      date.value = DateFormat("MMM dd, yyyy").format(DateTime.now());
+
+    } catch (e) {
+      debugPrint("❌ Error fetching weather: $e");
+      date.value = DateFormat("MMM dd, yyyy").format(DateTime.now());
+    }
+  }
+
   void shareAd(BuildContext context, AdItem ad) {
     final String shareText = ad.shareDescription.isNotEmpty
         ? ad.shareDescription
@@ -295,8 +327,9 @@ class DashboardController {
     isLoading.value = true;
 
     try {
+      await fetchWeatherData();
+
       await Future.wait([
-        fetchWeatherData(),
         fetchQuoteData(),
         fetchAdsData(),
       ]);

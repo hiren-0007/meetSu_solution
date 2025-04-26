@@ -1,11 +1,13 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:meetsu_solutions/screen/auth/login/login_screen.dart';
+import 'package:meetsu_solutions/screen/home/home_screen.dart';
 import 'package:meetsu_solutions/screen/more/contact/contact_screen.dart';
 import 'package:meetsu_solutions/screen/more/profile/profile_screen.dart';
 import 'package:meetsu_solutions/screen/more/quiz/quiz_result_screen.dart';
 import 'package:meetsu_solutions/screen/more/request/send_request_screen.dart';
 import 'package:meetsu_solutions/screen/more/training/training_screen.dart';
+import 'package:meetsu_solutions/screen/splash/splash_screen.dart';
 import 'package:meetsu_solutions/services/connectivity/connectivity_service.dart';
 import 'package:meetsu_solutions/services/firebase/firebase_messaging_service.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
@@ -48,7 +50,7 @@ class JobPortalApp extends StatelessWidget {
           scaffoldBackgroundColor: Colors.white,
           fontFamily: 'Roboto',
         ),
-        home: LoginScreen(),
+        home: const SplashScreen(),
         routes: {
           '/profile': (context) => const ProfileScreen(),
           '/contact': (context) => const ContactScreen(),
@@ -56,6 +58,7 @@ class JobPortalApp extends StatelessWidget {
           '/send-request': (context) => const SendRequestScreen(),
           '/quiz-result': (context) => const QuizResultScreen(),
           '/login': (context) => LoginScreen(),
+          '/home': (context) => const HomeScreen(),
         },
         navigatorKey: GlobalKey<NavigatorState>(),
       ),

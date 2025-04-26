@@ -325,16 +325,37 @@ class MoreController {
               ),
               TextButton(
                 child: const Text("Logout"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pushReplacementNamed('/login');
+                onPressed: () async {
+                  isLoading.value = true;
+
+                  try {
+                    await _initializeWithToken();
+                    final response = await _apiService.getUserLogout();
+                    print('logout response => $response');
+
+                    await SharedPrefsService.instance.clear();
+
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pushReplacementNamed('/login');
+                  } catch (e) {
+                    debugPrint('Error during logout: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error during logout: ${e.toString()}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    Navigator.of(context).pop();
+                  } finally {
+                    isLoading.value = false;
+                  }
                 },
               ),
             ],
           );
         },
       );
-    } else if (route == "/clock-in") {
+    }else if (route == "/clock-in") {
       handleCheckInOut(context);
     } else if (route == "/delete") {
       showDialog(

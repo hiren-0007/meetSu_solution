@@ -18,8 +18,6 @@ class ApiEndpoints {
 
   static const String getWeather = 'flutter/weather';
 
-  static const String getWeatherEpicode = 'flutter/weather-epicode';
-
   static const String getTrainingAssigned = 'flutter/training-assigned';
 
   static const String getTrainingCompleted = 'flutter/training-finished';
@@ -41,4 +39,6 @@ class ApiEndpoints {
   static const String checkOut = 'flutter/checkout';
 
   static const String fcmToken = 'flutter/user-token';
+
+  static const String userLogout = 'flutter/logout';
 }
