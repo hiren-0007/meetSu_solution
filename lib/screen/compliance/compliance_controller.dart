@@ -84,7 +84,7 @@ class ComplianceController {
         final String filePath = downloadResponse['filename'];
         String baseUrl = 'https://www.meetsusolutions.com';
         String normalizedPath =
-            filePath.startsWith('/') ? filePath : '/$filePath';
+        filePath.startsWith('/') ? filePath : '/$filePath';
         String fullUrl = '$baseUrl$normalizedPath'.replaceAll(' ', '%20');
         String fileName = fullUrl.split('/').last;
         debugPrint("🔗 Download URL: $fullUrl");
@@ -107,9 +107,17 @@ class ComplianceController {
                 action: SnackBarAction(
                   label: 'VIEW',
                   onPressed: () {
+                    // First try to open directly
                     FileUtils.openFile(downloadedFilePath, context: context);
                   },
                 ),
+                // Add a second action for sharing
+                // secondaryAction: SnackBarAction(
+                //   label: 'SHARE',
+                //   onPressed: () {
+                //     FileUtils.shareFile(downloadedFilePath, context: context);
+                //   },
+                // ),
               ),
             );
           }
