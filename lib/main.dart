@@ -44,7 +44,7 @@ class JobPortalApp extends StatelessWidget {
     return ConnectivityWidget(
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Job Portal App',
+        title: '',
         theme: ThemeData(
           primaryColor: const Color(0xFF6C63FF),
           scaffoldBackgroundColor: Colors.white,
