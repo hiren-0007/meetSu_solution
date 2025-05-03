@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meetsu_solutions/model/request/request_records_model.dart';
 import 'package:meetsu_solutions/screen/more/request/send_request_controller.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
@@ -236,31 +237,43 @@ class _SendRequestScreenState extends State<SendRequestScreen> {
                                                 ),
                                                 columns: const [
                                                   DataColumn(
-                                                      label: Text("Actions")),
+                                                      label: Text("View")),
                                                   DataColumn(
                                                       label: Text("Amount")),
                                                   DataColumn(
                                                       label: Text("Reason")),
+                                                  DataColumn(
+                                                      label: Text("Date")),
                                                 ],
                                                 rows: records.map((record) {
                                                   return DataRow(
                                                     cells: [
                                                       DataCell(IconButton(
                                                         icon: const Icon(
-                                                            Icons.download,
+                                                            Icons
+                                                                .remove_red_eye_outlined,
                                                             color: AppTheme
                                                                 .primaryColor,
                                                             size: 20),
                                                         onPressed: () =>
-                                                            _controller
-                                                                .downloadRecord(
-                                                                    record),
+                                                            _controller.showPdf(
+                                                                record,
+                                                                context),
                                                       )),
-                                                      DataCell(Text(record
-                                                          .amount
-                                                          .toString())),
-                                                      DataCell(
-                                                          Text(record.reason)),
+                                                      // Parse and display amount
+                                                      DataCell(Text(double
+                                                              .tryParse(
+                                                            record.amount ??
+                                                                '0',
+                                                          )?.toStringAsFixed(
+                                                              2) ??
+                                                          '0.00')),
+                                                      // Display reason
+                                                      DataCell(Text(
+                                                          record.reason ?? '')),
+                                                      // Display date
+                                                      DataCell(Text(
+                                                          record.date ?? '')),
                                                     ],
                                                   );
                                                 }).toList(),

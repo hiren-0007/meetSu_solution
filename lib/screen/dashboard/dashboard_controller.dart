@@ -13,32 +13,6 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../model/weather/weather_response_model.dart';
 
-class AdItem {
-  final int id;
-  final String subjectLine;
-  final String description;
-  final String shareDescription;
-  final String date;
-  final String place;
-  final String amount;
-  final String imageUrl;
-  final String status;
-  final String onlyImage;
-
-  AdItem({
-    required this.id,
-    required this.subjectLine,
-    required this.description,
-    required this.shareDescription,
-    required this.date,
-    required this.place,
-    required this.amount,
-    required this.imageUrl,
-    required this.status,
-    required this.onlyImage,
-  });
-}
-
 class DashboardController {
   final ApiService _apiService;
 
@@ -49,7 +23,7 @@ class DashboardController {
   final ValueNotifier<String> quoteAuthor = ValueNotifier<String>("Goethe");
   final ValueNotifier<String> iconLink = ValueNotifier<String>("");
 
-  final ValueNotifier<List<AdItem>> adItems = ValueNotifier<List<AdItem>>([]);
+  final ValueNotifier<List<Ads>> adItems = ValueNotifier<List<Ads>>([]);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(true);
   final ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
@@ -154,11 +128,11 @@ class DashboardController {
           adsResponse.response != null &&
           adsResponse.response!.ads != null &&
           adsResponse.response!.ads!.isNotEmpty) {
-        final List<AdItem> ads = adsResponse.response!.ads!.map((ad) {
+        final List<Ads> ads = adsResponse.response!.ads!.map((ad) {
           String plainDescription = HtmlParsers.htmlToText(ad.description);
 
-          return AdItem(
-            id: ad.adsId ?? 0,
+          return Ads(
+            adsId: ad.adsId ?? 0,
             subjectLine: ad.subjectLine ?? "No Subject",
             description: plainDescription,
             shareDescription: ad.shareDescription ?? "",
@@ -292,14 +266,14 @@ class DashboardController {
     }
   }
 
-  void shareAd(BuildContext context, AdItem ad) {
-    final String shareText = ad.shareDescription.isNotEmpty
-        ? ad.shareDescription
-        : "Check out this ad: ${ad.subjectLine}\n\nhttps://meetsusolutions.com/franciso/web/site/ads?id=${ad.id}";
+  void shareAd(BuildContext context, Ads ad) {
+    final String shareText = ad.shareDescription?.isNotEmpty == true
+        ? ad.shareDescription!
+        : "Check out this ad: ${ad.subjectLine ?? 'Untitled Ad'}\n\nhttps://meetsusolutions.com/franciso/web/site/ads?id=${ad.adsId ?? ''}";
 
     Share.share(
       shareText,
-      subject: ad.subjectLine,
+      subject: ad.subjectLine ?? 'Ad',
     );
   }
 

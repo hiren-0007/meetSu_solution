@@ -12,18 +12,41 @@ class JobOpeningScreen extends StatefulWidget {
 
 class _JobOpeningScreenState extends State<JobOpeningScreen> {
   final JobOpeningController _controller = JobOpeningController();
-  final PageController _pageController = PageController();
+  late PageController _pageController;
+  int _realIndex = 0;
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize with large initial page for infinite scrolling
+    _pageController = PageController(
+      initialPage: _controller.jobOpenings.value.isNotEmpty ? 10000 : 0,
+    );
+
     _controller.currentIndex.addListener(_handleIndexChange);
+    _controller.jobOpenings.addListener(_handleJobItemsUpdate);
+  }
+
+  void _handleJobItemsUpdate() {
+    if (mounted && _controller.jobOpenings.value.isNotEmpty) {
+      // Reset to middle position for infinite scrolling
+      _pageController = PageController(initialPage: 10000);
+    }
   }
 
   void _handleIndexChange() {
-    if (_pageController.hasClients) {
+    if (_pageController.hasClients &&
+        _controller.jobOpenings.value.isNotEmpty &&
+        mounted) {
+      // Calculate the page to jump to
+      final currentPage = _pageController.page?.round() ?? 0;
+      final jobItemsLength = _controller.jobOpenings.value.length;
+      final targetPage = (currentPage ~/ jobItemsLength) * jobItemsLength +
+          _controller.currentIndex.value;
+
       _pageController.animateToPage(
-        _controller.currentIndex.value,
+        targetPage,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
@@ -33,6 +56,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
   @override
   void dispose() {
     _controller.currentIndex.removeListener(_handleIndexChange);
+    _controller.jobOpenings.removeListener(_handleJobItemsUpdate);
     _controller.dispose();
     _pageController.dispose();
     super.dispose();
@@ -110,22 +134,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                             ),
                           );
                         } else {
-                          return Column(
-                            children: [
-                              Expanded(
-                                child: PageView.builder(
-                                  controller: _pageController,
-                                  itemCount: jobOpenings.length,
-                                  onPageChanged: (index) {
-                                    _controller.setCurrentIndex(index);
-                                  },
-                                  itemBuilder: (context, index) {
-                                    return _buildJobCard(jobOpenings[index]);
-                                  },
-                                ),
-                              ),
-                            ],
-                          );
+                          return _buildJobPageView(jobOpenings);
                         }
                       },
                     );
@@ -136,6 +145,24 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildJobPageView(List<JobOpening> jobOpenings) {
+    return PageView.builder(
+      controller: _pageController,
+      itemCount: 20000, // Large number for infinite scrolling
+      onPageChanged: (index) {
+        // Calculate real index
+        final realIndex = index % jobOpenings.length;
+        _realIndex = realIndex;
+        _controller.setCurrentIndex(realIndex);
+      },
+      itemBuilder: (context, index) {
+        // Calculate real index
+        final realIndex = index % jobOpenings.length;
+        return _buildJobCard(jobOpenings[realIndex]);
+      },
     );
   }
 
@@ -166,19 +193,19 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
               borderRadius: BorderRadius.circular(15),
               child: job.imageUrl.isNotEmpty
                   ? Container(
-                      width: double.infinity,
-                      constraints: const BoxConstraints(
-                        minHeight: 150,
-                        maxHeight: 250,
-                      ),
-                      child: Image.network(
-                        job.imageUrl,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return _buildFallbackImage();
-                        },
-                      ),
-                    )
+                width: double.infinity,
+                constraints: const BoxConstraints(
+                  minHeight: 150,
+                  maxHeight: 250,
+                ),
+                child: Image.network(
+                  job.imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return _buildFallbackImage();
+                  },
+                ),
+              )
                   : _buildFallbackImage(),
             ),
           ),
@@ -378,7 +405,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                             children: [
                               const Text("• ",
                                   style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
+                                  TextStyle(fontWeight: FontWeight.bold)),
                               Expanded(
                                 child: Text(
                                   job.requirements[index],

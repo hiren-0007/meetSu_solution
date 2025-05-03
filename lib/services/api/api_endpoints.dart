@@ -16,6 +16,8 @@ class ApiEndpoints {
 
   static const String addDeduction = 'flutter/add-deduction';
 
+  static const String getRequestData = 'flutter/show-deduction';
+
   static const String getWeather = 'flutter/weather';
 
   static const String getTrainingAssigned = 'flutter/training-assigned';

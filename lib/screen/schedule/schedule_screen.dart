@@ -46,7 +46,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             "Start Date",
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: 13, // Reduced from 14
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -58,7 +58,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             "End Date",
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: 13, // Reduced from 14
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -74,8 +74,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       GestureDetector(
                         onTap: () => _controller.navigateToPreviousPeriod(),
                         child: Container(
-                          width: 40, // Fixed width
-                          height: 40, // Fixed height for square button
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(8),
@@ -92,10 +92,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       const SizedBox(width: 8),
                       // Start Date Picker - Wider container
                       Expanded(
-                        flex: 3, // More space for date text
+                        flex: 3,
                         child: ValueListenableBuilder<String>(
                           valueListenable: _controller.startDate,
                           builder: (context, startDate, _) {
+                            // Ensure proper date formatting
+                            String formattedStartDate = startDate;
+                            if (startDate.isNotEmpty &&
+                                !startDate.contains('-')) {
+                              // If the date only contains the month, replace it with full date
+                              final now = DateTime.now();
+                              formattedStartDate =
+                                  "${startDate}-${now.day.toString().padLeft(2, '0')}-${now.year}";
+                            }
+
                             return GestureDetector(
                               onTap: () => _controller.selectStartDate(context),
                               child: Container(
@@ -107,20 +117,21 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    Expanded(
-                                      child: Text(
-                                        startDate,
-                                        style: const TextStyle(
-                                          color: AppTheme.textPrimaryColor,
-                                          fontSize: 14,
-                                        ),
-                                        textAlign: TextAlign.center, // Center text
-                                      ),
-                                    ),
                                     const Icon(
                                       Icons.calendar_month_outlined,
                                       size: 18,
                                       color: AppTheme.primaryColor,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        formattedStartDate,
+                                        style: const TextStyle(
+                                          color: AppTheme.textPrimaryColor,
+                                          fontSize: 13, // Reduced from 14
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -130,12 +141,21 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // End Date Picker - Wider container
+                      // End Date Picker - Fixed and Wider container
                       Expanded(
-                        flex: 3, // More space for date text
+                        flex: 3,
                         child: ValueListenableBuilder<String>(
                           valueListenable: _controller.endDate,
                           builder: (context, endDate, _) {
+                            // Ensure proper date formatting
+                            String formattedEndDate = endDate;
+                            if (endDate.isNotEmpty && !endDate.contains('-')) {
+                              // If the date only contains the month, replace it with full date
+                              final now = DateTime.now();
+                              formattedEndDate =
+                                  "${endDate}-${now.day.toString().padLeft(2, '0')}-${now.year}";
+                            }
+
                             return GestureDetector(
                               onTap: () => _controller.selectEndDate(context),
                               child: Container(
@@ -147,20 +167,21 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    Expanded(
-                                      child: Text(
-                                        endDate,
-                                        style: const TextStyle(
-                                          color: AppTheme.textPrimaryColor,
-                                          fontSize: 14,
-                                        ),
-                                        textAlign: TextAlign.center, // Center text
-                                      ),
-                                    ),
                                     const Icon(
                                       Icons.calendar_month_outlined,
                                       size: 18,
                                       color: AppTheme.primaryColor,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        formattedEndDate,
+                                        style: const TextStyle(
+                                          color: AppTheme.textPrimaryColor,
+                                          fontSize: 13, // Reduced from 14
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -174,8 +195,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       GestureDetector(
                         onTap: () => _controller.navigateToNextPeriod(),
                         child: Container(
-                          width: 40, // Fixed width
-                          height: 40, // Fixed height for square button
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(8),
@@ -215,126 +236,126 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               builder: (context, hasData, _) {
                 if (hasData && _controller.scheduleItems.value.isNotEmpty) {
                   final firstItem = _controller.scheduleItems.value.first;
-                  return
-                    Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withValues(alpha: 0.2),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // First row: Company and Position
-                          Row(
-                            children: [
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: "Company: ",
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
+                  return Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withValues(alpha: 0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // First row: Company and Position
+                        Row(
+                          children: [
+                            RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: "Company: ",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
                                     ),
-                                    TextSpan(
-                                      text: "${firstItem.company ?? 'N/A'}",
-                                      style: TextStyle(
-                                        color: AppTheme.primaryColor,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14,
-                                      ),
+                                  ),
+                                  TextSpan(
+                                    text: "${firstItem.company ?? 'N/A'}",
+                                    style: TextStyle(
+                                      color: AppTheme.primaryColor,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                              Spacer(flex: 1),
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: "Position: ",
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
+                            ),
+                            Spacer(flex: 1),
+                            RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: "Position: ",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
                                     ),
-                                    TextSpan(
-                                      text: "${firstItem.position ?? 'N/A'}",
-                                      style: TextStyle(
-                                        color: AppTheme.textSecondaryColor,
-                                        fontSize: 14,
-                                      ),
+                                  ),
+                                  TextSpan(
+                                    text: "${firstItem.position ?? 'N/A'}",
+                                    style: TextStyle(
+                                      color: AppTheme.textSecondaryColor,
+                                      fontSize: 14,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          SizedBox(height: 8),
-                          // Second row: Shift and Rate
-                          Row(
-                            children: [
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: "Shift: ",
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        // Second row: Shift and Rate
+                        Row(
+                          children: [
+                            RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: "Shift: ",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
                                     ),
-                                    TextSpan(
-                                      text: "${firstItem.shift ?? 'N/A'}",
-                                      style: TextStyle(
-                                        color: AppTheme.textSecondaryColor,
-                                        fontSize: 14,
-                                      ),
+                                  ),
+                                  TextSpan(
+                                    text: "${firstItem.shift ?? 'N/A'}",
+                                    style: TextStyle(
+                                      color: AppTheme.textSecondaryColor,
+                                      fontSize: 14,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                              Spacer(flex: 1),
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: "Rate: ",
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
+                            ),
+                            Spacer(flex: 1),
+                            RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: "Rate: ",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
                                     ),
-                                    TextSpan(
-                                      text: "${firstItem.rate ?? 'N/A'}/hr",
-                                      style: TextStyle(
-                                        color: AppTheme.textSecondaryColor,
-                                        fontSize: 14,
-                                      ),
+                                  ),
+                                  TextSpan(
+                                    text: "${firstItem.rate ?? 'N/A'}/hr",
+                                    style: TextStyle(
+                                      color: AppTheme.textSecondaryColor,
+                                      fontSize: 14,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
                 }
                 return const SizedBox.shrink();
               },
@@ -473,7 +494,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             children: [
               Container(
                 padding:
-                const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor,
                   borderRadius: const BorderRadius.only(

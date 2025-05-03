@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:meetsu_solutions/model/job&ads/job_and_ads_response_model.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/screen/dashboard/dashboard_controller.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
@@ -13,7 +14,8 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final DashboardController _controller = DashboardController();
-  final PageController _pageController = PageController();
+  late PageController _pageController;
+  int _realIndex = 0;
 
   String formatDate(String isoDate) {
     DateTime dateTime = DateTime.parse(isoDate);
@@ -23,22 +25,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(
+      initialPage: _controller.adItems.value.isNotEmpty ? 10000 : 0,
+    );
     _controller.currentIndex.addListener(_handleIndexChange);
   }
 
+  void _handleAdItemsUpdate() {
+    if (mounted && _controller.adItems.value.isNotEmpty) {
+      _pageController = PageController(initialPage: 10000);
+    }
+  }
+
   void _handleIndexChange() {
-    if (_pageController.hasClients) {
+    if (_pageController.hasClients &&
+        _controller.adItems.value.isNotEmpty &&
+        mounted) {
+      // Calculate the page to jump to
+      final currentPage = _pageController.page?.round() ?? 0;
+      final adItemsLength = _controller.adItems.value.length;
+      final targetPage = (currentPage ~/ adItemsLength) * adItemsLength +
+          _controller.currentIndex.value;
+
       _pageController.animateToPage(
-        _controller.currentIndex.value,
+        targetPage,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     }
   }
 
+
   @override
   void dispose() {
     _controller.currentIndex.removeListener(_handleIndexChange);
+    _controller.adItems.removeListener(_handleAdItemsUpdate);
     _controller.dispose();
     _pageController.dispose();
     super.dispose();
@@ -209,7 +230,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               return _buildLoadingIndicator();
             }
 
-            return ValueListenableBuilder<List<AdItem>>(
+            return ValueListenableBuilder<List<Ads>>(
               valueListenable: _controller.adItems,
               builder: (context, adItems, _) {
                 if (adItems.isEmpty) {
@@ -238,7 +259,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildAdsPageView(List<AdItem> adItems) {
+  Widget _buildAdsPageView(List<Ads> adItems) {
     return Container(
       constraints: BoxConstraints(
         minHeight: 400,
@@ -246,18 +267,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: PageView.builder(
         controller: _pageController,
-        itemCount: adItems.length,
+        itemCount: 30000,
         onPageChanged: (index) {
-          _controller.setCurrentIndex(index);
+          final realIndex = index % adItems.length;
+          _realIndex = realIndex;
+          _controller.setCurrentIndex(realIndex);
         },
         itemBuilder: (context, index) {
-          return _buildAdCard(adItems[index]);
+          final realIndex = index % adItems.length;
+          return _buildAdCard(adItems[realIndex]);
         },
       ),
     );
   }
 
-  Widget _buildAdCard(AdItem ad) {
+  Widget _buildAdCard(Ads ad) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -282,7 +306,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(
-                ad.subjectLine,
+                ad.subjectLine!,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -302,7 +326,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildAdImage(AdItem ad) {
+  Widget _buildAdImage(Ads ad) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -310,7 +334,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
-        child: ad.imageUrl.isNotEmpty
+        child: ad.imageUrl!.isNotEmpty
             ? Container(
                 width: double.infinity,
                 constraints: const BoxConstraints(
@@ -318,7 +342,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   maxHeight: 300,
                 ),
                 child: Image.network(
-                  ad.imageUrl,
+                  ad.imageUrl!,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
@@ -343,7 +367,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildDateAndPlace(AdItem ad) {
+  Widget _buildDateAndPlace(Ads ad) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -359,7 +383,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               Text(
-                ad.date,
+                ad.date!,
                 style: const TextStyle(
                   color: AppTheme.textPrimaryColor,
                   fontSize: 14,
@@ -379,7 +403,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 Flexible(
                   child: Text(
-                    ad.place,
+                    ad.place!,
                     style: const TextStyle(
                       color: AppTheme.textPrimaryColor,
                       fontSize: 14,
@@ -395,7 +419,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildStatusAndAmount(AdItem ad) {
+  Widget _buildStatusAndAmount(Ads ad) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Row(
@@ -411,7 +435,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               Text(
-                ad.status,
+                ad.status!,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textPrimaryColor,
@@ -444,7 +468,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildDescription(AdItem ad) {
+  Widget _buildDescription(Ads ad) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Column(
@@ -496,7 +520,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            ad.description,
+            ad.description!,
             style: const TextStyle(
               color: AppTheme.textSecondaryColor,
               fontSize: 14,

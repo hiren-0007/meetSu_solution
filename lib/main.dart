@@ -13,6 +13,9 @@ import 'package:meetsu_solutions/services/firebase/firebase_messaging_service.da
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 
+// Create a global navigator key
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -60,7 +63,7 @@ class JobPortalApp extends StatelessWidget {
           '/login': (context) => LoginScreen(),
           '/home': (context) => const HomeScreen(),
         },
-        navigatorKey: GlobalKey<NavigatorState>(),
+        navigatorKey: navigatorKey,
       ),
     );
   }

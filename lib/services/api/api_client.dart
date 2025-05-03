@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
+import 'package:meetsu_solutions/main.dart';
 
 class ApiClient {
   final String baseUrlNew = 'https://meetsusolutions.com/api/web/';
@@ -21,6 +23,35 @@ class ApiClient {
     _headers['Authorization'] = 'Bearer $token';
   }
 
+  // Remove auth token
+  void removeAuthToken() {
+    _headers.remove('Authorization');
+  }
+
+  // Handle 401 Unauthorized
+  void _handle401(http.Response response) async {
+    try {
+      debugPrint('🚫 401 Unauthorized - Logging out user');
+
+      // Clear all data from SharedPreferences
+      await SharedPrefsService.instance.clear();
+
+      // Remove auth token from headers
+      removeAuthToken();
+
+      // Check if we can navigate
+      if (navigatorKey.currentState != null) {
+        // Navigate to login screen and remove all previous routes
+        navigatorKey.currentState!.pushNamedAndRemoveUntil(
+          '/login',
+              (route) => false,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error handling 401: $e');
+    }
+  }
+
   // Generic GET request
   Future<Map<String, dynamic>> get(String endpoint, {Map<String, dynamic>? queryParams}) async {
     try {
@@ -37,6 +68,15 @@ class ApiClient {
 
         final response = await http.Response.fromStream(streamedResponse)
             .timeout(_receiveTimeout);
+
+        // Check for 401 status
+        if (response.statusCode == 401) {
+          _handle401(response);
+          throw HttpException(
+            statusCode: 401,
+            message: 'Unauthorized',
+          );
+        }
 
         return _handleResponse(response);
       } finally {
@@ -81,6 +121,15 @@ class ApiClient {
           final response = await http.Response.fromStream(streamedResponse)
               .timeout(_receiveTimeout);
 
+          // Check for 401 status
+          if (response.statusCode == 401) {
+            _handle401(response);
+            throw HttpException(
+              statusCode: 401,
+              message: 'Unauthorized',
+            );
+          }
+
           return _handleResponse(response);
         } finally {
           client.close();
@@ -98,6 +147,15 @@ class ApiClient {
 
           final response = await http.Response.fromStream(streamedResponse)
               .timeout(_receiveTimeout);
+
+          // Check for 401 status
+          if (response.statusCode == 401) {
+            _handle401(response);
+            throw HttpException(
+              statusCode: 401,
+              message: 'Unauthorized',
+            );
+          }
 
           return _handleResponse(response);
         } finally {
@@ -127,6 +185,15 @@ class ApiClient {
         final response = await http.Response.fromStream(streamedResponse)
             .timeout(_receiveTimeout);
 
+        // Check for 401 status
+        if (response.statusCode == 401) {
+          _handle401(response);
+          throw HttpException(
+            statusCode: 401,
+            message: 'Unauthorized',
+          );
+        }
+
         return _handleResponse(response);
       } finally {
         client.close();
@@ -151,6 +218,15 @@ class ApiClient {
 
         final response = await http.Response.fromStream(streamedResponse)
             .timeout(_receiveTimeout);
+
+        // Check for 401 status
+        if (response.statusCode == 401) {
+          _handle401(response);
+          throw HttpException(
+            statusCode: 401,
+            message: 'Unauthorized',
+          );
+        }
 
         return _handleResponse(response);
       } finally {
@@ -209,8 +285,14 @@ class ApiClient {
         final response = await http.Response.fromStream(streamedResponse)
             .timeout(_receiveTimeout);
 
-        // debugPrint('Response status: ${response.statusCode}');
-        // debugPrint('Response body: ${response.body}');
+        // Check for 401 status
+        if (response.statusCode == 401) {
+          _handle401(response);
+          throw HttpException(
+            statusCode: 401,
+            message: 'Unauthorized',
+          );
+        }
 
         return _handleResponse(response);
       } finally {

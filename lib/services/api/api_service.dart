@@ -71,6 +71,11 @@ class ApiService {
     );
   }
 
+  // Show request records related APIs
+  Future<Map<String, dynamic>> getRequestRecords() async {
+    return await _client.get(ApiEndpoints.getRequestData);
+  }
+
   //Quote related APIs
   Future<Map<String, dynamic>> getQuote() async {
     return await _client.fetchQuote();

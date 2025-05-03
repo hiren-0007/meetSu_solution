@@ -37,13 +37,14 @@ class ScheduleController {
 
     if (picked != null && picked != currentDate) {
       startDate.value = _formatDate(picked);
+      endDate.value = _formatDate(picked.add(const Duration(days: 13)));
       _fetchScheduleData();
     }
   }
 
   Future<void> selectEndDate(BuildContext context) async {
     final DateTime minEndDate =
-    _parseDate(startDate.value).add(const Duration(days: 14));
+    _parseDate(startDate.value).add(const Duration(days: 13));
     final DateTime currentDate = _parseDate(endDate.value);
 
     final DateTime? picked = await showDatePicker(
@@ -154,8 +155,8 @@ class ScheduleController {
   void navigateToPreviousPeriod() {
     final currentStartDate = _parseDate(startDate.value);
 
-    final newStartDate = currentStartDate.subtract(const Duration(days: 14));
-    final newEndDate = _parseDate(endDate.value).subtract(const Duration(days: 14));
+    final newEndDate = currentStartDate.subtract(const Duration(days: 1));
+    final newStartDate = newEndDate.subtract(const Duration(days: 13));
 
     startDate.value = _formatDate(newStartDate);
     endDate.value = _formatDate(newEndDate);
@@ -166,18 +167,11 @@ class ScheduleController {
   void navigateToNextPeriod() {
     final currentEndDate = _parseDate(endDate.value);
 
-    final today = DateTime.now();
+    final newStartDate = currentEndDate.add(const Duration(days: 1));
+    final newEndDate = newStartDate.add(const Duration(days: 13));
 
-    if (currentEndDate.add(const Duration(days: 14)).isAfter(today)) {
-      endDate.value = _formatDate(today);
-      startDate.value = _formatDate(today.subtract(const Duration(days: 14)));
-    } else {
-      final newStartDate = _parseDate(startDate.value).add(const Duration(days: 14));
-      final newEndDate = currentEndDate.add(const Duration(days: 14));
-
-      startDate.value = _formatDate(newStartDate);
-      endDate.value = _formatDate(newEndDate);
-    }
+    startDate.value = _formatDate(newStartDate);
+    endDate.value = _formatDate(newEndDate);
 
     _fetchScheduleData();
   }
