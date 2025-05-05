@@ -170,16 +170,14 @@ class ComplianceScreenState extends State<ComplianceScreen> {
                                             ),
                                             trailing: IconButton(
                                               icon: const Icon(
-                                                Icons.download,
+                                                Icons.remove_red_eye_outlined,
                                                 color: AppTheme.primaryColor,
                                               ),
-                                              onPressed: isLoading
-                                                  ? null
-                                                  : () => _controller
-                                                          .simpleDownloadReport(
-                                                        context,
-                                                        report,
-                                                      ),
+                                              onPressed: () =>
+                                                  _controller.showPdf(
+                                                report,
+                                                context,
+                                              ),
                                             ),
                                             contentPadding:
                                                 const EdgeInsets.symmetric(

@@ -38,7 +38,7 @@ class _PdfViewerScreenAssignedScreenState extends State<PdfViewerScreenAssignedS
             widget.trainingData!['give_test'] == 1;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("PDF Viewer")),
+      appBar: AppBar(title: const Text("")),
       body: Stack(
         children: [
           SfPdfViewer.network(
