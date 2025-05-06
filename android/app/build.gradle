@@ -11,7 +11,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.example.meetsuSolution"
+    namespace = "app.meetsusolutions"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -36,7 +36,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.meetsuSolution"
+        applicationId = "app.meetsusolutions"
         minSdk = 25
         targetSdk = 34
         versionCode = flutter.versionCode
