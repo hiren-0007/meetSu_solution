@@ -7,6 +7,7 @@ import 'package:meetsu_solutions/screen/more/profile/profile_screen.dart';
 import 'package:meetsu_solutions/screen/more/quiz/quiz_result_screen.dart';
 import 'package:meetsu_solutions/screen/more/request/send_request_screen.dart';
 import 'package:meetsu_solutions/screen/more/training/training_screen.dart';
+import 'package:meetsu_solutions/screen/quiz/quiz_screen.dart';
 import 'package:meetsu_solutions/screen/splash/splash_screen.dart';
 import 'package:meetsu_solutions/services/connectivity/connectivity_service.dart';
 import 'package:meetsu_solutions/services/firebase/firebase_messaging_service.dart';
@@ -62,6 +63,7 @@ class JobPortalApp extends StatelessWidget {
           '/quiz-result': (context) => const QuizResultScreen(),
           '/login': (context) => LoginScreen(),
           '/home': (context) => const HomeScreen(),
+          '/quiz': (context) => const QuizScreen(),
         },
         navigatorKey: navigatorKey,
       ),

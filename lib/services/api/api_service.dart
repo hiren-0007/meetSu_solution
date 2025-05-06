@@ -140,7 +140,23 @@ class ApiService {
     }
   }
 
+  //Log out related APIs
   Future<Map<String, dynamic>> getUserLogout() async {
     return await _client.get(ApiEndpoints.userLogout);
+  }
+
+  //Show quiz related APIs
+  Future<Map<String, dynamic>> getShowQuiz() async {
+    return await _client.get(ApiEndpoints.getShowQuiz);
+  }
+
+  //Get quiz related APIs
+  Future<Map<String, dynamic>> getQuiz() async {
+    return await _client.get(ApiEndpoints.getQuiz);
+  }
+
+  // Quiz answer submission API
+  Future<Map<String, dynamic>> submitQuizAnswer(Map<String, dynamic> answerData) async {
+    return await _client.post(ApiEndpoints.quizAnswer, body: answerData);
   }
 }

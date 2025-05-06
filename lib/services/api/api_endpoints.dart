@@ -43,4 +43,10 @@ class ApiEndpoints {
   static const String fcmToken = 'flutter/user-token';
 
   static const String userLogout = 'flutter/logout';
+
+  static const String getShowQuiz = 'flutter/show-quiz';
+
+  static const String getQuiz = 'flutter/quiz';
+
+  static const String quizAnswer = 'flutter/quiz-answer';
 }

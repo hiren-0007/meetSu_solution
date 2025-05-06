@@ -45,10 +45,31 @@ class _HomeScreenState extends State<HomeScreen> {
               valueListenable: _controller.selectedIndex,
               builder: (context, selectedIndex, _) {
                 if (selectedIndex == 0) {
-                  return IconButton(
-                    icon: const Icon(Icons.question_mark, color: Colors.white),
-                    onPressed: () => _controller.openNotifications(context),
-                  );
+                  return
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12.0),
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.blue),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: () => _controller.openNotifications(context),
+                        child: const Text(
+                          'Quiz ?',
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    );
                 } else {
                   return Padding(
                     padding: const EdgeInsets.only(
