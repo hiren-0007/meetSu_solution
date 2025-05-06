@@ -146,9 +146,11 @@ class _QuizScreenState extends State<QuizScreen> {
                       ValueListenableBuilder<int>(
                         valueListenable: _controller.remainingSeconds,
                         builder: (context, seconds, child) {
-                          final timeColor = seconds < 60 ? Colors.red : Colors.blue;
+                          final timeColor =
+                              seconds < 60 ? Colors.red : Colors.blue;
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
                               color: timeColor.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(16),
@@ -217,7 +219,8 @@ class _QuizScreenState extends State<QuizScreen> {
                 if (_controller.answerController.text.trim().isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text("Please enter your answer before submitting"),
+                      content:
+                          Text("Please enter your answer before submitting"),
                       backgroundColor: Colors.orange,
                     ),
                   );
@@ -231,7 +234,8 @@ class _QuizScreenState extends State<QuizScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(response['message']),
-                        backgroundColor: response.containsKey('correct') && response['correct'] == true
+                        backgroundColor: response.containsKey('correct') &&
+                                response['correct'] == true
                             ? Colors.green
                             : Colors.blue,
                       ),
@@ -243,16 +247,19 @@ class _QuizScreenState extends State<QuizScreen> {
                     barrierDismissible: false,
                     builder: (context) => AlertDialog(
                       title: Text(
-                        response.containsKey('correct') && response['correct'] == true
+                        response.containsKey('correct') &&
+                                response['correct'] == true
                             ? "Correct Answer!"
                             : "Thank You",
                         style: TextStyle(
-                          color: response.containsKey('correct') && response['correct'] == true
+                          color: response.containsKey('correct') &&
+                                  response['correct'] == true
                               ? Colors.green
                               : Colors.blue,
                         ),
                       ),
-                      content: Text(response['message'] ?? "Your answer has been submitted."),
+                      content: Text(response['message'] ??
+                          "Your answer has been submitted."),
                       actions: [
                         TextButton(
                           onPressed: () {
@@ -330,7 +337,8 @@ class _QuizScreenState extends State<QuizScreen> {
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

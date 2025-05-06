@@ -58,7 +58,8 @@ class QuizController {
           durationMinutes.value = quizData['duration'] ?? 20;
         }
 
-        debugPrint("✅ Quiz data loaded: ID=${quizId.value}, Question: ${question.value}");
+        debugPrint(
+            "✅ Quiz data loaded: ID=${quizId.value}, Question: ${question.value}");
 
         if (!quizTaken.value) {
           startQuizTimer();
