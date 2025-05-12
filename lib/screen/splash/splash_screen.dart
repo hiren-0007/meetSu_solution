@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meetsu_solutions/clint/c_screen/c_home/clint_home_screen.dart';
 
 import '../../services/pref/shared_prefs_service.dart';
 import '../auth/login/login_screen.dart';
@@ -34,6 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
       // Valid token exists, navigate to home
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const HomeScreen())
+          // MaterialPageRoute(builder: (_) => const ClientHomeScreen())
       );
     } else {
       // No valid token, go to login

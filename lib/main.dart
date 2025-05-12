@@ -1,5 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:meetsu_solutions/clint/c_screen/c_home/clint_home_screen.dart';
+import 'package:meetsu_solutions/clint/c_screen/c_more/analytics/daily/daily_analytics_screen.dart';
+import 'package:meetsu_solutions/clint/c_screen/c_more/analytics/weekly/weekly_analytics_screen.dart';
+import 'package:meetsu_solutions/clint/c_screen/c_more/c_profile/clint_profile_screen.dart';
 import 'package:meetsu_solutions/screen/auth/login/login_screen.dart';
 import 'package:meetsu_solutions/screen/home/home_screen.dart';
 import 'package:meetsu_solutions/screen/more/contact/contact_screen.dart';
@@ -57,13 +61,18 @@ class JobPortalApp extends StatelessWidget {
         home: const SplashScreen(),
         routes: {
           '/profile': (context) => const ProfileScreen(),
+          '/clint-profile': (context) => const ClientProfileScreen(),
           '/contact': (context) => const ContactScreen(),
           '/trainings': (context) => const TrainingScreen(),
           '/send-request': (context) => const SendRequestScreen(),
           '/quiz-result': (context) => const QuizResultScreen(),
           '/login': (context) => LoginScreen(),
           '/home': (context) => const HomeScreen(),
+          // '/home': (context) => const ClientHomeScreen(),
           '/quiz': (context) => const QuizScreen(),
+
+          '/analytics/daily': (context) => const DailyAnalyticsScreen(),
+          '/analytics/weekly': (context) => const WeeklyAnalyticsScreen(),
         },
         navigatorKey: navigatorKey,
       ),

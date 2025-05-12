@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:meetsu_solutions/model/job&ads/job_and_ads_response_model.dart';
+import 'package:meetsu_solutions/model/job&ads/ads/ads_response_model.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/screen/dashboard/dashboard_controller.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';

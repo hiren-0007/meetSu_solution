@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meetsu_solutions/clint/c_screen/c_home/clint_home_screen.dart';
 import 'package:meetsu_solutions/model/auth/login/login_request_model.dart';
 import 'package:meetsu_solutions/model/auth/login/login_response_model.dart';
 import 'package:meetsu_solutions/screen/auth/signup/signup_screen.dart';
@@ -66,6 +67,7 @@ class LoginController {
           await requestLocationPermission(context);
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => const HomeScreen()));
+              // MaterialPageRoute(builder: (context) => const ClientHomeScreen()));
         }
         return true;
       } else {

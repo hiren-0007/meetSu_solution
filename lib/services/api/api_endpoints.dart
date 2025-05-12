@@ -6,7 +6,9 @@ class ApiEndpoints {
 
   static const String schedule = 'flutter/schedule';
 
-  static const String jobAndAds = 'job/get-jobopenings-ads?page=0&limit=100&job_or_ads=0&webmob=0';
+  static const String getAdsOnly = 'job/get-jobopenings-ads?page=0&limit=100&job_or_ads=2&webmob=0';
+
+  static const String getJobsOnly = 'job/get-jobopenings-ads?page=0&limit=100&job_or_ads=1&webmob=0';
 
   static const String jobShare = 'flutter/share-link';
 

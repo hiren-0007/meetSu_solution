@@ -26,9 +26,14 @@ class ApiService {
     return await _client.post(ApiEndpoints.schedule, body: body);
   }
 
-  // Job related APIs
-  Future<Map<String, dynamic>> getJobAndAds() async {
-    return await _client.get(ApiEndpoints.jobAndAds);
+  // Ads only API
+  Future<Map<String, dynamic>> getAdsOnly() async {
+    return await _client.get(ApiEndpoints.getAdsOnly);
+  }
+
+  // Jobs only API
+  Future<Map<String, dynamic>> getJobsOnly() async {
+    return await _client.get(ApiEndpoints.getJobsOnly);
   }
 
   //Job Share related APIs
@@ -81,7 +86,7 @@ class ApiService {
     return await _client.fetchQuote();
   }
 
-  // Weather related APis
+  // Weather related APIs
   Future<Map<String, dynamic>> getWeather(Map<String, dynamic> locationData) async {
     return await _client.post(ApiEndpoints.getWeather, body: locationData);
   }

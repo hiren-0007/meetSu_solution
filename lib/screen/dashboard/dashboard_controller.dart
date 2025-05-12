@@ -1,9 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
-import 'package:meetsu_solutions/model/job&ads/job_and_ads_response_model.dart';
+import 'package:meetsu_solutions/model/job&ads/ads/ads_response_model.dart';
 import 'dart:async';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
@@ -27,9 +26,11 @@ class DashboardController {
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(true);
   final ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
+  // Add a loading indicator specifically for share operation
+  final ValueNotifier<bool> isSharing = ValueNotifier<bool>(false);
 
   final ValueNotifier<WeatherResponseModel?> getWeatherData =
-      ValueNotifier<WeatherResponseModel?>(null);
+  ValueNotifier<WeatherResponseModel?>(null);
 
   Timer? _autoScrollTimer;
 
@@ -119,17 +120,17 @@ class DashboardController {
 
       _apiService.client.addAuthToken(token);
 
-      final response = await _apiService.getJobAndAds();
+      final response = await _apiService.getAdsOnly();
       debugPrint("📥 Received response for Ads");
 
-      final adsResponse = JobAndAdsResponseModel.fromJson(response);
+      final adsResponse = AdsResponseModel.fromJson(response);
 
       if (adsResponse.success == true &&
           adsResponse.response != null &&
           adsResponse.response!.ads != null &&
           adsResponse.response!.ads!.isNotEmpty) {
         final List<Ads> ads = adsResponse.response!.ads!.map((ad) {
-          String plainDescription = HtmlParsers.htmlToText(ad.description);
+          String plainDescription = HtmlParsers.htmlToText(ad.description ?? "");
 
           return Ads(
             adsId: ad.adsId ?? 0,
@@ -236,26 +237,24 @@ class DashboardController {
       final response = await _apiService.getWeather(locationData);
       debugPrint("📥 Weather API Response: $response");
 
-      if (response != null) {
-        if (response.containsKey('temperature')) {
-          final temp = response['temperature'];
-          final tempString = temp is double ? temp.toStringAsFixed(2) : temp.toString();
+      if (response.containsKey('temperature')) {
+        final temp = response['temperature'];
+        final tempString = temp is double ? temp.toStringAsFixed(2) : temp.toString();
 
-          temperature.value = "${tempString}°C";
+        temperature.value = "${tempString}°C";
 
-          final modifiedResponse = Map<String, dynamic>.from(response);
-          modifiedResponse['temperature'] = tempString;
+        final modifiedResponse = Map<String, dynamic>.from(response);
+        modifiedResponse['temperature'] = tempString;
 
-          getWeatherData.value = WeatherResponseModel.fromJson(modifiedResponse);
+        getWeatherData.value = WeatherResponseModel.fromJson(modifiedResponse);
 
-          if (response.containsKey('icon') && response['icon'] != null) {
-            iconLink.value = response['icon'];
-          }
-
-          debugPrint("✅ Weather Updated: ${temperature.value}");
-        } else {
-          debugPrint("⚠️ Weather API response missing temperature: $response");
+        if (response.containsKey('icon') && response['icon'] != null) {
+          iconLink.value = response['icon'];
         }
+
+        debugPrint("✅ Weather Updated: ${temperature.value}");
+      } else {
+        debugPrint("⚠️ Weather API response missing temperature: $response");
       }
 
       date.value = DateFormat("MMM dd, yyyy").format(DateTime.now());
@@ -266,15 +265,70 @@ class DashboardController {
     }
   }
 
-  void shareAd(BuildContext context, Ads ad) {
-    final String shareText = ad.shareDescription?.isNotEmpty == true
-        ? ad.shareDescription!
-        : "Check out this ad: ${ad.subjectLine ?? 'Untitled Ad'}\n\nhttps://meetsusolutions.com/franciso/web/site/ads?id=${ad.adsId ?? ''}";
+  Future<void> shareAd(BuildContext context, Ads ad) async {
+    try {
+      isSharing.value = true;
 
-    Share.share(
-      shareText,
-      subject: ad.subjectLine ?? 'Ad',
-    );
+      final Map<String, dynamic> shareData = {
+        'id': ad.adsId.toString(),
+        'job_or_ad': '2',
+        'medium': 'Whatsapp',
+      };
+
+      debugPrint("🔄 Sharing ad: ${ad.subjectLine} (ID: ${ad.adsId})");
+      debugPrint("📤 Share request data: $shareData");
+
+      final response = await _apiService.getJobShare(shareData);
+      debugPrint("📥 Share API Response: $response");
+
+      if (response['success'] == true) {
+        String shareLink = "";
+
+        if (response['response'] != null && response['response']['link'] != null) {
+          shareLink = response['response']['link'];
+          debugPrint("🔗 Share link received: $shareLink");
+        } else if (response['link'] != null) {
+          shareLink = response['link'];
+          debugPrint("🔗 Share link received (alt path): $shareLink");
+        }
+
+        if (shareLink.isNotEmpty) {
+          final String shareText = ad.shareDescription?.isNotEmpty == true
+              ? "${ad.shareDescription!}\n\n$shareLink"
+              : "Check out this ad: ${ad.subjectLine ?? 'Untitled Ad'}\n\n$shareLink";
+
+          await Share.share(
+            shareText,
+            subject: ad.subjectLine ?? 'Ad',
+          );
+
+          debugPrint("✅ Ad shared successfully");
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Unable to get share link')),
+          );
+          debugPrint("⚠️ No share link found in response");
+        }
+      } else {
+        String errorMsg = response != null && response['message'] != null
+            ? response['message']
+            : 'Failed to generate share link';
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMsg)),
+        );
+
+        debugPrint("❌ Error in share API response: $errorMsg");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sharing: ${e.toString()}')),
+      );
+
+      debugPrint("❌ Exception during share operation: $e");
+    } finally {
+      isSharing.value = false;
+    }
   }
 
   void downloadFromPlayStore(BuildContext context) {
@@ -327,6 +381,7 @@ class DashboardController {
     currentIndex.dispose();
     benefits.dispose();
     errorMessage.dispose();
+    isSharing.dispose();
     _autoScrollTimer?.cancel();
   }
 }

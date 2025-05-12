@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class AppTheme {
   // Main Colors
   static const Color primaryColor = Color(0xFF2196F3);
+  static const Color primaryClintColor = Color(0xFF0258F8);
   static const Color primaryLightColor = Color(0xFF00B0FF);
   static const Color backgroundColor = Color(0xFFF5F7FA);
   static const Color cardColor = Colors.white;
@@ -45,11 +46,26 @@ class AppTheme {
     ],
   );
 
+  static const LinearGradient primaryClintGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      primaryColor,
+      primaryClintColor,
+    ],
+  );
+
   // Shadows
   static BoxShadow primaryShadow = BoxShadow(
     color: const Color.fromRGBO(0, 0, 0, 0.1),
     blurRadius: 10,
     spreadRadius: 5,
+  );
+
+  static BoxShadow primaryClintShadow = BoxShadow(
+    color: const Color.fromRGBO(0, 0, 0, 0.3),
+    blurRadius: 12,
+    spreadRadius: 7,
   );
 
   static BoxShadow lightShadow = BoxShadow(
@@ -389,6 +405,16 @@ class AppTheme {
       bottomRight: Radius.circular(largeBorderRadius),
     ),
     boxShadow: [primaryShadow],
+  );
+
+  // Header Container Decoration
+  static BoxDecoration headerClintContainerDecoration = BoxDecoration(
+    gradient: primaryClintGradient,
+    borderRadius: const BorderRadius.only(
+      bottomLeft: Radius.circular(largeBorderRadius),
+      bottomRight: Radius.circular(largeBorderRadius),
+    ),
+    boxShadow: [primaryClintShadow],
   );
 
   // Profile Content Container

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meetsu_solutions/model/job&ads/job/job_opening_response_model.dart';
 import 'package:meetsu_solutions/screen/job/job_opening_controller.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
@@ -13,13 +14,11 @@ class JobOpeningScreen extends StatefulWidget {
 class _JobOpeningScreenState extends State<JobOpeningScreen> {
   final JobOpeningController _controller = JobOpeningController();
   late PageController _pageController;
-  int _realIndex = 0;
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize with large initial page for infinite scrolling
     _pageController = PageController(
       initialPage: _controller.jobOpenings.value.isNotEmpty ? 10000 : 0,
     );
@@ -73,10 +72,10 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
             Container(
               width: double.infinity,
               margin: const EdgeInsets.fromLTRB(16, 24, 16, 16),
-              child: Column(
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "Job Openings",
                     style: TextStyle(
                       fontSize: 24,
@@ -84,7 +83,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                       color: AppTheme.textPrimaryColor,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Text(
                     "Explore available positions",
                     style: TextStyle(
@@ -104,7 +103,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                       child: CircularProgressIndicator(),
                     );
                   } else {
-                    return ValueListenableBuilder<List<JobOpening>>(
+                    return ValueListenableBuilder<List<Jobs>>(
                       valueListenable: _controller.jobOpenings,
                       builder: (context, jobOpenings, _) {
                         if (jobOpenings.isEmpty) {
@@ -148,14 +147,13 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
     );
   }
 
-  Widget _buildJobPageView(List<JobOpening> jobOpenings) {
+  Widget _buildJobPageView(List<Jobs> jobOpenings) {
     return PageView.builder(
       controller: _pageController,
       itemCount: 20000, // Large number for infinite scrolling
       onPageChanged: (index) {
         // Calculate real index
         final realIndex = index % jobOpenings.length;
-        _realIndex = realIndex;
         _controller.setCurrentIndex(realIndex);
       },
       itemBuilder: (context, index) {
@@ -166,7 +164,10 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
     );
   }
 
-  Widget _buildJobCard(JobOpening job) {
+  Widget _buildJobCard(Jobs job) {
+    // Get requirements as a list from job description
+    List<String> requirements = _controller.getRequirements(job);
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -191,7 +192,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(15),
-              child: job.imageUrl.isNotEmpty
+              child: job.imageUrl != null && job.imageUrl!.isNotEmpty
                   ? Container(
                 width: double.infinity,
                 constraints: const BoxConstraints(
@@ -199,7 +200,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                   maxHeight: 250,
                 ),
                 child: Image.network(
-                  job.imageUrl,
+                  job.imageUrl!,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     return _buildFallbackImage();
@@ -212,7 +213,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
-              job.title,
+              job.jobPosition ?? "Unknown Position",
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -235,7 +236,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                       ),
                     ),
                     Text(
-                      job.date,
+                      job.positionDate ?? "Unknown",
                       style: const TextStyle(
                         color: AppTheme.textPrimaryColor,
                         fontSize: 14,
@@ -255,7 +256,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                       ),
                       Flexible(
                         child: Text(
-                          job.location,
+                          job.location ?? "Unknown",
                           style: const TextStyle(
                             color: AppTheme.textPrimaryColor,
                             fontSize: 14,
@@ -284,7 +285,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                       ),
                     ),
                     Text(
-                      job.positions.toString(),
+                      (job.noOfPositions ?? 1).toString(),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textPrimaryColor,
@@ -303,7 +304,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                       ),
                     ),
                     Text(
-                      job.salary,
+                      job.salary ?? "N/A",
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primaryColor,
@@ -332,42 +333,57 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                         color: AppTheme.textPrimaryColor,
                       ),
                     ),
-                    // Share button
-                    GestureDetector(
-                      onTap: () => _controller.shareJob(context, job),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.share,
-                              color: Colors.white,
-                              size: 16,
+                    // Share button with loading indicator
+                    ValueListenableBuilder<bool>(
+                      valueListenable: _controller.isSharing,
+                      builder: (context, isSharing, _) {
+                        return GestureDetector(
+                          onTap: isSharing ? null : () => _controller.shareJob(context, job),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSharing ? Colors.grey : AppTheme.primaryColor,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            SizedBox(width: 4),
-                            Text(
-                              "Share",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (isSharing)
+                                  const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                else
+                                  const Icon(
+                                    Icons.share,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  isSharing ? "Sharing..." : "Share",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  job.description,
+                  job.positionDescription ?? "No description available",
                   style: const TextStyle(
                     color: AppTheme.textSecondaryColor,
                     fontSize: 14,
@@ -396,7 +412,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                   Expanded(
                     child: ListView.builder(
                       padding: EdgeInsets.zero,
-                      itemCount: job.requirements.length,
+                      itemCount: requirements.length,
                       itemBuilder: (context, index) {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 4),
@@ -408,7 +424,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                                   TextStyle(fontWeight: FontWeight.bold)),
                               Expanded(
                                 child: Text(
-                                  job.requirements[index],
+                                  requirements[index],
                                   style: const TextStyle(
                                     color: AppTheme.textSecondaryColor,
                                     fontSize: 14,
