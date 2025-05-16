@@ -250,7 +250,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               "We'd like to know more about you",
                               style: AppTheme.sectionSubtitleStyle,
                             ),
-                            const SizedBox(height: AppTheme.contentSpacing),
+                            const SizedBox(height: AppTheme.microSpacing),
                             Expanded(
                               child: _buildSelectedTabContent(),
                             ),
@@ -378,7 +378,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(AppTheme.contentSpacing),
+              padding: const EdgeInsets.all(AppTheme.mediumSpacing),
               decoration: AppTheme.aptitudeCardDecoration,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -387,7 +387,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     "Aptitude Test Results",
                     style: AppTheme.aptitudeTitleStyle,
                   ),
-                  const SizedBox(height: AppTheme.extraSmallSpacing),
+                  const SizedBox(height: AppTheme.microSpacing),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -422,12 +422,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: AppTheme.contentSpacing - 2),
+            const SizedBox(height: AppTheme.smallSpacing - 2),
             Text(
               "Category Breakdown",
               style: AppTheme.categoryTitleStyle,
             ),
-            const SizedBox(height: AppTheme.smallSpacing),
+            const SizedBox(height: AppTheme.smallSpacing - 1),
             SizedBox(
               height: AppTheme.tabBarHeight,
               child: ListView.builder(
@@ -459,7 +459,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: AppTheme.miniSpacing),
+                        const SizedBox(height: 1),
                         Text(
                           "${category.correctAnswer}/${category.totalQuestion}",
                           style: AppTheme.categoryScoreStyle,
@@ -474,7 +474,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
             ),
-            const SizedBox(height: AppTheme.contentSpacing - 2),
+            const SizedBox(height: AppTheme.smallSpacing - 2),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -488,7 +488,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: AppTheme.smallSpacing),
+            const SizedBox(height: AppTheme.microSpacing - 3),
             Expanded(
               child: ListView.builder(
                 itemCount: profileData.aptitude.length,

@@ -34,7 +34,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [AppTheme.primaryShadow],
               ),
-              margin: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+              margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
               child: Column(
                 children: [
@@ -46,7 +46,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             "Start Date",
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 13, // Reduced from 14
+                              fontSize: 13,
                               fontWeight: FontWeight.w500,
                             ),
                           ),

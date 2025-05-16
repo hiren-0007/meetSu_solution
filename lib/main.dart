@@ -31,12 +31,11 @@ void main() async {
   ConnectivityService().initialize();
 
   try {
-    // Initialize Firebase only once with options
+    // Initialize Firebase
     await Firebase.initializeApp();
     print('Firebase core initialized successfully');
 
-    // Initialize Firebase Messaging
-    await FirebaseMessagingService().initializeWithoutFirebase();
+    await FirebaseMessagingService().initialize();
   } catch (e) {
     print('Firebase initialization error: $e');
   }

@@ -239,18 +239,19 @@ class DashboardController {
 
       if (response.containsKey('temperature')) {
         final temp = response['temperature'];
-        final tempString = temp is double ? temp.toStringAsFixed(2) : temp.toString();
+        String tempString;
+
+        if (temp is int || temp is double) {
+          tempString = temp.toString();
+        } else {
+          tempString = temp.toString();
+        }
 
         temperature.value = "${tempString}°C";
 
-        final modifiedResponse = Map<String, dynamic>.from(response);
-        modifiedResponse['temperature'] = tempString;
-
-        getWeatherData.value = WeatherResponseModel.fromJson(modifiedResponse);
-
-        if (response.containsKey('icon') && response['icon'] != null) {
-          iconLink.value = response['icon'];
-        }
+        getWeatherData.value = WeatherResponseModel.fromJson({
+          'temperature': tempString
+        });
 
         debugPrint("✅ Weather Updated: ${temperature.value}");
       } else {

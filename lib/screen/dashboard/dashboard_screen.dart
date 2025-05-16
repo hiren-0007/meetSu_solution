@@ -92,7 +92,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildHeaderCard() {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       decoration: BoxDecoration(
         color: AppTheme.primaryColor,
         borderRadius: BorderRadius.circular(15),
@@ -105,31 +105,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ValueListenableBuilder<String>(
-                valueListenable: _controller.iconLink,
-                builder: (context, iconUrl, _) {
-                  return iconUrl.isNotEmpty
-                      ? Image.network(
-                          iconUrl,
-                          width: 24,
-                          height: 24,
-                          color: Colors.white,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(
-                              Icons.wb_sunny,
-                              color: Colors.white,
-                              size: 24,
-                            );
-                          },
-                        )
-                      : const Icon(
-                          Icons.wb_sunny,
-                          color: Colors.white,
-                          size: 24,
-                        );
-                },
+              const Icon(
+                Icons.wb_sunny,
+                color: Colors.white,
+                size: 22,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 2),
               ValueListenableBuilder<String>(
                 valueListenable: _controller.temperature,
                 builder: (context, temperature, _) {
@@ -140,7 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         "$temperature • $date",
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.w500,
                         ),
                       );
@@ -150,16 +131,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           const Text(
             "Quote of the day",
             style: TextStyle(
               color: Colors.white,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 2),
           ValueListenableBuilder<String>(
             valueListenable: _controller.quote,
             builder: (context, quote, _) {
@@ -168,13 +149,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 16,
+                  fontSize: 14,
                   fontStyle: FontStyle.italic,
                 ),
               );
             },
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 2),
           ValueListenableBuilder<String>(
             valueListenable: _controller.quoteAuthor,
             builder: (context, author, _) {
@@ -183,7 +164,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 textAlign: TextAlign.right,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
               );
@@ -200,24 +181,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         Container(
           width: double.infinity,
-          margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          margin: const EdgeInsets.fromLTRB(20, 4, 16, 0.1),
           child: const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Latest Advertisements",
+                "Advertisements",
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textPrimaryColor,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                "Swipe to view all",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.textSecondaryColor,
                 ),
               ),
             ],
@@ -308,7 +281,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Text(
                 ad.subjectLine!,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textPrimaryColor,
                 ),
@@ -319,7 +292,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const Divider(),
             _buildDescription(ad),
             _buildBenefits(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
           ],
         ),
       ),
@@ -379,14 +352,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 "Date: ",
                 style: TextStyle(
                   color: AppTheme.textSecondaryColor,
-                  fontSize: 14,
+                  fontSize: 12,
                 ),
               ),
               Text(
                 ad.date!,
                 style: const TextStyle(
                   color: AppTheme.textPrimaryColor,
-                  fontSize: 14,
+                  fontSize: 12,
                 ),
               ),
             ],
@@ -398,7 +371,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   "Place: ",
                   style: TextStyle(
                     color: AppTheme.textSecondaryColor,
-                    fontSize: 14,
+                    fontSize: 12,
                   ),
                 ),
                 Flexible(
@@ -406,7 +379,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ad.place!,
                     style: const TextStyle(
                       color: AppTheme.textPrimaryColor,
-                      fontSize: 14,
+                      fontSize: 12,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -431,7 +404,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 "Status: ",
                 style: TextStyle(
                   color: AppTheme.textSecondaryColor,
-                  fontSize: 14,
+                  fontSize: 12,
                 ),
               ),
               Text(
@@ -439,7 +412,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textPrimaryColor,
-                  fontSize: 14,
+                  fontSize: 12,
                 ),
               ),
             ],
@@ -450,7 +423,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 "Amount: ",
                 style: TextStyle(
                   color: AppTheme.textSecondaryColor,
-                  fontSize: 14,
+                  fontSize: 12,
                 ),
               ),
               Text(
@@ -458,7 +431,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: AppTheme.primaryColor,
-                  fontSize: 14,
+                  fontSize: 12,
                 ),
               ),
             ],
@@ -481,7 +454,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 "Description:",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 14,
                   color: AppTheme.textPrimaryColor,
                 ),
               ),
@@ -501,15 +474,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Icon(
                         Icons.share,
                         color: Colors.white,
-                        size: 16,
+                        size: 14,
                       ),
-                      SizedBox(width: 4),
+                      SizedBox(width: 3),
                       Text(
                         "Share",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: 11,
                         ),
                       ),
                     ],
@@ -518,12 +491,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 2),
           Text(
             ad.description!,
             style: const TextStyle(
               color: AppTheme.textSecondaryColor,
-              fontSize: 14,
+              fontSize: 12,
             ),
           ),
         ],
@@ -541,11 +514,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             "Benefits:",
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: 14,
               color: AppTheme.textPrimaryColor,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 2),
           ValueListenableBuilder<List<String>>(
             valueListenable: _controller.benefits,
             builder: (context, benefits, _) {
@@ -567,7 +540,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             benefit,
                             style: const TextStyle(
                               color: AppTheme.textSecondaryColor,
-                              fontSize: 14,
+                              fontSize: 12,
                             ),
                           ),
                         ),
@@ -764,15 +737,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Icon(
                         Icons.share,
                         color: Colors.white,
-                        size: 16,
+                        size: 14,
                       ),
-                      SizedBox(width: 4),
+                      SizedBox(width: 3),
                       Text(
                         "Share",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: 11,
                         ),
                       ),
                     ],
@@ -781,10 +754,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 2),
           const Text(
             "Also, share with your co-worker to do the same",
-            style: TextStyle(fontSize: 14),
+            style: TextStyle(fontSize: 12),
           ),
         ],
       ),
@@ -801,7 +774,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               "-: Benefits: -",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
+                fontSize: 12,
               ),
             ),
           ),

@@ -3,7 +3,7 @@
     package="app.meetsusolutions">
    <!-- package="app.meetsusolutions">-->
 
-
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Internet permission -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>

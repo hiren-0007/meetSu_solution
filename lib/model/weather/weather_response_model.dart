@@ -1,25 +1,21 @@
 class WeatherResponseModel {
   String? temperature;
-  String? date;
-  String? icon;
 
-  WeatherResponseModel({
-    this.temperature,
-    this.date,
-    this.icon,
-  });
+  WeatherResponseModel({this.temperature});
 
   WeatherResponseModel.fromJson(Map<String, dynamic> json) {
-    temperature = json['temperature'];
-    date = json['date'];
-    icon = json['icon'];
+    if (json['temperature'] != null) {
+      if (json['temperature'] is int || json['temperature'] is double) {
+        temperature = json['temperature'].toString();
+      } else {
+        temperature = json['temperature'];
+      }
+    }
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['temperature'] = temperature;
-    data['date'] = date;
-    data['icon'] = icon;
+    data['temperature'] = this.temperature;
     return data;
   }
 }

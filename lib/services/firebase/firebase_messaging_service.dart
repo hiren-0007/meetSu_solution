@@ -4,11 +4,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 
-import '../api/api_client.dart';
-import '../api/api_service.dart';
+import 'package:meetsu_solutions/services/api/api_client.dart';
+import 'package:meetsu_solutions/services/api/api_service.dart';
+
+import 'package:meetsu_solutions/main.dart' show navigatorKey;
 
 class FirebaseMessagingService {
   static final FirebaseMessagingService _instance = FirebaseMessagingService._internal();
@@ -18,35 +20,47 @@ class FirebaseMessagingService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
 
-  // Future<void> initialize() async {
-  //   await Firebase.initializeApp();
-  //   await setupFirebaseMessaging();
-  // }
-
-  Future<void> initialize() async {
-    try {
-      // This should be called only once in your app
-      await Firebase.initializeApp();
-      print('Firebase initialized in service');
-      await setupFirebaseMessaging();
-    } catch (e) {
-      print('Error initializing Firebase in service: $e');
-    }
-  }
-
-  Future<void> initializeWithoutFirebase() async {
-    try {
-      // Skip initialization as it should be done in main.dart
-      await setupFirebaseMessaging();
-      print('Firebase Messaging setup complete');
-    } catch (e) {
-      print('Error setting up Firebase Messaging: $e');
-    }
-  }
-
   static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     await Firebase.initializeApp();
     print('💥 Background Message: ${message.messageId}');
+  }
+
+  Future<void> initialize() async {
+    try {
+      // Firebase core should already be initialized in main.dart
+      print('Setting up Firebase Messaging');
+
+      // Request permissions for notifications based on platform
+      await requestNotificationPermissions();
+
+      await setupFirebaseMessaging();
+    } catch (e) {
+      print('Error initializing Firebase Messaging: $e');
+    }
+  }
+
+  Future<void> requestNotificationPermissions() async {
+    // For iOS notification permissions
+    if (Platform.isIOS) {
+      await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        provisional: false,
+        criticalAlert: false,
+        announcement: false,
+      );
+      print('iOS notification permissions requested');
+    }
+    // For Android 13+ (API level 33+)
+    else if (Platform.isAndroid) {
+      // Using permission_handler for Android
+      PermissionStatus status = await Permission.notification.status;
+      if (status.isDenied) {
+        await Permission.notification.request();
+        print('Android notification permissions requested');
+      }
+    }
   }
 
   Future<void> saveAndSendTokenToServer(String? token) async {
@@ -84,36 +98,33 @@ class FirebaseMessagingService {
     }
   }
 
-  // Setup notification channels
   Future<void> setupNotificationChannels() async {
-    // For regular notifications
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'default_channel', // id
-      'Default Notifications', // title
-      description: 'Used for default notifications', // description
-      importance: Importance.high,
-    );
+    if (Platform.isAndroid) {
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+        'default_channel', // id
+        'Default Notifications', // title
+        description: 'Used for default notifications', // description
+        importance: Importance.high,
+      );
 
-    // For foreground service
-    const AndroidNotificationChannel foregroundChannel = AndroidNotificationChannel(
-      'foreground_channel', // id
-      'Foreground Service', // title
-      description: 'Used for foreground service notifications', // description
-      importance: Importance.low,
-    );
+      const AndroidNotificationChannel foregroundChannel = AndroidNotificationChannel(
+        'foreground_channel', // id
+        'Foreground Service', // title
+        description: 'Used for foreground service notifications', // description
+        importance: Importance.low,
+      );
 
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(channel);
 
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(foregroundChannel);
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(foregroundChannel);
+    }
   }
 
-  // Handle notification navigation
   void handleNotificationNavigation(Map<String, dynamic> data, BuildContext? context) {
-    // Example: if notification is about a new training
     if (data.containsKey('type')) {
       switch(data['type']) {
         case 'training':
@@ -126,49 +137,33 @@ class FirebaseMessagingService {
             Navigator.of(context).pushNamed('/profile');
           }
           break;
-      // Add more types as needed
       }
     }
   }
 
-  // Setup Firebase Messaging
   Future<void> setupFirebaseMessaging() async {
-    // Register background handler
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-    // Request permission on iOS
-    await FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
-    // Setup notification channels
     await setupNotificationChannels();
 
-    // Get FCM token
     String? token = await FirebaseMessaging.instance.getToken();
     print('🔥 FCM Token: $token');
     await saveAndSendTokenToServer(token);
 
-    // Listen for token refreshes
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
       await saveAndSendTokenToServer(newToken);
     });
 
-    // Initialize local notifications
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    // Add iOS-specific notification settings
     const DarwinInitializationSettings initializationSettingsIOS =
     DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: false, 
+      requestBadgePermission: false, 
+      requestSoundPermission: false, 
     );
 
-    // Update to include iOS settings
     const InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsIOS,
@@ -177,12 +172,10 @@ class FirebaseMessagingService {
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse details) {
-        // Handle notification tap when app is in foreground
         if (details.payload != null) {
           try {
             final data = jsonDecode(details.payload!);
-            final context = GlobalKey<NavigatorState>().currentContext;
-            handleNotificationNavigation(data, context);
+            handleNotificationNavigation(data, navigatorKey.currentContext);
           } catch (e) {
             print('Error handling notification response: $e');
           }
@@ -190,14 +183,10 @@ class FirebaseMessagingService {
       },
     );
 
-    // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
 
-      // Check for notification from Firebase
       if (notification != null) {
-        // Show notification with iOS support
         flutterLocalNotificationsPlugin.show(
           notification.hashCode,
           notification.title,
@@ -221,28 +210,19 @@ class FirebaseMessagingService {
       }
     });
 
-    // Handle notification when app is terminated and opened from notification
     FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
       if (message != null) {
-        final context = GlobalKey<NavigatorState>().currentContext;
-        handleNotificationNavigation(message.data, context);
+        handleNotificationNavigation(message.data, navigatorKey.currentContext);
       }
     });
 
-    // Handle notification when app is in background
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      final context = GlobalKey<NavigatorState>().currentContext;
-      handleNotificationNavigation(message.data, context);
+      handleNotificationNavigation(message.data, navigatorKey.currentContext);
     });
   }
 
-  // Add this method to FirebaseMessagingService
   Future<void> sendTokenToServerAfterLogin() async {
     final token = await SharedPrefsService.getFcmToken();
     await saveAndSendTokenToServer(token);
   }
-
-  // Future<void> initializeWithoutFirebase() async {
-  //   await setupFirebaseMessaging();
-  // }
 }

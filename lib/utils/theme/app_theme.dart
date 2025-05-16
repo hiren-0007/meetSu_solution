@@ -138,8 +138,10 @@ class AppTheme {
   static const double textSizeExtraSmall = 14.0;
   static const double textSizeMini = 13.0;
   static const double textSizeMicro = 12.0;
+  static const double textSizeExtraMicro = 10.0;
   static const double titleSize = 18.0;
   static const double subtitleSize = 15.0;
+  static const double subtitleSize1 = 14.0;
 
   // Text Styles
   static const TextStyle headerStyle = TextStyle(
@@ -171,13 +173,13 @@ class AppTheme {
   );
 
   static const TextStyle categoryTitleStyle = TextStyle(
-    fontSize: subtitleSize,
+    fontSize: subtitleSize1,
     fontWeight: FontWeight.bold,
     color: textPrimaryColor,
   );
 
   static const TextStyle tabTitleStyle = TextStyle(
-    fontSize: textSizeMini,
+    fontSize: textSizeExtraMicro,
     fontWeight: FontWeight.w500,
     color: textPrimaryColor,
   );
@@ -258,28 +260,28 @@ class AppTheme {
   );
 
   static const TextStyle categoryScoreStyle = TextStyle(
-    fontSize: textSizeSmall,
+    fontSize: textSizeMicro,
     fontWeight: FontWeight.bold,
   );
 
   static const TextStyle categoryPercentStyle = TextStyle(
-    fontSize: textSizeMini,
+    fontSize: textSizeMicro,
     color: textSecondaryColor,
   );
 
   static TextStyle aptitudeTitleStyle = TextStyle(
-    fontSize: textSizeRegular,
+    fontSize: textSizeMicro,
     fontWeight: FontWeight.bold,
     color: aptitudeTitleColor,
   );
 
   static const TextStyle aptitudeLabelStyle = TextStyle(
-    fontSize: textSizeMicro,
+    fontSize: textSizeExtraMicro,
     color: textSecondaryColor,
   );
 
   static const TextStyle aptitudeValueStyle = TextStyle(
-    fontSize: textSizeMini,
+    fontSize: textSizeExtraMicro,
     fontWeight: FontWeight.bold,
   );
 

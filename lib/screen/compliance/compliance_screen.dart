@@ -80,13 +80,13 @@ class ComplianceScreenState extends State<ComplianceScreen> {
                             "Available Reports",
                             style: AppTheme.headerStyle,
                           ),
-                          SizedBox(height: AppTheme.smallSpacing),
+                          SizedBox(height: AppTheme.miniSpacing),
                           Text(
-                            "Download compliance documents",
+                            "View compliance documents",
                             style: AppTheme.subHeaderStyle,
                           ),
 
-                          SizedBox(height: AppTheme.largeSpacing),
+                          SizedBox(height: AppTheme.mediumSpacing),
 
                           ValueListenableBuilder<String?>(
                             valueListenable: _controller.errorMessage,

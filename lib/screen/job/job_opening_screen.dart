@@ -71,23 +71,23 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
           children: [
             Container(
               width: double.infinity,
-              margin: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+              margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     "Job Openings",
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.textPrimaryColor,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  SizedBox(height: 2),
                   Text(
                     "Explore available positions",
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       color: AppTheme.textSecondaryColor,
                     ),
                   ),
@@ -232,14 +232,14 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                       "Date: ",
                       style: TextStyle(
                         color: AppTheme.textSecondaryColor,
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                     ),
                     Text(
                       job.positionDate ?? "Unknown",
                       style: const TextStyle(
                         color: AppTheme.textPrimaryColor,
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -251,7 +251,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                         "Location: ",
                         style: TextStyle(
                           color: AppTheme.textSecondaryColor,
-                          fontSize: 14,
+                          fontSize: 12,
                         ),
                       ),
                       Flexible(
@@ -259,7 +259,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                           job.location ?? "Unknown",
                           style: const TextStyle(
                             color: AppTheme.textPrimaryColor,
-                            fontSize: 14,
+                            fontSize: 12,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -271,7 +271,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -281,7 +281,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                       "No. of Positions: ",
                       style: TextStyle(
                         color: AppTheme.textSecondaryColor,
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                     ),
                     Text(
@@ -289,7 +289,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textPrimaryColor,
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -300,7 +300,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                       "Salary: ",
                       style: TextStyle(
                         color: AppTheme.textSecondaryColor,
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                     ),
                     Text(
@@ -308,7 +308,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primaryColor,
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -318,7 +318,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
           ),
           const Divider(),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
