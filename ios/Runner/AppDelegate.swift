@@ -86,8 +86,9 @@ import FirebaseMessaging
 }
 
 @available(iOS 10, *)
-extension AppDelegate: UNUserNotificationCenterDelegate {
-  func userNotificationCenter(_ center: UNUserNotificationCenter,
+extension AppDelegate {
+  // UNUserNotificationCenterDelegate मेथड्स
+  override func userNotificationCenter(_ center: UNUserNotificationCenter,
                               willPresent notification: UNNotification,
                               withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
     let userInfo = notification.request.content.userInfo
@@ -100,12 +101,11 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
     }
   }
 
-  func userNotificationCenter(_ center: UNUserNotificationCenter,
+  override func userNotificationCenter(_ center: UNUserNotificationCenter,
                               didReceive response: UNNotificationResponse,
                               withCompletionHandler completionHandler: @escaping () -> Void) {
     let userInfo = response.notification.request.content.userInfo
     print("User tapped on notification: \(userInfo)")
-
 
     completionHandler()
   }
