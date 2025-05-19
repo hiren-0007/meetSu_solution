@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
-import 'package:meetsu_solutions/screen/more/profile/personalinfo/personal_info_sreen.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:meetsu_solutions/screen/more/profile/profile_cantroller.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
@@ -1238,6 +1237,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _viewPdfCredential(BuildContext context, String url, String title) {
+    print('Opening credential URL: $url');
+
+    // Check file extension to determine how to display it
+    String fileExtension = url.toLowerCase().split('.').last;
+
+    if (fileExtension == 'pdf') {
+      // Open PDF files with PDF viewer
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(
+              title: Text(title),
+              backgroundColor: AppTheme.primaryColor,
+            ),
+            body: SfPdfViewer.network(url),
+          ),
+        ),
+      );
+    } else if (['jpg', 'jpeg', 'png', 'gif'].contains(fileExtension)) {
+      // Open image files with image viewer
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(
+              title: Text(title),
+              backgroundColor: AppTheme.primaryColor,
+            ),
+            body: Center(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    InteractiveViewer(
+                      minScale: 0.5,
+                      maxScale: 3.0,
+                      child: Image.network(
+                        url,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.error, color: Colors.red, size: 48),
+                              SizedBox(height: 16),
+                              Text(
+                                "Failed to load image",
+                                style: TextStyle(color: Colors.red),
+                              ),
+                              SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  launchUrl(Uri.parse(url));
+                                },
+                                child: Text("Open in Browser"),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Unsupported File Type"),
+          content: Text("Would you like to open this file in browser?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                launchUrl(Uri.parse(url));
+              },
+              child: Text("Open"),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+/*  void _viewPdfCredential(BuildContext context, String url, String title) {
     print('Opening PDF URL: $url');
 
     Navigator.push(
@@ -1252,7 +1355,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
-  }
+  }*/
 
   Widget _buildPersonalInfoTab() {
     return ValueListenableBuilder(
