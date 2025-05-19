@@ -146,6 +146,14 @@ class FirebaseMessagingService {
 
     await setupNotificationChannels();
 
+    if (Platform.isIOS) {
+      await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    }
+
     String? token = await FirebaseMessaging.instance.getToken();
     print('🔥 FCM Token: $token');
     await saveAndSendTokenToServer(token);

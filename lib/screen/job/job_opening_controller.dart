@@ -19,10 +19,14 @@ class JobOpeningController {
   JobOpeningController({ApiService? apiService})
       : _apiService = apiService ?? ApiService(ApiClient()) {
     fetchJobOpenings();
-    _setupAutoScroll();
   }
 
   void _setupAutoScroll() {
+    _autoScrollTimer?.cancel();
+
+    if (jobOpenings.value.isEmpty) return;
+
+
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (jobOpenings.value.isNotEmpty) {
         int nextIndex = (currentIndex.value + 1) % jobOpenings.value.length;
@@ -32,7 +36,9 @@ class JobOpeningController {
   }
 
   void setCurrentIndex(int index) {
-    currentIndex.value = index;
+    if (index >= 0 && index < jobOpenings.value.length) {
+      currentIndex.value = index;
+    }
   }
 
   Future<void> fetchJobOpenings() async {
@@ -61,10 +67,14 @@ class JobOpeningController {
 
         jobOpenings.value = jobsResponse.response!.jobs!;
         debugPrint("✅ Loaded ${jobOpenings.value.length} job openings");
+
+        currentIndex.value = 0;
+
+        _setupAutoScroll();
       } else {
         jobOpenings.value = [];
         debugPrint(
-            "No jobs available or API returned an error: ${jobsResponse.message}");
+            "⚠️ No jobs available or API returned an error: ${jobsResponse.message}");
       }
     } catch (e) {
       debugPrint("❌ Error fetching job openings: $e");
@@ -77,7 +87,6 @@ class JobOpeningController {
   Future<void> shareJob(BuildContext context, Jobs job) async {
     try {
       isSharing.value = true;
-
       debugPrint("🔄 Sharing job: ${job.jobPosition} (ID: ${job.jobId})");
 
       final token = SharedPrefsService.instance.getAccessToken();
@@ -103,67 +112,62 @@ class JobOpeningController {
 
         if (response['response'] != null && response['response']['link'] != null) {
           shareLink = response['response']['link'];
-          debugPrint("🔗 Share link received: $shareLink");
+          debugPrint("🔗 Share link received from response: $shareLink");
         } else if (response['link'] != null) {
           shareLink = response['link'];
-          debugPrint("🔗 Share link received (alt path): $shareLink");
+          debugPrint("🔗 Share link received from root: $shareLink");
+        }
+
+        if (!shareLink.contains("job?id=") && shareLink.contains("job-view?refid=")) {
+          String jobId = job.jobId.toString();
+          shareLink = "https://meetsusolutions.com/frontend/web/site/job?id=$jobId";
+          debugPrint("🔧 Reformatted share link to use job?id format: $shareLink");
         }
 
         if (shareLink.isNotEmpty) {
-          final String shareText = job.shareDescription?.isNotEmpty == true
-              ? "${job.shareDescription!}\n\n$shareLink"
-              : "Check out this Jobs: ${job.jobPosition ?? 'Untitled Jobs'}\n\n$shareLink";
+          String jobDescription = "";
+          if (job.shareDescription?.isNotEmpty == true) {
+            jobDescription = job.shareDescription!;
+          } else {
+            jobDescription = job.jobPosition!;
+          }
 
-          await Share.share(
-            shareText,
-            subject: job.jobPosition ?? 'Jobs',
-          );
+          String shareText = "$jobDescription\n$shareLink";
 
-          debugPrint("✅ Job shared successfully");
+          await Share.share(shareText, subject: job.jobPosition ?? 'Job Opening');
+          debugPrint("✅ Job shared successfully with optimized format for WhatsApp preview");
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Unable to get share link')),
           );
-          debugPrint("⚠️ No share link found in response");
         }
       } else {
-        String errorMsg = response != null && response['message'] != null
-            ? response['message']
-            : 'Failed to generate share link';
-
+        String errorMsg = response['message'] ?? 'Failed to generate share link';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(errorMsg)),
         );
-
-        debugPrint("❌ Error in share API response: $errorMsg");
       }
-
-      final String shareText = job.shareDescription?.isNotEmpty == true
-          ? job.shareDescription!
-          : "Check out this job opening: ${job.jobPosition ?? 'Job Opening'}\n\nLocation: ${job.location ?? 'Unknown Location'}\nSalary: ${job.salary ?? 'N/A'}\n\nhttps://meetsusolutions.com/frontend/web/site/jobs?id=${job.jobId ?? '0'}";
-
-      await Share.share(shareText, subject: job.jobPosition ?? 'Job Opening');
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Using default share text"),
-          backgroundColor: Colors.orange,
-          duration: Duration(seconds: 2),
-        ),
-      );
     } catch (e) {
       debugPrint("❌ Error during job sharing: $e");
 
-      final String shareText = job.shareDescription?.isNotEmpty == true
-          ? job.shareDescription!
-          : "Check out this job opening: ${job.jobPosition ?? 'Job Opening'}\n\nLocation: ${job.location ?? 'Unknown Location'}\nSalary: ${job.salary ?? 'N/A'}\n\nhttps://meetsusolutions.com/frontend/web/site/jobs?id=${job.jobId ?? '0'}";
+      String jobId = job.jobId.toString();
+      String fallbackLink = "https://meetsusolutions.com/frontend/web/site/job?id=$jobId";
+
+      String jobDescription = "";
+      if (job.shareDescription?.isNotEmpty == true) {
+        jobDescription = job.shareDescription!;
+      } else {
+        jobDescription = job.jobPosition!;
+      }
+
+      String shareText = "$jobDescription\n$fallbackLink";
 
       await Share.share(shareText, subject: job.jobPosition ?? 'Job Opening');
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Error: ${e.toString()}"),
-          backgroundColor: Colors.red,
+          content: Text("Using fallback link due to error"),
+          backgroundColor: Colors.orange,
         ),
       );
     } finally {
@@ -185,10 +189,24 @@ class JobOpeningController {
   }
 
   void retryFetch() {
+    debugPrint("🔄 Retrying fetch for job openings");
     fetchJobOpenings();
   }
 
+  void pauseAutoScroll() {
+    _autoScrollTimer?.cancel();
+    debugPrint("⏸️ Auto-scroll paused");
+  }
+
+  void resumeAutoScroll() {
+    if (_autoScrollTimer == null || !(_autoScrollTimer?.isActive ?? false)) {
+      _setupAutoScroll();
+      debugPrint("▶️ Auto-scroll resumed");
+    }
+  }
+
   void dispose() {
+    debugPrint("🧹 Disposing JobOpeningController resources");
     jobOpenings.dispose();
     isLoading.dispose();
     currentIndex.dispose();

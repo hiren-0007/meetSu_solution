@@ -38,7 +38,6 @@ class ApiService {
 
   //Job Share related APIs
   Future<Map<String, dynamic>> getJobShare(Map<String, dynamic> body) async {
-    // Use form-data instead of JSON for this specific endpoint
     return await _client.post(ApiEndpoints.jobShare, body: body, useFormData: true);
   }
 

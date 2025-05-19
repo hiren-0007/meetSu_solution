@@ -62,25 +62,42 @@ class DashboardController {
     }).then((_) {
       isLoading.value = false;
       debugPrint("✅ Dashboard fully initialized");
+
+      // Setup auto scroll after data is loaded
+      if (adItems.value.isNotEmpty) {
+        _setupAutoScroll();
+      }
     }).catchError((error) {
       isLoading.value = false;
       debugPrint("❌ Error during initialization: $error");
     });
-
-    _setupAutoScroll();
   }
 
   void _setupAutoScroll() {
+    // Cancel existing timer if any
+    _autoScrollTimer?.cancel();
+
+    // Only setup auto-scroll if we have ads
+    if (adItems.value.isEmpty) return;
+
+    debugPrint("⏱️ Setting up auto-scroll timer for ads");
+
+    // Start auto-scrolling every 5 seconds
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (adItems.value.isNotEmpty) {
+        // Always move to the next index in a circular fashion
         int nextIndex = (currentIndex.value + 1) % adItems.value.length;
+        debugPrint("🔄 Auto-scrolling to ad index: $nextIndex");
         setCurrentIndex(nextIndex);
       }
     });
   }
 
   void setCurrentIndex(int index) {
-    currentIndex.value = index;
+    if (index >= 0 && index < adItems.value.length) {
+      currentIndex.value = index;
+      debugPrint("📍 Current ad index set to: $index");
+    }
   }
 
   Future<void> fetchQuoteData() async {
@@ -148,6 +165,9 @@ class DashboardController {
 
         adItems.value = ads;
         debugPrint("✅ Loaded ${ads.length} ads");
+
+        // Reset current index when new ads are loaded
+        currentIndex.value = 0;
       } else {
         adItems.value = [];
         debugPrint(
@@ -266,20 +286,46 @@ class DashboardController {
     }
   }
 
+  Future<void> refreshDashboardData() async {
+    isLoading.value = true;
+
+    try {
+      await fetchWeatherData();
+
+      await Future.wait([
+        fetchQuoteData(),
+        fetchAdsData(),
+      ]);
+
+      debugPrint("✅ Dashboard data refreshed");
+    } catch (e) {
+      debugPrint("❌ Error refreshing dashboard data: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future<void> shareAd(BuildContext context, Ads ad) async {
     try {
       isSharing.value = true;
+      debugPrint("🔄 Sharing ad: ${ad.subjectLine} (ID: ${ad.adsId})");
 
-      final Map<String, dynamic> shareData = {
+      final token = SharedPrefsService.instance.getAccessToken();
+      if (token == null || token.isEmpty) {
+        throw Exception("No authentication token found");
+      }
+
+      _apiService.client.addAuthToken(token);
+
+      Map<String, dynamic> requestData = {
         'id': ad.adsId.toString(),
         'job_or_ad': '2',
-        'medium': 'Whatsapp',
+        'medium': 'Whatsapp'
       };
 
-      debugPrint("🔄 Sharing ad: ${ad.subjectLine} (ID: ${ad.adsId})");
-      debugPrint("📤 Share request data: $shareData");
+      debugPrint("📤 Share request data: $requestData");
 
-      final response = await _apiService.getJobShare(shareData);
+      final response = await _apiService.getJobShare(requestData);
       debugPrint("📥 Share API Response: $response");
 
       if (response['success'] == true) {
@@ -287,46 +333,61 @@ class DashboardController {
 
         if (response['response'] != null && response['response']['link'] != null) {
           shareLink = response['response']['link'];
-          debugPrint("🔗 Share link received: $shareLink");
+          debugPrint("🔗 Share link received from response: $shareLink");
         } else if (response['link'] != null) {
           shareLink = response['link'];
-          debugPrint("🔗 Share link received (alt path): $shareLink");
+          debugPrint("🔗 Share link received from root: $shareLink");
+        }
+
+        // Check if link is in the wrong format and fix it
+        if (!shareLink.contains("ads?id=") && shareLink.contains("ads-view?refid=")) {
+          String adId = ad.adsId.toString();
+          shareLink = "https://meetsusolutions.com/frontend/web/site/ads?id=$adId";
+          debugPrint("🔧 Reformatted share link to use ads?id format: $shareLink");
         }
 
         if (shareLink.isNotEmpty) {
-          final String shareText = ad.shareDescription?.isNotEmpty == true
-              ? "${ad.shareDescription!}\n\n$shareLink"
-              : "Check out this ad: ${ad.subjectLine ?? 'Untitled Ad'}\n\n$shareLink";
+          // Make the share description match the format in the job share function
+          String adTitle = ad.subjectLine ?? "Advertisement";
 
-          await Share.share(
-            shareText,
-            subject: ad.subjectLine ?? 'Ad',
-          );
+          // Format exactly like job sharing
+          String shareText = "$adTitle\n";
+          // Add the share link as the last line
+          shareText += "$shareLink";
 
-          debugPrint("✅ Ad shared successfully");
+          await Share.share(shareText, subject: adTitle);
+          debugPrint("✅ Ad shared successfully with optimized format for WhatsApp preview");
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Unable to get share link')),
           );
-          debugPrint("⚠️ No share link found in response");
         }
       } else {
-        String errorMsg = response != null && response['message'] != null
-            ? response['message']
-            : 'Failed to generate share link';
-
+        String errorMsg = response['message'] ?? 'Failed to generate share link';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(errorMsg)),
         );
-
-        debugPrint("❌ Error in share API response: $errorMsg");
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error sharing: ${e.toString()}')),
-      );
+      debugPrint("❌ Error during ad sharing: $e");
 
-      debugPrint("❌ Exception during share operation: $e");
+      String adId = ad.adsId.toString();
+      String fallbackLink = "https://meetsusolutions.com/frontend/web/site/ads?id=$adId";
+
+      // Create a simple format for fallback just like jobs
+      String adTitle = ad.subjectLine ?? "Advertisement";
+
+      String shareText = "$adTitle\n";
+      shareText += "$fallbackLink";
+
+      await Share.share(shareText, subject: adTitle);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Using fallback link due to error"),
+          backgroundColor: Colors.orange,
+        ),
+      );
     } finally {
       isSharing.value = false;
     }
@@ -352,22 +413,15 @@ class DashboardController {
     debugPrint("Downloading from App Store");
   }
 
-  Future<void> refreshDashboardData() async {
-    isLoading.value = true;
+  void pauseAutoScroll() {
+    _autoScrollTimer?.cancel();
+    debugPrint("⏸️ Auto-scroll paused");
+  }
 
-    try {
-      await fetchWeatherData();
-
-      await Future.wait([
-        fetchQuoteData(),
-        fetchAdsData(),
-      ]);
-
-      debugPrint("✅ Dashboard data refreshed");
-    } catch (e) {
-      debugPrint("❌ Error refreshing dashboard data: $e");
-    } finally {
-      isLoading.value = false;
+  void resumeAutoScroll() {
+    if (_autoScrollTimer == null || !(_autoScrollTimer?.isActive ?? false)) {
+      _setupAutoScroll();
+      debugPrint("▶️ Auto-scroll resumed");
     }
   }
 

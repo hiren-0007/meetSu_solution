@@ -224,7 +224,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               child: const Text(
-                "Report:- All hours and amount are approximate for the current week",
+                "All Hours And Amounts Are Approximate",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 14,

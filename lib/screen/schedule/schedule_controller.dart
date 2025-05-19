@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
@@ -255,12 +256,12 @@ class ScheduleController {
     payCheck.dispose();
   }
 }
+*/
 
 
 
 
-
-/*import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
@@ -268,6 +269,15 @@ import 'package:meetsu_solutions/model/schedule/schedule_response_model.dart';
 
 class ScheduleController {
   final ApiService _apiService;
+
+  static final DateTime referencePeriodStart = DateTime(2025, 4, 14);
+
+  final List<Map<String, String>> standardPeriods = [
+    {'start': 'Apr-14-2025', 'end': 'Apr-27-2025'},
+    {'start': 'Apr-28-2025', 'end': 'May-11-2025'},
+    {'start': 'May-12-2025', 'end': 'May-25-2025'},
+    {'start': 'May-26-2025', 'end': 'Jun-08-2025'},
+  ];
 
   final ValueNotifier<String> startDate = ValueNotifier<String>(
       _getThisWeekMonday(DateTime.now()));
@@ -280,9 +290,33 @@ class ScheduleController {
   final ValueNotifier<List<Data>> scheduleItems = ValueNotifier<List<Data>>([]);
   final ValueNotifier<String?> payCheck = ValueNotifier<String?>(null);
 
+  final ValueNotifier<bool> usingStandardPeriods = ValueNotifier<bool>(true);
+
   ScheduleController({ApiService? apiService})
       : _apiService = apiService ?? ApiService(ApiClient()) {
     _fetchScheduleData();
+  }
+
+  Map<String, String> _generateEarlierPeriod() {
+    DateTime firstStart = _parseDate(standardPeriods.first['start']!);
+    DateTime newStart = firstStart.subtract(const Duration(days: 14));
+    DateTime newEnd = newStart.add(const Duration(days: 13));
+
+    return {
+      'start': _formatDate(newStart),
+      'end': _formatDate(newEnd)
+    };
+  }
+
+  Map<String, String> _generateLaterPeriod() {
+    DateTime lastStart = _parseDate(standardPeriods.last['start']!);
+    DateTime newStart = lastStart.add(const Duration(days: 14));
+    DateTime newEnd = newStart.add(const Duration(days: 13));
+
+    return {
+      'start': _formatDate(newStart),
+      'end': _formatDate(newEnd)
+    };
   }
 
   static String _getThisWeekMonday(DateTime now) {
@@ -307,14 +341,13 @@ class ScheduleController {
       lastDate: DateTime(2030),
     );
 
-    if (picked != null && picked != currentDate) {
-      int daysToSubtract = (picked.weekday - 1) % 7;
-      final monday = picked.subtract(Duration(days: daysToSubtract));
+    if (picked != null) {
+      startDate.value = _formatDate(picked);
 
-      final nextSunday = monday.add(const Duration(days: 13));
+      final newEndDate = picked.add(const Duration(days: 13));
+      endDate.value = _formatDate(newEndDate);
 
-      startDate.value = _formatDate(monday);
-      endDate.value = _formatDate(nextSunday);
+      usingStandardPeriods.value = false;
 
       _fetchScheduleData();
     }
@@ -330,17 +363,44 @@ class ScheduleController {
       lastDate: DateTime(2030),
     );
 
-    if (picked != null && picked != currentDate) {
-      int daysToAdd = (7 - picked.weekday) % 7;
-      final sunday = picked.add(Duration(days: daysToAdd));
+    if (picked != null) {
+      endDate.value = _formatDate(picked);
 
-      final previousMonday = sunday.subtract(const Duration(days: 13));
-
-      startDate.value = _formatDate(previousMonday);
-      endDate.value = _formatDate(sunday);
+      usingStandardPeriods.value = false;
 
       _fetchScheduleData();
     }
+  }
+
+  int _findCurrentPeriodIndex() {
+    DateTime currentStart = _parseDate(startDate.value);
+
+    for (int i = 0; i < standardPeriods.length; i++) {
+      if (standardPeriods[i]['start'] == startDate.value) {
+        return i;
+      }
+    }
+
+    for (int i = 0; i < standardPeriods.length - 1; i++) {
+      DateTime periodStart = _parseDate(standardPeriods[i]['start']!);
+      DateTime nextPeriodStart = _parseDate(standardPeriods[i + 1]['start']!);
+
+      if (currentStart.isAfter(periodStart) && currentStart.isBefore(nextPeriodStart)) {
+        return i;
+      }
+    }
+
+    if (currentStart.isBefore(_parseDate(standardPeriods.first['start']!))) {
+      standardPeriods.insert(0, _generateEarlierPeriod());
+      return 0;
+    }
+
+    if (currentStart.isAfter(_parseDate(standardPeriods.last['start']!))) {
+      standardPeriods.add(_generateLaterPeriod());
+      return standardPeriods.length - 1;
+    }
+
+    return 0;
   }
 
   Future<void> _fetchScheduleData() async {
@@ -399,14 +459,6 @@ class ScheduleController {
     return "$month-${date.day.toString().padLeft(2, '0')}-${date.year}";
   }
 
-  int _getMonthNumber(String monthName) {
-    const months = {
-      'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
-      'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
-    };
-    return months[monthName] ?? 1;
-  }
-
   static int _getMonthNumberStatic(String monthName) {
     const months = {
       'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
@@ -424,23 +476,37 @@ class ScheduleController {
   }
 
   void navigateToPreviousPeriod() {
-    final currentStartDate = _parseDate(startDate.value);
-    final newStartDate = currentStartDate.subtract(const Duration(days: 14));
-    final newEndDate = newStartDate.add(const Duration(days: 13));
+    usingStandardPeriods.value = true;
 
-    startDate.value = _formatDate(newStartDate);
-    endDate.value = _formatDate(newEndDate);
+    int currentIndex = _findCurrentPeriodIndex();
+
+    if (currentIndex > 0) {
+      startDate.value = standardPeriods[currentIndex - 1]['start']!;
+      endDate.value = standardPeriods[currentIndex - 1]['end']!;
+    } else if (currentIndex == 0) {
+      Map<String, String> newPeriod = _generateEarlierPeriod();
+      standardPeriods.insert(0, newPeriod);
+      startDate.value = newPeriod['start']!;
+      endDate.value = newPeriod['end']!;
+    }
 
     _fetchScheduleData();
   }
 
   void navigateToNextPeriod() {
-    final currentStartDate = _parseDate(startDate.value);
-    final newStartDate = currentStartDate.add(const Duration(days: 14));
-    final newEndDate = newStartDate.add(const Duration(days: 13));
+    usingStandardPeriods.value = true;
 
-    startDate.value = _formatDate(newStartDate);
-    endDate.value = _formatDate(newEndDate);
+    int currentIndex = _findCurrentPeriodIndex();
+
+    if (currentIndex >= 0 && currentIndex < standardPeriods.length - 1) {
+      startDate.value = standardPeriods[currentIndex + 1]['start']!;
+      endDate.value = standardPeriods[currentIndex + 1]['end']!;
+    } else if (currentIndex == standardPeriods.length - 1) {
+      Map<String, String> newPeriod = _generateLaterPeriod();
+      standardPeriods.add(newPeriod);
+      startDate.value = newPeriod['start']!;
+      endDate.value = newPeriod['end']!;
+    }
 
     _fetchScheduleData();
   }
@@ -452,5 +518,6 @@ class ScheduleController {
     hasData.dispose();
     scheduleItems.dispose();
     payCheck.dispose();
+    usingStandardPeriods.dispose();
   }
-}*/
+}

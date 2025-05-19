@@ -15,7 +15,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final DashboardController _controller = DashboardController();
   late PageController _pageController;
-  int _realIndex = 0;
+  int _realPage = 1000; // Start at a large number to simulate infinite scroll
 
   String formatDate(String isoDate) {
     DateTime dateTime = DateTime.parse(isoDate);
@@ -25,41 +25,74 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(
-      initialPage: _controller.adItems.value.isNotEmpty ? 10000 : 0,
-    );
-    _controller.currentIndex.addListener(_handleIndexChange);
+
+    // Initialize with a large number to simulate infinite scroll
+    _pageController = PageController(initialPage: _realPage);
+
+    // Listen to job openings updates
+    _controller.adItems.addListener(_onAdItemsChanged);
+
+    // Listen to current index changes for auto-scroll
+    _controller.currentIndex.addListener(_onCurrentIndexChanged);
   }
 
-  void _handleAdItemsUpdate() {
-    if (mounted && _controller.adItems.value.isNotEmpty) {
-      _pageController = PageController(initialPage: 10000);
+  void _onAdItemsChanged() {
+    // When ad items are loaded, ensure the PageController is initialized correctly
+    if (_controller.adItems.value.isNotEmpty && mounted) {
+      if (_pageController.hasClients) {
+        // If controller already has clients, just update the real page to stay consistent
+        setState(() {
+          _realPage = _pageController.page!.round();
+        });
+      } else {
+        // Initialize the controller if it hasn't been initialized yet
+        _pageController = PageController(initialPage: _realPage);
+      }
     }
   }
 
-  void _handleIndexChange() {
-    if (_pageController.hasClients &&
-        _controller.adItems.value.isNotEmpty &&
-        mounted) {
-      // Calculate the page to jump to
-      final currentPage = _pageController.page?.round() ?? 0;
-      final adItemsLength = _controller.adItems.value.length;
-      final targetPage = (currentPage ~/ adItemsLength) * adItemsLength +
-          _controller.currentIndex.value;
+  void _onCurrentIndexChanged() {
+    // This handles the auto-scroll from the controller
+    if (_pageController.hasClients && _controller.adItems.value.isNotEmpty && mounted) {
+      // Get the current and target indexes
+      final adsLength = _controller.adItems.value.length;
+      final targetIndex = _controller.currentIndex.value;
+      final currentIndex = _realPage % adsLength;
 
-      _pageController.animateToPage(
-        targetPage,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      // Special case: when going from last item to first item (e.g., from 5 to 0)
+      if (currentIndex == adsLength - 1 && targetIndex == 0) {
+        // Instead of going backward, we go forward to the next group of items
+        final nextGroup = (_realPage ~/ adsLength + 1) * adsLength;
+        _pageController.animateToPage(
+          nextGroup,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+        _realPage = nextGroup;
+        debugPrint("🔄 Moving forward to next cycle: $_realPage");
+        return;
+      }
+
+      // Normal case: just go to the target index in the current group
+      final baseGroup = (_realPage ~/ adsLength) * adsLength;
+      final targetPage = baseGroup + targetIndex;
+
+      if (_pageController.page!.round() != targetPage) {
+        _pageController.animateToPage(
+          targetPage,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+        _realPage = targetPage;
+        debugPrint("🔄 Scrolling to page: $_realPage (index: $targetIndex)");
+      }
     }
   }
-
 
   @override
   void dispose() {
-    _controller.currentIndex.removeListener(_handleIndexChange);
-    _controller.adItems.removeListener(_handleAdItemsUpdate);
+    _controller.currentIndex.removeListener(_onCurrentIndexChanged);
+    _controller.adItems.removeListener(_onAdItemsChanged);
     _controller.dispose();
     _pageController.dispose();
     super.dispose();
@@ -240,13 +273,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: PageView.builder(
         controller: _pageController,
-        itemCount: 30000,
+        itemCount: null, // Infinite pages
         onPageChanged: (index) {
+          _realPage = index;
+          // Calculate the actual index in our dataset
           final realIndex = index % adItems.length;
-          _realIndex = realIndex;
-          _controller.setCurrentIndex(realIndex);
+
+          // Only update controller if index actually changed
+          if (_controller.currentIndex.value != realIndex) {
+            _controller.setCurrentIndex(realIndex);
+          }
         },
         itemBuilder: (context, index) {
+          // Get the real item to show based on the infinite index
           final realIndex = index % adItems.length;
           return _buildAdCard(adItems[realIndex]);
         },
@@ -262,7 +301,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
+            color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 2),
@@ -309,33 +348,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(15),
         child: ad.imageUrl!.isNotEmpty
             ? Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(
-                  minHeight: 200,
-                  maxHeight: 300,
-                ),
-                child: Image.network(
-                  ad.imageUrl!,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 200,
-                      width: double.infinity,
-                      color: Colors.grey.shade200,
-                      alignment: Alignment.center,
-                      child: const Icon(Icons.campaign,
-                          size: 50, color: Colors.grey),
-                    );
-                  },
-                ),
-              )
-            : Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(
+            minHeight: 200,
+            maxHeight: 300,
+          ),
+          child: Image.network(
+            ad.imageUrl!,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
                 height: 200,
                 width: double.infinity,
                 color: Colors.grey.shade200,
                 alignment: Alignment.center,
-                child: const Icon(Icons.campaign, size: 50, color: Colors.grey),
-              ),
+                child: const Icon(Icons.campaign,
+                    size: 50, color: Colors.grey),
+              );
+            },
+          ),
+        )
+            : Container(
+          height: 200,
+          width: double.infinity,
+          color: Colors.grey.shade200,
+          alignment: Alignment.center,
+          child: const Icon(Icons.campaign, size: 50, color: Colors.grey),
+        ),
       ),
     );
   }
@@ -463,7 +502,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onTap: () => _controller.shareAd(context, ad),
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
                     borderRadius: BorderRadius.circular(8),
@@ -495,7 +534,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Text(
             ad.description!,
             style: const TextStyle(
-              color: AppTheme.textSecondaryColor,
+              color: AppTheme.textPrimaryColor,
               fontSize: 12,
             ),
           ),
@@ -534,12 +573,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         Text("${index + 1}. ",
                             style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
+                            const TextStyle(fontWeight: FontWeight.bold)),
                         Expanded(
                           child: Text(
                             benefit,
                             style: const TextStyle(
-                              color: AppTheme.textSecondaryColor,
+                              color: AppTheme.textPrimaryColor,
                               fontSize: 12,
                             ),
                           ),
@@ -726,7 +765,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onTap: () {},
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
                     borderRadius: BorderRadius.circular(8),
