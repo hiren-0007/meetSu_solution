@@ -494,23 +494,18 @@ class ScheduleController {
     DateTime now1 = DateTime.now();
     DateTime referenceDate = referencePeriodStart;
 
-    // Calculate how many 14-day periods have passed since reference
     int periodsPassed = (now1.difference(referenceDate).inDays / 14).floor();
 
-    // Calculate the start date of the current period
     DateTime currentPeriodStart = referenceDate.add(Duration(days: periodsPassed * 14));
     DateTime currentPeriodEnd = currentPeriodStart.add(const Duration(days: 13));
 
-    // Format and set the dates
     startDate.value = _formatDate(currentPeriodStart);
     endDate.value = _formatDate(currentPeriodEnd);
 
-    // Add this period to standard periods if needed
     bool periodExists = standardPeriods.any((period) =>
     period['start'] == startDate.value && period['end'] == endDate.value);
 
     if (!periodExists) {
-      // Sort by start date first
       standardPeriods.add({
         'start': startDate.value,
         'end': endDate.value
