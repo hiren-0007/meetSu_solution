@@ -294,6 +294,7 @@ class ScheduleController {
 
   ScheduleController({ApiService? apiService})
       : _apiService = apiService ?? ApiService(ApiClient()) {
+    _setCurrentPeriod();
     _fetchScheduleData();
   }
 
@@ -473,6 +474,54 @@ class ScheduleController {
       7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
     };
     return months[monthNumber] ?? 'Jan';
+  }
+
+  void _setCurrentPeriod() {
+    final now = DateTime.now();
+
+    for (int i = 0; i < standardPeriods.length; i++) {
+      DateTime periodStart = _parseDate(standardPeriods[i]['start']!);
+      DateTime periodEnd = _parseDate(standardPeriods[i]['end']!);
+
+      if (now.isAfter(periodStart.subtract(const Duration(days: 1))) &&
+          now.isBefore(periodEnd.add(const Duration(days: 1)))) {
+        startDate.value = standardPeriods[i]['start']!;
+        endDate.value = standardPeriods[i]['end']!;
+        return;
+      }
+    }
+
+    DateTime now1 = DateTime.now();
+    DateTime referenceDate = referencePeriodStart;
+
+    // Calculate how many 14-day periods have passed since reference
+    int periodsPassed = (now1.difference(referenceDate).inDays / 14).floor();
+
+    // Calculate the start date of the current period
+    DateTime currentPeriodStart = referenceDate.add(Duration(days: periodsPassed * 14));
+    DateTime currentPeriodEnd = currentPeriodStart.add(const Duration(days: 13));
+
+    // Format and set the dates
+    startDate.value = _formatDate(currentPeriodStart);
+    endDate.value = _formatDate(currentPeriodEnd);
+
+    // Add this period to standard periods if needed
+    bool periodExists = standardPeriods.any((period) =>
+    period['start'] == startDate.value && period['end'] == endDate.value);
+
+    if (!periodExists) {
+      // Sort by start date first
+      standardPeriods.add({
+        'start': startDate.value,
+        'end': endDate.value
+      });
+
+      standardPeriods.sort((a, b) {
+        DateTime dateA = _parseDate(a['start']!);
+        DateTime dateB = _parseDate(b['start']!);
+        return dateA.compareTo(dateB);
+      });
+    }
   }
 
   void navigateToPreviousPeriod() {

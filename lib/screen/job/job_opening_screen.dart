@@ -233,7 +233,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen> {
                   child: Row(
                     children: [
                       const Text(
-                        "Location: ",
+                        "  Location: ",
                         style: TextStyle(
                           color: AppTheme.textSecondaryColor,
                           fontSize: 12,

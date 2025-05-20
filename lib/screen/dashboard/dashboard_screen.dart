@@ -407,7 +407,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Row(
               children: [
                 const Text(
-                  "Place: ",
+                  "  Place: ",
                   style: TextStyle(
                     color: AppTheme.textSecondaryColor,
                     fontSize: 12,
