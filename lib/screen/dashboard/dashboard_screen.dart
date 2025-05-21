@@ -69,7 +69,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           curve: Curves.easeInOut,
         );
         _realPage = nextGroup;
-        debugPrint("🔄 Moving forward to next cycle: $_realPage");
         return;
       }
 
@@ -84,7 +83,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           curve: Curves.easeInOut,
         );
         _realPage = targetPage;
-        debugPrint("🔄 Scrolling to page: $_realPage (index: $targetIndex)");
       }
     }
   }
@@ -103,19 +101,71 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return ConnectivityWidget(
       child: Scaffold(
         backgroundColor: AppTheme.backgroundColor,
-        body: RefreshIndicator(
-          onRefresh: _controller.refreshDashboardData,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeaderCard(),
-                  _buildAdvertisementSection(),
-                ],
+        // Use Column instead of SingleChildScrollView to separate fixed and scrollable parts
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // This part will be fixed (not scrollable)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: RefreshIndicator(
+                  onRefresh: _controller.refreshDashboardData,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: _buildHeaderCard(),
+                  ),
+                ),
               ),
-            ),
+
+              // Fixed "Advertisements" text heading
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.fromLTRB(20, 4, 16, 4),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Advertisements",
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Scrollable advertisement section (takes remaining space)
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: _controller.refreshDashboardData,
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: _controller.isLoading,
+                    builder: (context, isLoading, _) {
+                      if (isLoading) {
+                        return _buildLoadingIndicator();
+                      }
+
+                      return ValueListenableBuilder<List<Ads>>(
+                        valueListenable: _controller.adItems,
+                        builder: (context, adItems, _) {
+                          if (adItems.isEmpty) {
+                            return SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: _buildAppDownloadCard(),
+                            );
+                          }
+
+                          return _buildAdsPageView(adItems);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -208,88 +258,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildAdvertisementSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          margin: const EdgeInsets.fromLTRB(20, 4, 16, 0.1),
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Advertisements",
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimaryColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-        ValueListenableBuilder<bool>(
-          valueListenable: _controller.isLoading,
-          builder: (context, isLoading, _) {
-            if (isLoading) {
-              return _buildLoadingIndicator();
-            }
-
-            return ValueListenableBuilder<List<Ads>>(
-              valueListenable: _controller.adItems,
-              builder: (context, adItems, _) {
-                if (adItems.isEmpty) {
-                  return _buildAppDownloadCard();
-                }
-
-                return _buildAdsPageView(adItems);
-              },
-            );
-          },
-        ),
-      ],
-    );
-  }
-
   Widget _buildLoadingIndicator() {
-    return Container(
-      height: 400,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Container(
+        height: 400,
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        alignment: Alignment.center,
+        child: const CircularProgressIndicator(),
       ),
-      alignment: Alignment.center,
-      child: const CircularProgressIndicator(),
     );
   }
 
   Widget _buildAdsPageView(List<Ads> adItems) {
-    return Container(
-      constraints: BoxConstraints(
-        minHeight: 400,
-        maxHeight: MediaQuery.of(context).size.height * 0.8,
-      ),
-      child: PageView.builder(
-        controller: _pageController,
-        itemCount: null, // Infinite pages
-        onPageChanged: (index) {
-          _realPage = index;
-          // Calculate the actual index in our dataset
-          final realIndex = index % adItems.length;
+    return PageView.builder(
+      controller: _pageController,
+      itemCount: null, // Infinite
+      onPageChanged: (index) {
+        _realPage = index;
+        final realIndex = index % adItems.length;
 
-          // Only update controller if index actually changed
-          if (_controller.currentIndex.value != realIndex) {
-            _controller.setCurrentIndex(realIndex);
-          }
-        },
-        itemBuilder: (context, index) {
-          // Get the real item to show based on the infinite index
-          final realIndex = index % adItems.length;
-          return _buildAdCard(adItems[realIndex]);
-        },
-      ),
+        if (_controller.currentIndex.value != realIndex) {
+          _controller.setCurrentIndex(realIndex);
+        }
+      },
+      itemBuilder: (context, index) {
+        final realIndex = index % adItems.length;
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: _buildAdCard(adItems[realIndex]),
+        );
+      },
     );
   }
 
@@ -308,32 +311,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildAdImage(ad),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                ad.subjectLine!,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimaryColor,
-                ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildAdImage(ad),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              ad.subjectLine!,
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimaryColor,
               ),
             ),
-            _buildDateAndPlace(ad),
-            _buildStatusAndAmount(ad),
-            const Divider(),
-            _buildDescription(ad),
-            _buildBenefits(),
-            const SizedBox(height: 14),
-          ],
-        ),
+          ),
+          _buildDateAndPlace(ad),
+          _buildStatusAndAmount(ad),
+          const Divider(),
+          _buildDescription(ad),
+          const SizedBox(height: 14),
+        ],
       ),
     );
   }
@@ -537,58 +536,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               color: AppTheme.textPrimaryColor,
               fontSize: 12,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBenefits() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Benefits:",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-              color: AppTheme.textPrimaryColor,
-            ),
-          ),
-          const SizedBox(height: 2),
-          ValueListenableBuilder<List<String>>(
-            valueListenable: _controller.benefits,
-            builder: (context, benefits, _) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: benefits.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final benefit = entry.value;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("${index + 1}. ",
-                            style:
-                            const TextStyle(fontWeight: FontWeight.bold)),
-                        Expanded(
-                          child: Text(
-                            benefit,
-                            style: const TextStyle(
-                              color: AppTheme.textPrimaryColor,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              );
-            },
           ),
         ],
       ),

@@ -87,7 +87,6 @@ class DashboardController {
       if (adItems.value.isNotEmpty) {
         // Always move to the next index in a circular fashion
         int nextIndex = (currentIndex.value + 1) % adItems.value.length;
-        debugPrint("🔄 Auto-scrolling to ad index: $nextIndex");
         setCurrentIndex(nextIndex);
       }
     });
@@ -96,7 +95,6 @@ class DashboardController {
   void setCurrentIndex(int index) {
     if (index >= 0 && index < adItems.value.length) {
       currentIndex.value = index;
-      debugPrint("📍 Current ad index set to: $index");
     }
   }
 
