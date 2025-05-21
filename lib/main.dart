@@ -17,6 +17,7 @@ import 'package:meetsu_solutions/services/connectivity/connectivity_service.dart
 import 'package:meetsu_solutions/services/firebase/firebase_messaging_service.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 // Create a global navigator key
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -35,12 +36,30 @@ void main() async {
     await Firebase.initializeApp();
     print('Firebase core initialized successfully');
 
+    // Initialize FCM background handler
     await FirebaseMessagingService().initialize();
+
+    // 🔔 Request notification permission here
+    await requestNotificationPermission();
+
   } catch (e) {
     print('Firebase initialization error: $e');
   }
 
   runApp(const JobPortalApp());
+}
+
+// 🔹 Request iOS Notification Permissions
+Future<void> requestNotificationPermission() async {
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
+  print('🔔 Permission status: ${settings.authorizationStatus}');
 }
 
 class JobPortalApp extends StatelessWidget {
@@ -58,6 +77,7 @@ class JobPortalApp extends StatelessWidget {
           fontFamily: 'Roboto',
         ),
         home: const SplashScreen(),
+        navigatorKey: navigatorKey,
         routes: {
           '/profile': (context) => const ProfileScreen(),
           '/clint-profile': (context) => const ClientProfileScreen(),
@@ -69,11 +89,9 @@ class JobPortalApp extends StatelessWidget {
           '/home': (context) => const HomeScreen(),
           // '/home': (context) => const ClientHomeScreen(),
           '/quiz': (context) => const QuizScreen(),
-
           '/analytics/daily': (context) => const DailyAnalyticsScreen(),
           '/analytics/weekly': (context) => const WeeklyAnalyticsScreen(),
         },
-        navigatorKey: navigatorKey,
       ),
     );
   }
