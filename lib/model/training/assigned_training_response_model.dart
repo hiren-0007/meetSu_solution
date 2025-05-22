@@ -1,13 +1,13 @@
 class AssignedTrainingResponseModel {
-  List<Data>? data;
+  List<AssignedTrainingData>? data;
 
   AssignedTrainingResponseModel({this.data});
 
   AssignedTrainingResponseModel.fromJson(Map<String, dynamic> json) {
     if (json['data'] != null) {
-      data = <Data>[];
+      data = <AssignedTrainingData>[];
       json['data'].forEach((v) {
-        data!.add(Data.fromJson(v));
+        data!.add(AssignedTrainingData.fromJson(v));
       });
     }
   }
@@ -21,15 +21,20 @@ class AssignedTrainingResponseModel {
   }
 }
 
-class Data {
+class AssignedTrainingData {
   String? clientName;
   String? trainingName;
   int? trainingId;
   int? docRead;
 
-  Data({this.clientName, this.trainingName, this.trainingId, this.docRead});
+  AssignedTrainingData({
+    this.clientName,
+    this.trainingName,
+    this.trainingId,
+    this.docRead
+  });
 
-  Data.fromJson(Map<String, dynamic> json) {
+  AssignedTrainingData.fromJson(Map<String, dynamic> json) {
     clientName = json['client_name'];
     trainingName = json['training_name'];
     trainingId = json['training_id'];

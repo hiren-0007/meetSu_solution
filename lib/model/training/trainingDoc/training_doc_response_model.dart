@@ -1,15 +1,15 @@
 class TrainingDocResponseModel {
   int? showTest;
-  List<Data>? data;
+  List<TrainingDocData>? data;
 
   TrainingDocResponseModel({this.showTest, this.data});
 
   TrainingDocResponseModel.fromJson(Map<String, dynamic> json) {
     showTest = json['show_test'];
     if (json['data'] != null) {
-      data = <Data>[];
+      data = <TrainingDocData>[];
       json['data'].forEach((v) {
-        data!.add(Data.fromJson(v));
+        data!.add(TrainingDocData.fromJson(v));
       });
     }
   }
@@ -24,21 +24,22 @@ class TrainingDocResponseModel {
   }
 }
 
-class Data {
+class TrainingDocData {
   String? name;
   int? trainingId;
   int? documentId;
   String? document;
-  Null youtube;
+  String? youtube;
 
-  Data(
-      {this.name,
-        this.trainingId,
-        this.documentId,
-        this.document,
-        this.youtube});
+  TrainingDocData({
+    this.name,
+    this.trainingId,
+    this.documentId,
+    this.document,
+    this.youtube
+  });
 
-  Data.fromJson(Map<String, dynamic> json) {
+  TrainingDocData.fromJson(Map<String, dynamic> json) {
     name = json['name'];
     trainingId = json['training_id'];
     documentId = json['document_id'];

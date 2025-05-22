@@ -7,36 +7,51 @@ import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 import 'package:share_plus/share_plus.dart';
 
 class JobOpeningController {
+  static const Duration _autoScrollInterval = Duration(seconds: 5);
+  static const Duration _animationDuration = Duration(milliseconds: 300);
+  static const String _fallbackBaseUrl = "https://meetsusolutions.com/frontend/web/site/job?id=";
+
   final ApiService _apiService;
 
+  // ValueNotifiers for reactive UI updates
   final ValueNotifier<List<Jobs>> jobOpenings = ValueNotifier<List<Jobs>>([]);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(true);
   final ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
   final ValueNotifier<bool> isSharing = ValueNotifier<bool>(false);
 
   Timer? _autoScrollTimer;
+  String? _cachedToken;
 
   JobOpeningController({ApiService? apiService})
       : _apiService = apiService ?? ApiService(ApiClient()) {
+    _initializeController();
+  }
+
+  void _initializeController() {
+    _cacheAuthToken();
     fetchJobOpenings();
   }
 
+  void _cacheAuthToken() {
+    _cachedToken = SharedPrefsService.instance.getAccessToken();
+  }
+
+  // Auto-scroll functionality
   void _setupAutoScroll() {
     _autoScrollTimer?.cancel();
 
     if (jobOpenings.value.isEmpty) return;
 
-
-    _autoScrollTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _autoScrollTimer = Timer.periodic(_autoScrollInterval, (timer) {
       if (jobOpenings.value.isNotEmpty) {
-        int nextIndex = (currentIndex.value + 1) % jobOpenings.value.length;
+        final nextIndex = (currentIndex.value + 1) % jobOpenings.value.length;
         setCurrentIndex(nextIndex);
       }
     });
   }
 
   void setCurrentIndex(int index) {
-    if (index >= 0 && index < jobOpenings.value.length) {
+    if (index >= 0 && index < jobOpenings.value.length && currentIndex.value != index) {
       currentIndex.value = index;
     }
   }
@@ -46,11 +61,16 @@ class JobOpeningController {
       isLoading.value = true;
       debugPrint("🔄 Fetching job openings...");
 
-      final token = SharedPrefsService.instance.getAccessToken();
-      debugPrint("🔑 Auth Token: ${token != null ? (token.length > 10 ? '${token.substring(0, 10)}...' : token) : 'null'}");
+      // Use cached token or refresh if needed
+      final token = _cachedToken ?? SharedPrefsService.instance.getAccessToken();
 
       if (token == null || token.isEmpty) {
         throw Exception("No authentication token found");
+      }
+
+      // Update cached token if it changed
+      if (_cachedToken != token) {
+        _cachedToken = token;
       }
 
       _apiService.client.addAuthToken(token);
@@ -58,45 +78,74 @@ class JobOpeningController {
       final response = await _apiService.getJobsOnly();
       debugPrint("📥 Received response for Jobs");
 
-      final jobsResponse = JobOpeningResponseModel.fromJson(response);
-
-      if (jobsResponse.success == true &&
-          jobsResponse.response != null &&
-          jobsResponse.response!.jobs != null &&
-          jobsResponse.response!.jobs!.isNotEmpty) {
-
-        jobOpenings.value = jobsResponse.response!.jobs!;
-        debugPrint("✅ Loaded ${jobOpenings.value.length} job openings");
-
-        currentIndex.value = 0;
-
-        _setupAutoScroll();
-      } else {
-        jobOpenings.value = [];
-        debugPrint(
-            "⚠️ No jobs available or API returned an error: ${jobsResponse.message}");
-      }
+      await _processJobResponse(response);
     } catch (e) {
       debugPrint("❌ Error fetching job openings: $e");
-      jobOpenings.value = [];
+      _handleFetchError();
     } finally {
       isLoading.value = false;
     }
   }
 
+  Future<void> _processJobResponse(Map<String, dynamic> response) async {
+    final jobsResponse = JobOpeningResponseModel.fromJson(response);
+
+    if (jobsResponse.success == true &&
+        jobsResponse.response?.jobs?.isNotEmpty == true) {
+
+      jobOpenings.value = jobsResponse.response!.jobs!;
+      debugPrint("✅ Loaded ${jobOpenings.value.length} job openings");
+
+      currentIndex.value = 0;
+      _setupAutoScroll();
+    } else {
+      jobOpenings.value = [];
+      debugPrint("⚠️ No jobs available or API returned an error: ${jobsResponse.message}");
+    }
+  }
+
+  void _handleFetchError() {
+    jobOpenings.value = [];
+    // Optionally, you could implement retry logic here
+  }
+
   Future<void> shareJob(BuildContext context, Jobs job) async {
+    if (isSharing.value) return; // Prevent multiple simultaneous shares
+
     try {
       isSharing.value = true;
       debugPrint("🔄 Sharing job: ${job.jobPosition} (ID: ${job.jobId})");
 
-      final token = SharedPrefsService.instance.getAccessToken();
+      final shareLink = await _getShareLink(job);
+      final shareText = _buildShareText(job, shareLink);
+
+      await Share.share(shareText, subject: job.jobPosition ?? 'Job Opening');
+      debugPrint("✅ Job shared successfully");
+
+      if (context.mounted) {
+        _showShareSuccess(context);
+      }
+    } catch (e) {
+      debugPrint("❌ Error during job sharing: $e");
+
+      if (context.mounted) {
+        await _handleShareError(context, job);
+      }
+    } finally {
+      isSharing.value = false;
+    }
+  }
+
+  Future<String> _getShareLink(Jobs job) async {
+    try {
+      final token = _cachedToken ?? SharedPrefsService.instance.getAccessToken();
       if (token == null || token.isEmpty) {
         throw Exception("No authentication token found");
       }
 
       _apiService.client.addAuthToken(token);
 
-      Map<String, dynamic> requestData = {
+      final requestData = {
         'id': job.jobId.toString(),
         'job_or_ad': '1',
         'medium': 'Whatsapp'
@@ -107,89 +156,99 @@ class JobOpeningController {
       final response = await _apiService.getJobShare(requestData);
       debugPrint("📥 Share API Response: $response");
 
-      if (response['success'] == true) {
-        String shareLink = "";
-
-        if (response['response'] != null && response['response']['link'] != null) {
-          shareLink = response['response']['link'];
-          debugPrint("🔗 Share link received from response: $shareLink");
-        } else if (response['link'] != null) {
-          shareLink = response['link'];
-          debugPrint("🔗 Share link received from root: $shareLink");
-        }
-
-        if (!shareLink.contains("job?id=") && shareLink.contains("job-view?refid=")) {
-          String jobId = job.jobId.toString();
-          shareLink = "https://meetsusolutions.com/frontend/web/site/job?id=$jobId";
-          debugPrint("🔧 Reformatted share link to use job?id format: $shareLink");
-        }
-
-        if (shareLink.isNotEmpty) {
-          String jobDescription = "";
-          if (job.shareDescription?.isNotEmpty == true) {
-            jobDescription = job.shareDescription!;
-          } else {
-            jobDescription = job.jobPosition!;
-          }
-
-          String shareText = "$jobDescription\n$shareLink";
-
-          await Share.share(shareText, subject: job.jobPosition ?? 'Job Opening');
-          debugPrint("✅ Job shared successfully with optimized format for WhatsApp preview");
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Unable to get share link')),
-          );
-        }
-      } else {
-        String errorMsg = response['message'] ?? 'Failed to generate share link';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMsg)),
-        );
-      }
+      return _extractShareLink(response, job);
     } catch (e) {
-      debugPrint("❌ Error during job sharing: $e");
+      debugPrint("⚠️ Failed to get share link from API: $e");
+      return _getFallbackShareLink(job);
+    }
+  }
 
-      String jobId = job.jobId.toString();
-      String fallbackLink = "https://meetsusolutions.com/frontend/web/site/job?id=$jobId";
+  String _extractShareLink(Map<String, dynamic> response, Jobs job) {
+    if (response['success'] != true) {
+      throw Exception(response['message'] ?? 'Failed to generate share link');
+    }
 
-      String jobDescription = "";
-      if (job.shareDescription?.isNotEmpty == true) {
-        jobDescription = job.shareDescription!;
-      } else {
-        jobDescription = job.jobPosition!;
-      }
+    String shareLink = "";
 
-      String shareText = "$jobDescription\n$fallbackLink";
+    // Try different response structures
+    if (response['response']?['link'] != null) {
+      shareLink = response['response']['link'];
+    } else if (response['link'] != null) {
+      shareLink = response['link'];
+    }
 
-      await Share.share(shareText, subject: job.jobPosition ?? 'Job Opening');
+    // Reformat link if necessary
+    if (shareLink.isNotEmpty &&
+        !shareLink.contains("job?id=") &&
+        shareLink.contains("job-view?refid=")) {
+      shareLink = "$_fallbackBaseUrl${job.jobId}";
+      debugPrint("🔧 Reformatted share link: $shareLink");
+    }
 
+    if (shareLink.isEmpty) {
+      throw Exception("Empty share link received from API");
+    }
+
+    return shareLink;
+  }
+
+  String _getFallbackShareLink(Jobs job) {
+    return "$_fallbackBaseUrl${job.jobId}";
+  }
+
+  String _buildShareText(Jobs job, String shareLink) {
+    final description = job.shareDescription?.isNotEmpty == true
+        ? job.shareDescription!
+        : job.jobPosition ?? 'Job Opening';
+
+    return "$description\n$shareLink";
+  }
+
+  void _showShareSuccess(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Job shared successfully!'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _handleShareError(BuildContext context, Jobs job) async {
+    final fallbackLink = _getFallbackShareLink(job);
+    final shareText = _buildShareText(job, fallbackLink);
+
+    await Share.share(shareText, subject: job.jobPosition ?? 'Job Opening');
+
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Using fallback link due to error"),
+        const SnackBar(
+          content: Text("Shared with fallback link"),
           backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
         ),
       );
-    } finally {
-      isSharing.value = false;
     }
   }
 
   List<String> getRequirements(Jobs job) {
-    if (job.positionDescription == null || job.positionDescription!.isEmpty) {
+    if (job.positionDescription?.isEmpty != false) {
       return ["No specific requirements listed"];
     }
 
-    List<String> requirements = job.positionDescription!
+    final requirements = job.positionDescription!
         .split('\n')
-        .where((line) => line.trim().isNotEmpty)
+        .map((line) => line.trim())
+        .where((line) => line.isNotEmpty)
         .toList();
 
     return requirements.isEmpty ? ["No specific requirements listed"] : requirements;
   }
 
+  // Control methods
   void retryFetch() {
     debugPrint("🔄 Retrying fetch for job openings");
+    _cacheAuthToken(); // Refresh token cache
     fetchJobOpenings();
   }
 
@@ -199,7 +258,7 @@ class JobOpeningController {
   }
 
   void resumeAutoScroll() {
-    if (_autoScrollTimer == null || !(_autoScrollTimer?.isActive ?? false)) {
+    if (_autoScrollTimer?.isActive != true && jobOpenings.value.isNotEmpty) {
       _setupAutoScroll();
       debugPrint("▶️ Auto-scroll resumed");
     }
@@ -207,10 +266,12 @@ class JobOpeningController {
 
   void dispose() {
     debugPrint("🧹 Disposing JobOpeningController resources");
+    _autoScrollTimer?.cancel();
+
+    // Dispose ValueNotifiers
     jobOpenings.dispose();
     isLoading.dispose();
     currentIndex.dispose();
     isSharing.dispose();
-    _autoScrollTimer?.cancel();
   }
 }

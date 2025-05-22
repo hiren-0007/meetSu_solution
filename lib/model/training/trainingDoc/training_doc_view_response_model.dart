@@ -2,23 +2,24 @@ class TrainingDocViewResponseModel {
   int? trainingId;
   String? documentName;
   String? documentPath;
-  Null youtube;
+  String? youtube;
   String? vimeo;
   int? documentViewed;
   int? giveTest;
-  Null nextDocument;
+  String? nextDocument;
   String? content;
 
-  TrainingDocViewResponseModel(
-      {this.trainingId,
-        this.documentName,
-        this.documentPath,
-        this.youtube,
-        this.vimeo,
-        this.documentViewed,
-        this.giveTest,
-        this.nextDocument,
-        this.content});
+  TrainingDocViewResponseModel({
+    this.trainingId,
+    this.documentName,
+    this.documentPath,
+    this.youtube,
+    this.vimeo,
+    this.documentViewed,
+    this.giveTest,
+    this.nextDocument,
+    this.content
+  });
 
   TrainingDocViewResponseModel.fromJson(Map<String, dynamic> json) {
     trainingId = json['training_id'];
