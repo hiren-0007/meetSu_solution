@@ -117,7 +117,6 @@ class _SendRequestScreenState extends State<SendRequestScreen>
     );
   }
 
-  // Full header when keyboard is not visible
   Widget _buildFullHeader() {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
@@ -152,7 +151,6 @@ class _SendRequestScreenState extends State<SendRequestScreen>
     );
   }
 
-  // Compact header when keyboard is visible
   Widget _buildCompactHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -194,7 +192,7 @@ class _SendRequestScreenState extends State<SendRequestScreen>
           child: Text(
             "Send Request",
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 17,
               fontWeight: FontWeight.bold,
               color: Colors.white,
               letterSpacing: 0.5,
@@ -224,7 +222,7 @@ class _SendRequestScreenState extends State<SendRequestScreen>
         child: const Icon(
           Icons.arrow_back,
           color: Colors.white,
-          size: 20,
+          size: 17,
         ),
       ),
     );
@@ -253,16 +251,16 @@ class _SendRequestScreenState extends State<SendRequestScreen>
             backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
             child: Icon(
               Icons.person,
-              size: 14,
+              size: 10,
               color: AppTheme.primaryColor,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Text(
             SharedPrefsService.instance.getUsername() ?? "User",
             style: const TextStyle(
               color: Colors.black87,
-              fontSize: 12,
+              fontSize: 10,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -288,7 +286,7 @@ class _SendRequestScreenState extends State<SendRequestScreen>
       child: const Icon(
         Icons.assignment_add,
         color: AppTheme.primaryColor,
-        size: 32,
+        size: 28,
       ),
     );
   }
@@ -366,10 +364,10 @@ class _SendRequestScreenState extends State<SendRequestScreen>
             child: Icon(
               Icons.edit_document,
               color: AppTheme.primaryColor,
-              size: 20,
+              size: 17,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 11),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,17 +375,17 @@ class _SendRequestScreenState extends State<SendRequestScreen>
                 Text(
                   "Request Details",
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.primaryColor,
                   ),
                 ),
-                SizedBox(height: 3),
+                SizedBox(height: 2),
                 Text(
                   "Fill the form to submit your request",
                   style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
+                    fontSize: 11,
+                    color: Colors.blueGrey,
                   ),
                 ),
               ],
@@ -415,18 +413,18 @@ class _SendRequestScreenState extends State<SendRequestScreen>
         Row(
           children: [
             Icon(Icons.calendar_today, color: AppTheme.primaryColor, size: 18),
-            const SizedBox(width: 8),
+            const SizedBox(width: 5),
             const Text(
               "Date",
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 5),
         ValueListenableBuilder<DateTime>(
           valueListenable: _controller.selectedDate,
           builder: (context, date, _) {
@@ -453,14 +451,14 @@ class _SendRequestScreenState extends State<SendRequestScreen>
                     Icon(
                       Icons.calendar_today,
                       color: AppTheme.primaryColor,
-                      size: 18,
+                      size: 15,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 7),
                     Expanded(
                       child: Text(
                         _controller.formatDate(date),
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 12,
                           color: Colors.black87,
                           fontWeight: FontWeight.w500,
                         ),
@@ -469,7 +467,7 @@ class _SendRequestScreenState extends State<SendRequestScreen>
                     Icon(
                       Icons.expand_more,
                       color: AppTheme.primaryColor,
-                      size: 18,
+                      size: 15,
                     ),
                   ],
                 ),
@@ -487,20 +485,20 @@ class _SendRequestScreenState extends State<SendRequestScreen>
       children: [
         Row(
           children: [
-            Icon(Icons.description, color: AppTheme.primaryColor, size: 18),
-            const SizedBox(width: 8),
+            Icon(Icons.description, color: AppTheme.primaryColor, size: 15),
+            const SizedBox(width: 5),
             const Text(
               "Reason",
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
             ),
-            const Text(" *", style: TextStyle(color: Colors.red, fontSize: 15)),
+            const Text(" *", style: TextStyle(color: Colors.red, fontSize: 12)),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 5),
         TextField(
           controller: _controller.reasonController,
           decoration: InputDecoration(
@@ -529,9 +527,9 @@ class _SendRequestScreenState extends State<SendRequestScreen>
             filled: true,
             fillColor: Colors.grey.shade50,
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 15),
+            hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 12),
           ),
-          style: const TextStyle(fontSize: 15),
+          style: const TextStyle(fontSize: 12),
           textInputAction: TextInputAction.done,
           maxLines: 3,
           minLines: 1,
@@ -583,15 +581,15 @@ class _SendRequestScreenState extends State<SendRequestScreen>
             child: Icon(
               Icons.history,
               color: AppTheme.primaryColor,
-              size: 18,
+              size: 15,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 7),
           const Expanded(
             child: Text(
               "Request History",
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 13,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.primaryColor,
               ),
@@ -620,7 +618,7 @@ class _SendRequestScreenState extends State<SendRequestScreen>
                   child: Icon(
                     Icons.refresh,
                     color: AppTheme.primaryColor,
-                    size: 16,
+                    size: 13,
                   ),
                 ),
               );
@@ -648,8 +646,8 @@ class _SendRequestScreenState extends State<SendRequestScreen>
                       height: 24,
                       child: CircularProgressIndicator(strokeWidth: 2.5),
                     ),
-                    SizedBox(height: 10),
-                    Text("Loading records...", style: TextStyle(fontSize: 13)),
+                    SizedBox(height: 7),
+                    Text("Loading records...", style: TextStyle(fontSize: 10)),
                   ],
                 ),
               );
@@ -681,24 +679,24 @@ class _SendRequestScreenState extends State<SendRequestScreen>
               ),
               child: Icon(
                 Icons.assignment_outlined,
-                size: 28,
+                size: 25,
                 color: Colors.grey.shade400,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 9),
             Text(
               "No Records Yet",
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey.shade600,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 5),
             Text(
               "Submit your first request",
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 9,
                 color: Colors.grey.shade500,
               ),
             ),
@@ -741,7 +739,7 @@ class _SendRequestScreenState extends State<SendRequestScreen>
                 child: Icon(
                   Icons.visibility,
                   color: AppTheme.primaryColor,
-                  size: 16,
+                  size: 14,
                 ),
               ),
             ),
@@ -757,17 +755,17 @@ class _SendRequestScreenState extends State<SendRequestScreen>
                   child: Text(
                     '\$${double.tryParse(record.amount ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 8,
                       fontWeight: FontWeight.w600,
                       color: Colors.green.shade700,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 5),
                 Expanded(
                   child: Text(
                     record.reason ?? 'No reason',
-                    style: const TextStyle(fontSize: 12),
+                    style: const TextStyle(fontSize: 9),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -777,7 +775,7 @@ class _SendRequestScreenState extends State<SendRequestScreen>
             subtitle: Text(
               record.date ?? 'N/A',
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 7,
                 color: Colors.grey.shade600,
               ),
             ),
@@ -820,11 +818,11 @@ class _SendRequestScreenState extends State<SendRequestScreen>
                 strokeWidth: 2,
               ),
             )
-                : const Icon(Icons.add_task, size: 18),
+                : const Icon(Icons.add_task, size: 15),
             label: Text(
               isLoading ? "Loading..." : "Add New Request",
               style: const TextStyle(
-                fontSize: 15,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
             ),

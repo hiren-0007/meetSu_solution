@@ -241,15 +241,16 @@ class _ScheduleScreenState extends State<ScheduleScreen>
       width: double.infinity,
       decoration: BoxDecoration(
         color: AppTheme.primaryColor,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(12),
       ),
-      margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       child: const Text(
         "All Hours And Amounts Are Approximate",
         style: TextStyle(
           color: Colors.white,
-          fontSize: 14,
+          fontSize: 12,
+          fontWeight: FontWeight.w700
         ),
       ),
     );
@@ -344,17 +345,17 @@ class _ScheduleScreenState extends State<ScheduleScreen>
           "$label:",
           style: TextStyle(
             color: AppTheme.textSecondaryColor,
-            fontSize: 12,
+            fontSize: 10,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.3,
           ),
         ),
-        SizedBox(height: 4),
+        SizedBox(height: 2),
         Text(
           value,
           style: TextStyle(
             color: isHighlighted ? AppTheme.primaryColor : AppTheme.textPrimaryColor,
-            fontSize: 14,
+            fontSize: 10,
             fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w600,
             letterSpacing: 0.2,
           ),
@@ -433,7 +434,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 12,
                         ),
                       ),
                     ),
@@ -444,7 +445,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 12,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -456,7 +457,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 12,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -468,7 +469,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 12,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -480,7 +481,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 12,
                         ),
                         textAlign: TextAlign.right,
                       ),
@@ -552,7 +553,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                               formattedDate,
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13,
+                                fontSize: 12,
                               ),
                             ),
                           ),
@@ -562,7 +563,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                               startTime,
                               style: TextStyle(
                                 color: AppTheme.textSecondaryColor,
-                                fontSize: 13,
+                                fontSize: 12,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -573,7 +574,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                               endTime,
                               style: TextStyle(
                                 color: AppTheme.textSecondaryColor,
-                                fontSize: 13,
+                                fontSize: 12,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -584,7 +585,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                               item.hours ?? "0.00",
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13,
+                                fontSize: 12,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -596,7 +597,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: AppTheme.primaryColor,
-                                fontSize: 13,
+                                fontSize: 12,
                               ),
                               textAlign: TextAlign.right,
                             ),
@@ -630,7 +631,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
           }
 
           return Container(
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -649,7 +650,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
+                fontSize: 16,
               ),
               textAlign: TextAlign.center,
             ),

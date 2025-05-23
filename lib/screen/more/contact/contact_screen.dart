@@ -124,7 +124,7 @@ class _ContactScreenState extends State<ContactScreen>
           const Text(
             "Contact Us",
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.white,
               letterSpacing: 0.5,
@@ -152,7 +152,7 @@ class _ContactScreenState extends State<ContactScreen>
         child: const Icon(
           Icons.arrow_back,
           color: Colors.white,
-          size: 24,
+          size: 20,
         ),
       ),
     );
@@ -160,10 +160,10 @@ class _ContactScreenState extends State<ContactScreen>
 
   Widget _buildUserPill() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.15),
@@ -181,7 +181,7 @@ class _ContactScreenState extends State<ContactScreen>
             backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
             child: Icon(
               Icons.person,
-              size: 16,
+              size: 14,
               color: AppTheme.primaryColor,
             ),
           ),
@@ -190,7 +190,7 @@ class _ContactScreenState extends State<ContactScreen>
             SharedPrefsService.instance.getUsername() ?? "User",
             style: const TextStyle(
               color: Colors.black87,
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -217,7 +217,7 @@ class _ContactScreenState extends State<ContactScreen>
         child: const Icon(
           Icons.contact_support,
           color: AppTheme.primaryColor,
-          size: 45,
+          size: 40,
         ),
       ),
     );
@@ -259,7 +259,6 @@ class _ContactScreenState extends State<ContactScreen>
                       _buildQueryField(),
                       SizedBox(height: AppTheme.contentSpacing + 8),
                       _buildFormProgress(),
-                      _buildQuickActions(),
                       _buildHelpText(),
                       _buildErrorMessage(),
                       _buildSubmitButton(),
@@ -299,13 +298,13 @@ class _ContactScreenState extends State<ContactScreen>
               Icon(
                 Icons.chat_bubble_outline,
                 color: AppTheme.primaryColor,
-                size: 24,
+                size: 20,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               const Text(
                 "Get in Touch",
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.primaryColor,
                 ),
@@ -316,7 +315,7 @@ class _ContactScreenState extends State<ContactScreen>
           Text(
             "We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               color: Colors.grey[600],
               height: 1.4,
             ),
@@ -571,77 +570,6 @@ class _ContactScreenState extends State<ContactScreen>
     return progress;
   }
 
-  Widget _buildQuickActions() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Quick Actions",
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              _buildQuickActionChip(
-                "Clear Form",
-                Icons.clear_all,
-                    () {
-                  HapticFeedback.lightImpact();
-                  _showClearFormDialog();
-                },
-              ),
-              const SizedBox(width: 8),
-              _buildQuickActionChip(
-                "Save Draft",
-                Icons.save_outlined,
-                    () {
-                  HapticFeedback.lightImpact();
-                  _saveDraft();
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActionChip(String label, IconData icon, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: Colors.grey.shade600),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildHelpText() {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -846,75 +774,6 @@ class _ContactScreenState extends State<ContactScreen>
           },
         );
       },
-    );
-  }
-
-  void _showClearFormDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Text("Clear Form"),
-          content: const Text("Are you sure you want to clear all fields? This action cannot be undone."),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _controller.subjectController.clear();
-                _controller.queryController.clear();
-                _controller.clearMessages();
-                HapticFeedback.mediumImpact();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Form cleared successfully"),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text("Clear"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _saveDraft() {
-    if (_controller.subjectController.text.trim().isEmpty &&
-        _controller.queryController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Nothing to save - form is empty"),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
-
-    // Here you could implement actual draft saving logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.save, color: Colors.white),
-            SizedBox(width: 8),
-            Text("Draft saved locally"),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
-      ),
     );
   }
 }

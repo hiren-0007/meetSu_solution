@@ -144,7 +144,7 @@ class _TrainingScreenState extends State<TrainingScreen>
               child: Text(
                 "Training Center",
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -170,7 +170,7 @@ class _TrainingScreenState extends State<TrainingScreen>
         child: const Icon(
           Icons.arrow_back,
           color: Colors.white,
-          size: 24,
+          size: 20,
         ),
       ),
     );
@@ -195,20 +195,20 @@ class _TrainingScreenState extends State<TrainingScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           CircleAvatar(
-            radius: 12,
+            radius: 10,
             backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
             child: Icon(
               Icons.person,
-              size: 16,
+              size: 14,
               color: AppTheme.primaryColor,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Text(
             SharedPrefsService.instance.getUsername() ?? "User",
             style: const TextStyle(
               color: Colors.black87,
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -235,7 +235,7 @@ class _TrainingScreenState extends State<TrainingScreen>
         child: const Icon(
           Icons.school,
           color: AppTheme.primaryColor,
-          size: 35,
+          size: 30,
         ),
       ),
     );
@@ -488,22 +488,22 @@ class _TrainingScreenState extends State<TrainingScreen>
 
   Widget _buildSectionHeader(String title, int count, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(7),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 16),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Text(
             title,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -518,7 +518,7 @@ class _TrainingScreenState extends State<TrainingScreen>
             child: Text(
               count.toString(),
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
@@ -593,7 +593,7 @@ class _TrainingScreenState extends State<TrainingScreen>
     final isRead = training.docRead == 1;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -629,10 +629,10 @@ class _TrainingScreenState extends State<TrainingScreen>
                   child: const Icon(
                     Icons.assignment,
                     color: Colors.blue,
-                    size: 28,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -640,34 +640,34 @@ class _TrainingScreenState extends State<TrainingScreen>
                       Text(
                         training.trainingName ?? 'Unknown Training',
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
                           Icon(
                             Icons.business,
-                            size: 14,
+                            size: 12,
                             color: Colors.grey[600],
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 2),
                           Expanded(
                             child: Text(
                               training.clientName ?? 'Unknown Client',
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 12,
                                 color: Colors.grey[600],
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
@@ -679,14 +679,14 @@ class _TrainingScreenState extends State<TrainingScreen>
                           children: [
                             Icon(
                               isRead ? Icons.check_circle : Icons.pending,
-                              size: 14,
+                              size: 12,
                               color: isRead ? Colors.green.shade700 : Colors.orange.shade700,
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: 2),
                             Text(
                               isRead ? 'Document Read' : 'Pending',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 color: isRead ? Colors.green.shade700 : Colors.orange.shade700,
                               ),
@@ -705,7 +705,7 @@ class _TrainingScreenState extends State<TrainingScreen>
                   ),
                   child: const Icon(
                     Icons.arrow_forward_ios,
-                    size: 16,
+                    size: 14,
                     color: Colors.blue,
                   ),
                 ),
@@ -719,7 +719,7 @@ class _TrainingScreenState extends State<TrainingScreen>
 
   Widget _buildCompletedTrainingItem(CompletedTrainingData training) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -755,10 +755,10 @@ class _TrainingScreenState extends State<TrainingScreen>
                   child: const Icon(
                     Icons.check_circle,
                     color: Colors.green,
-                    size: 28,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -766,34 +766,34 @@ class _TrainingScreenState extends State<TrainingScreen>
                       Text(
                         training.trainingName ?? 'Unknown Training',
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
                           Icon(
                             Icons.business,
-                            size: 14,
+                            size: 12,
                             color: Colors.grey[600],
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 2),
                           Expanded(
                             child: Text(
                               training.clientName ?? 'Unknown Client',
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 12,
                                 color: Colors.grey[600],
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
                           Container(
@@ -807,14 +807,14 @@ class _TrainingScreenState extends State<TrainingScreen>
                               children: [
                                 Icon(
                                   Icons.star,
-                                  size: 14,
+                                  size: 12,
                                   color: Colors.green.shade700,
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: 2),
                                 Text(
                                   'Score: ${training.score ?? 'N/A'}',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.green.shade700,
                                   ),
@@ -823,7 +823,7 @@ class _TrainingScreenState extends State<TrainingScreen>
                             ),
                           ),
                           if (training.document != null) ...[
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
@@ -835,14 +835,14 @@ class _TrainingScreenState extends State<TrainingScreen>
                                 children: [
                                   Icon(
                                     Icons.description,
-                                    size: 14,
+                                    size: 12,
                                     color: Colors.blue.shade700,
                                   ),
-                                  const SizedBox(width: 4),
+                                  const SizedBox(width: 2),
                                   Text(
                                     'Document',
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 10,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.blue.shade700,
                                     ),
@@ -864,7 +864,7 @@ class _TrainingScreenState extends State<TrainingScreen>
                   ),
                   child: const Icon(
                     Icons.arrow_forward_ios,
-                    size: 16,
+                    size: 14,
                     color: Colors.green,
                   ),
                 ),
