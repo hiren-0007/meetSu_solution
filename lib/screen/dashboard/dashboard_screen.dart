@@ -17,7 +17,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   late final DashboardController _controller;
   PageController? _pageController;
-  int _realPage = 1000; // Start at a large number for infinite scroll
+  int _currentAdIndex = 0;
 
   @override
   bool get wantKeepAlive => true;
@@ -27,63 +27,35 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.initState();
     _controller = DashboardController();
     WidgetsBinding.instance.addObserver(this);
-    _initializePageController();
     _setupListeners();
-  }
-
-  void _initializePageController() {
-    _pageController = PageController(initialPage: _realPage);
   }
 
   void _setupListeners() {
     _controller.adItems.addListener(_onAdItemsChanged);
-    _controller.currentIndex.addListener(_onCurrentIndexChanged);
   }
 
   void _onAdItemsChanged() {
-    if (_controller.adItems.value.isNotEmpty && mounted) {
-      if (_pageController?.hasClients == true) {
-        setState(() {
-          _realPage = _pageController!.page!.round();
-        });
+    final ads = _controller.adItems.value;
+    if (ads.isNotEmpty && mounted) {
+      if (_pageController == null) {
+        final middleIndex = ads.length * 500; // Start from middle for infinite scroll
+        _pageController = PageController(initialPage: middleIndex);
+        _currentAdIndex = 0;
+        _startAutoScroll();
       }
     }
   }
 
-  void _onCurrentIndexChanged() {
-    if (_pageController?.hasClients == true &&
-        _controller.adItems.value.isNotEmpty &&
-        mounted) {
-
-      final adsLength = _controller.adItems.value.length;
-      final targetIndex = _controller.currentIndex.value;
-      final currentIndex = _realPage % adsLength;
-
-      // Handle wrap-around from last to first
-      if (currentIndex == adsLength - 1 && targetIndex == 0) {
-        final nextGroup = (_realPage ~/ adsLength + 1) * adsLength;
-        _animateToPage(nextGroup);
-        _realPage = nextGroup;
-        return;
-      }
-
-      // Normal navigation
-      final baseGroup = (_realPage ~/ adsLength) * adsLength;
-      final targetPage = baseGroup + targetIndex;
-
-      if (_pageController!.page!.round() != targetPage) {
-        _animateToPage(targetPage);
-        _realPage = targetPage;
-      }
+  void _startAutoScroll() {
+    if (_controller.adItems.value.isNotEmpty) {
+      _controller.startAutoScrollWithPageController(_pageController!, (index) {
+        if (mounted) {
+          setState(() {
+            _currentAdIndex = index;
+          });
+        }
+      });
     }
-  }
-
-  void _animateToPage(int page) {
-    _pageController?.animateToPage(
-      page,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-    );
   }
 
   @override
@@ -105,26 +77,91 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _controller.currentIndex.removeListener(_onCurrentIndexChanged);
     _controller.adItems.removeListener(_onAdItemsChanged);
     _pageController?.dispose();
     _controller.dispose();
     super.dispose();
   }
 
-  // Device type detection
+  bool get isSmallMobile => MediaQuery.of(context).size.width < 400;
   bool get isMobile => MediaQuery.of(context).size.width < 600;
   bool get isTablet => MediaQuery.of(context).size.width >= 600 && MediaQuery.of(context).size.width < 1200;
   bool get isDesktop => MediaQuery.of(context).size.width >= 1200;
+  bool get isLargeDesktop => MediaQuery.of(context).size.width >= 1600;
 
-  // Responsive values
-  double get horizontalPadding => isMobile ? 16 : isTablet ? 24 : 32;
-  double get verticalSpacing => isMobile ? 8 : isTablet ? 12 : 16;
-  double get cardBorderRadius => isMobile ? 12 : 15;
-  double get fontSizeSmall => isMobile ? 11 : isTablet ? 12 : 13;
-  double get fontSizeMedium => isMobile ? 13 : isTablet ? 14 : 15;
-  double get fontSizeLarge => isMobile ? 15 : isTablet ? 17 : 19;
-  double get fontSizeXLarge => isMobile ? 17 : isTablet ? 19 : 21;
+  double get screenWidth => MediaQuery.of(context).size.width;
+  double get screenHeight => MediaQuery.of(context).size.height;
+
+  double get horizontalPadding {
+    if (isSmallMobile) return 8;
+    if (isMobile) return 12;
+    if (isTablet) return 16;
+    if (isDesktop) return 20;
+    return 24;
+  }
+
+  double get verticalSpacing {
+    if (isSmallMobile) return 4;
+    if (isMobile) return 6;
+    if (isTablet) return 8;
+    if (isDesktop) return 10;
+    return 12;
+  }
+
+  double get cardBorderRadius {
+    if (isSmallMobile) return 8;
+    if (isMobile) return 12;
+    if (isTablet) return 14;
+    return 16;
+  }
+
+  double get fontSizeSmall {
+    if (isSmallMobile) return 10;
+    if (isMobile) return 11;
+    if (isTablet) return 12;
+    if (isDesktop) return 13;
+    return 14;
+  }
+
+  double get fontSizeMedium {
+    if (isSmallMobile) return 12;
+    if (isMobile) return 13;
+    if (isTablet) return 14;
+    if (isDesktop) return 15;
+    return 16;
+  }
+
+  double get fontSizeLarge {
+    if (isSmallMobile) return 14;
+    if (isMobile) return 15;
+    if (isTablet) return 16;
+    if (isDesktop) return 17;
+    return 18;
+  }
+
+  double get fontSizeXLarge {
+    if (isSmallMobile) return 16;
+    if (isMobile) return 17;
+    if (isTablet) return 18;
+    if (isDesktop) return 19;
+    return 20;
+  }
+
+  double get imageHeight {
+    if (isSmallMobile) return 160;
+    if (isMobile) return 180;
+    if (isTablet) return 200;
+    if (isDesktop) return 220;
+    return 240;
+  }
+
+  double get headerIconSize {
+    if (isSmallMobile) return 16;
+    if (isMobile) return 18;
+    if (isTablet) return 20;
+    if (isDesktop) return 22;
+    return 24;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +187,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  // Mobile Layout (< 600px)
   Widget _buildMobileLayout() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,7 +198,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  // Tablet Layout (600-1200px)
   Widget _buildTabletLayout() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,22 +205,27 @@ class _DashboardScreenState extends State<DashboardScreen>
         _buildRefreshableHeader(),
         _buildSectionTitle(),
         Expanded(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 800),
-            child: _buildMainContent(),
+          child: Center(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: screenWidth * 0.85,
+                minWidth: 600,
+              ),
+              child: _buildMainContent(),
+            ),
           ),
         ),
       ],
     );
   }
 
-  // Desktop Layout (> 1200px)
   Widget _buildDesktopLayout() {
+    final sidebarWidth = isLargeDesktop ? 450.0 : 400.0;
+
     return Row(
       children: [
-        // Left sidebar for header
         Container(
-          width: 400,
+          width: sidebarWidth,
           child: Column(
             children: [
               _buildRefreshableHeader(),
@@ -196,9 +236,14 @@ class _DashboardScreenState extends State<DashboardScreen>
 
         // Main content area
         Expanded(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 900),
-            child: _buildMainContent(),
+          child: Center(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: isLargeDesktop ? 1200 : 900,
+                minWidth: 600,
+              ),
+              child: _buildMainContent(),
+            ),
           ),
         ),
       ],
@@ -228,9 +273,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         borderRadius: BorderRadius.circular(cardBorderRadius),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: AppTheme.primaryColor.withOpacity(0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -238,16 +283,15 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Weather and date row
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.wb_sunny,
                 color: Colors.white,
-                size: isMobile ? 20 : 24,
+                size: headerIconSize,
               ),
-              SizedBox(width: verticalSpacing / 2),
+              SizedBox(width: 4),
               ValueListenableBuilder<String>(
                 valueListenable: _controller.temperature,
                 builder: (context, temperature, _) {
@@ -259,8 +303,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                           "$temperature • $date",
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: fontSizeMedium,
-                            fontWeight: FontWeight.w500,
+                            fontSize: fontSizeSmall,
+                            fontWeight: FontWeight.w600,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -274,12 +318,11 @@ class _DashboardScreenState extends State<DashboardScreen>
 
           SizedBox(height: verticalSpacing),
 
-          // Quote section
           Text(
             "Quote of the day",
             style: TextStyle(
               color: Colors.white,
-              fontSize: fontSizeLarge,
+              fontSize: fontSizeMedium,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -292,11 +335,13 @@ class _DashboardScreenState extends State<DashboardScreen>
               return Text(
                 '"$quote"',
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: fontSizeMedium,
+                  fontSize: fontSizeSmall,
                   fontStyle: FontStyle.italic,
-                  height: 1.4,
+                  height: 1.3,
                 ),
               );
             },
@@ -313,7 +358,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   "- $author",
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: fontSizeSmall,
+                    fontSize: fontSizeSmall - 1,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -328,7 +373,12 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget _buildSectionTitle() {
     return Container(
       width: double.infinity,
-      margin: EdgeInsets.fromLTRB(horizontalPadding, verticalSpacing / 2, horizontalPadding, verticalSpacing / 2),
+      margin: EdgeInsets.fromLTRB(
+          horizontalPadding,
+          verticalSpacing / 4,
+          horizontalPadding,
+          0
+      ),
       child: Text(
         "Advertisements",
         style: TextStyle(
@@ -336,6 +386,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           fontWeight: FontWeight.bold,
           color: AppTheme.textPrimaryColor,
         ),
+        textAlign: isDesktop ? TextAlign.center : TextAlign.left,
       ),
     );
   }
@@ -374,19 +425,21 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildLoadingState() {
+    final loadingHeight = isSmallMobile ? 300.0 : isMobile ? 350.0 : isTablet ? 450.0 : 500.0;
+
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       child: Container(
-        height: isMobile ? 300 : 400,
+        height: loadingHeight,
         margin: EdgeInsets.all(horizontalPadding),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(cardBorderRadius),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.grey.withOpacity(0.15),
+              blurRadius: isDesktop ? 15 : 10,
+              offset: Offset(0, isDesktop ? 4 : 3),
             ),
           ],
         ),
@@ -395,9 +448,12 @@ class _DashboardScreenState extends State<DashboardScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(
-                width: isMobile ? 40 : 60,
-                height: isMobile ? 40 : 60,
-                child: const CircularProgressIndicator(strokeWidth: 3),
+                width: isSmallMobile ? 40 : isMobile ? 45 : isTablet ? 55 : 65,
+                height: isSmallMobile ? 40 : isMobile ? 45 : isTablet ? 55 : 65,
+                child: CircularProgressIndicator(
+                  strokeWidth: isDesktop ? 4 : 3,
+                  color: AppTheme.primaryColor,
+                ),
               ),
               SizedBox(height: verticalSpacing * 2),
               Text(
@@ -405,6 +461,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 style: TextStyle(
                   color: AppTheme.textSecondaryColor,
                   fontSize: fontSizeMedium,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -423,13 +480,20 @@ class _DashboardScreenState extends State<DashboardScreen>
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(cardBorderRadius),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.15),
+              blurRadius: isDesktop ? 15 : 10,
+              offset: Offset(0, isDesktop ? 4 : 3),
+            ),
+          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.error_outline,
-              size: isMobile ? 48 : 64,
+              size: isSmallMobile ? 48 : isMobile ? 55 : isTablet ? 65 : 75,
               color: Colors.red.shade400,
             ),
             SizedBox(height: verticalSpacing * 2),
@@ -438,20 +502,28 @@ class _DashboardScreenState extends State<DashboardScreen>
               style: TextStyle(
                 color: AppTheme.textSecondaryColor,
                 fontSize: fontSizeMedium,
+                fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: verticalSpacing * 2),
             ElevatedButton.icon(
               onPressed: _controller.retryFetch,
-              icon: const Icon(Icons.refresh),
-              label: const Text("Retry"),
+              icon: Icon(Icons.refresh, size: fontSizeMedium + 2),
+              label: Text("Retry"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(
                   horizontal: horizontalPadding * 1.5,
-                  vertical: verticalSpacing,
+                  vertical: verticalSpacing + (isDesktop ? 4 : 2),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(cardBorderRadius / 2),
+                ),
+                textStyle: TextStyle(
+                  fontSize: fontSizeMedium,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -461,16 +533,17 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  // Updated _buildAdsPageView with infinite scroll logic similar to JobOpeningScreen
   Widget _buildAdsPageView(List<Ads> adItems) {
     return PageView.builder(
       controller: _pageController,
-      itemCount: null, // Infinite scroll
+      itemCount: adItems.length * 1000, // Infinite scroll
       onPageChanged: (index) {
-        _realPage = index;
         final realIndex = index % adItems.length;
-        if (_controller.currentIndex.value != realIndex) {
-          _controller.setCurrentIndex(realIndex);
-        }
+        setState(() {
+          _currentAdIndex = realIndex;
+        });
+        _controller.updateCurrentIndex(realIndex);
       },
       itemBuilder: (context, index) {
         final realIndex = index % adItems.length;
@@ -484,36 +557,41 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildAdCard(Ads ad) {
     return Container(
-      margin: EdgeInsets.all(horizontalPadding),
+      margin: EdgeInsets.symmetric(
+        horizontal: horizontalPadding,
+        vertical: 2,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(cardBorderRadius),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.15),
-            spreadRadius: 2,
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            spreadRadius: 1,
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           _buildAdImage(ad),
           _buildAdHeader(ad),
           _buildAdDetails(ad),
-          const Divider(height: 1),
+          Divider(
+            height: 1,
+            color: Colors.grey.shade200,
+            thickness: 0.5,
+          ),
           _buildAdDescription(ad),
-          SizedBox(height: verticalSpacing),
         ],
       ),
     );
   }
 
   Widget _buildAdImage(Ads ad) {
-    final imageHeight = isMobile ? 200.0 : isTablet ? 250.0 : 300.0;
-
     return ClipRRect(
       borderRadius: BorderRadius.vertical(top: Radius.circular(cardBorderRadius)),
       child: ad.imageUrl?.isNotEmpty == true
@@ -522,18 +600,20 @@ class _DashboardScreenState extends State<DashboardScreen>
         height: imageHeight,
         child: Image.network(
           ad.imageUrl!,
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
             return Container(
               height: imageHeight,
               alignment: Alignment.center,
+              color: Colors.grey.shade50,
               child: CircularProgressIndicator(
                 value: loadingProgress.expectedTotalBytes != null
                     ? loadingProgress.cumulativeBytesLoaded /
                     loadingProgress.expectedTotalBytes!
                     : null,
-                strokeWidth: 2,
+                strokeWidth: isDesktop ? 4 : 3,
+                color: AppTheme.primaryColor,
               ),
             );
           },
@@ -554,15 +634,29 @@ class _DashboardScreenState extends State<DashboardScreen>
           end: Alignment.bottomRight,
           colors: [
             AppTheme.primaryColor.withOpacity(0.1),
-            AppTheme.primaryColor.withOpacity(0.2),
+            AppTheme.primaryColor.withOpacity(0.25),
           ],
         ),
       ),
       child: Center(
-        child: Icon(
-          Icons.campaign,
-          size: height * 0.3,
-          color: AppTheme.primaryColor.withOpacity(0.6),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.campaign,
+              size: height * 0.25,
+              color: AppTheme.primaryColor.withOpacity(0.7),
+            ),
+            SizedBox(height: verticalSpacing),
+            Text(
+              "Image not available",
+              style: TextStyle(
+                color: AppTheme.primaryColor.withOpacity(0.8),
+                fontSize: fontSizeSmall,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -570,16 +664,21 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildAdHeader(Ads ad) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(horizontalPadding, horizontalPadding, horizontalPadding, verticalSpacing),
+      padding: EdgeInsets.fromLTRB(
+          horizontalPadding,
+          verticalSpacing,
+          horizontalPadding,
+          verticalSpacing / 2
+      ),
       child: Text(
         ad.subjectLine ?? "No Subject",
         style: TextStyle(
-          fontSize: fontSizeXLarge,
+          fontSize: fontSizeLarge,
           fontWeight: FontWeight.bold,
           color: AppTheme.textPrimaryColor,
           height: 1.2,
         ),
-        maxLines: isMobile ? 2 : 3,
+        maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
     );
@@ -590,64 +689,57 @@ class _DashboardScreenState extends State<DashboardScreen>
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: Column(
         children: [
-          // Date and Place row
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(child: _buildDetailItem(Icons.date_range, "Date", ad.date ?? "Unknown")),
-              SizedBox(width: horizontalPadding),
-              Expanded(child: _buildDetailItem(Icons.location_on, "Place", ad.place ?? "Unknown")),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  "Date: ${ad.date ?? "Unknown"}",
+                  style: TextStyle(
+                    fontSize: fontSizeSmall,
+                    color: AppTheme.textPrimaryColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                flex: 2,
+                child: Text(
+                  "Amount:" "${ad.amount ?? '0.00'}",
+                  style: TextStyle(
+                    fontSize: fontSizeSmall,
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
+                ),
+              ),
             ],
           ),
 
-          SizedBox(height: verticalSpacing),
+          SizedBox(height: verticalSpacing / 2),
 
-          // Status and Amount row
           Row(
             children: [
-              Expanded(child: _buildDetailItem(Icons.info, "Status", ad.status ?? "OFF")),
-              SizedBox(width: horizontalPadding),
-              Expanded(child: _buildDetailItem(Icons.attach_money, "Amount", "\$ ${ad.amount ?? '0.00'}", isHighlighted: true)),
+              Expanded(
+                child: Text(
+                  "Place: ${ad.place ?? "Unknown"}",
+                  style: TextStyle(
+                    fontSize: fontSizeSmall,
+                    color: AppTheme.textPrimaryColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildDetailItem(IconData icon, String label, String value, {bool isHighlighted = false}) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: fontSizeMedium + 2,
-          color: isHighlighted ? AppTheme.primaryColor : AppTheme.textSecondaryColor,
-        ),
-        SizedBox(width: 4),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: AppTheme.textSecondaryColor,
-                  fontSize: fontSizeSmall,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                value,
-                style: TextStyle(
-                  fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w600,
-                  color: isHighlighted ? AppTheme.primaryColor : AppTheme.textPrimaryColor,
-                  fontSize: fontSizeSmall,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
@@ -664,7 +756,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 "Description:",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: fontSizeMedium,
+                  fontSize: fontSizeSmall,
                   color: AppTheme.textPrimaryColor,
                 ),
               ),
@@ -678,8 +770,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             ad.description ?? "No description available",
             style: TextStyle(
               color: AppTheme.textPrimaryColor,
-              fontSize: fontSizeSmall,
-              height: 1.4,
+              fontSize: fontSizeSmall - 1,
+              height: 1.3,
             ),
           ),
         ],
@@ -695,23 +787,30 @@ class _DashboardScreenState extends State<DashboardScreen>
           color: Colors.transparent,
           child: InkWell(
             onTap: isSharing ? null : () => _controller.shareAd(context, ad),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(cardBorderRadius / 2),
             child: Container(
               padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 10 : 12,
-                vertical: isMobile ? 6 : 8,
+                horizontal: isSmallMobile ? 10 : isMobile ? 12 : isTablet ? 14 : 16,
+                vertical: isSmallMobile ? 6 : isMobile ? 8 : isTablet ? 10 : 12,
               ),
               decoration: BoxDecoration(
                 color: isSharing ? Colors.grey : AppTheme.primaryColor,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(cardBorderRadius / 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    blurRadius: isDesktop ? 8 : 6,
+                    offset: Offset(0, isDesktop ? 3 : 2),
+                  ),
+                ],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (isSharing)
                     SizedBox(
-                      width: 14,
-                      height: 14,
+                      width: fontSizeMedium,
+                      height: fontSizeMedium,
                       child: const CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
@@ -721,9 +820,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                     Icon(
                       Icons.share,
                       color: Colors.white,
-                      size: isMobile ? 14 : 16,
+                      size: fontSizeMedium,
                     ),
-                  SizedBox(width: 4),
+                  SizedBox(width: 6),
                   Text(
                     isSharing ? "Sharing..." : "Share",
                     style: TextStyle(
@@ -750,15 +849,18 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildAppDownloadCard() {
     return Container(
-      margin: EdgeInsets.all(horizontalPadding),
+      margin: EdgeInsets.symmetric(
+        horizontal: horizontalPadding,
+        vertical: 2,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(cardBorderRadius),
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
@@ -787,7 +889,6 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
           ),
 
-          // Download buttons
           Padding(
             padding: EdgeInsets.all(horizontalPadding),
             child: Column(
@@ -811,11 +912,124 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
 
           _buildAppDownloadInfo(),
-          const Divider(height: 1),
+          Divider(height: 1, color: Colors.grey.shade200),
           _buildAppDownloadDescription(),
           _buildAppDownloadBenefits(),
+          _buildAppDownloadFeatures(),
         ],
       ),
+    );
+  }
+
+  Widget _buildAppDownloadFeatures() {
+    return Container(
+      margin: EdgeInsets.all(horizontalPadding),
+      padding: EdgeInsets.all(verticalSpacing),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryColor.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(cardBorderRadius / 2),
+        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2), width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.stars,
+                size: fontSizeSmall,
+                color: AppTheme.primaryColor,
+              ),
+              SizedBox(width: 6),
+              Text(
+                "App Features",
+                style: TextStyle(
+                  fontSize: fontSizeSmall,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: verticalSpacing / 2),
+          Row(
+            children: [
+              Expanded(
+                child: _buildFeatureItem(Icons.access_time, "Time Tracking"),
+              ),
+              Expanded(
+                child: _buildFeatureItem(Icons.notifications, "Push Alerts"),
+              ),
+            ],
+          ),
+          SizedBox(height: verticalSpacing / 2),
+          Row(
+            children: [
+              Expanded(
+                child: _buildFeatureItem(Icons.payment, "Payroll Info"),
+              ),
+              Expanded(
+                child: _buildFeatureItem(Icons.schedule, "Shift Updates"),
+              ),
+            ],
+          ),
+          SizedBox(height: verticalSpacing),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding / 2,
+              vertical: verticalSpacing / 2,
+            ),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor,
+              borderRadius: BorderRadius.circular(cardBorderRadius / 3),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.download,
+                  size: fontSizeSmall,
+                  color: Colors.white,
+                ),
+                SizedBox(width: 6),
+                Text(
+                  "Free Download • No Subscription Required",
+                  style: TextStyle(
+                    fontSize: fontSizeSmall - 1,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem(IconData icon, String title) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: fontSizeSmall - 1,
+          color: AppTheme.primaryColor,
+        ),
+        SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: fontSizeSmall - 1,
+              color: AppTheme.textPrimaryColor,
+              fontWeight: FontWeight.w500,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 
@@ -825,29 +1039,42 @@ class _DashboardScreenState extends State<DashboardScreen>
     required IconData icon,
     required Color color,
   }) {
+    final buttonHeight = isSmallMobile ? 50.0 : isMobile ? 55.0 : isTablet ? 60.0 : 65.0;
+    final iconSize = isSmallMobile ? 20.0 : isMobile ? 22.0 : isTablet ? 24.0 : 28.0;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(cardBorderRadius / 2),
         child: Container(
-          height: isMobile ? 50 : 60,
+          height: buttonHeight,
           width: double.infinity,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(cardBorderRadius / 2),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.3),
+                blurRadius: isDesktop ? 10 : 8,
+                offset: Offset(0, isDesktop ? 4 : 3),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white, size: isMobile ? 20 : 24),
-              SizedBox(width: verticalSpacing),
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: fontSizeMedium,
-                  fontWeight: FontWeight.w600,
+              Icon(icon, color: Colors.white, size: iconSize),
+              SizedBox(width: verticalSpacing + 2),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: fontSizeMedium,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -861,25 +1088,39 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding + (isDesktop ? 8 : 4)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  "Place: App Store and Play Store",
-                  style: TextStyle(fontSize: fontSizeSmall),
-                  overflow: TextOverflow.ellipsis,
+                flex: isDesktop ? 2 : 3,
+                child: ValueListenableBuilder<String>(
+                  valueListenable: _controller.date,
+                  builder: (context, date, _) {
+                    return Text(
+                      "Date: $date",
+                      style: TextStyle(
+                        fontSize: fontSizeSmall,
+                        color: AppTheme.textPrimaryColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
                 ),
               ),
-              ValueListenableBuilder<String>(
-                valueListenable: _controller.date,
-                builder: (context, date, _) {
-                  return Text(
-                    "Date: $date",
-                    style: TextStyle(fontSize: fontSizeSmall),
-                  );
-                },
+              SizedBox(width: isDesktop ? 12 : 8),
+              Expanded(
+                flex: isDesktop ? 2 : 2,
+                child: Text(
+                  "Amount: \$0.00",
+                  style: TextStyle(
+                    fontSize: fontSizeSmall,
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.end,
+                ),
               ),
             ],
           ),
@@ -888,31 +1129,18 @@ class _DashboardScreenState extends State<DashboardScreen>
         SizedBox(height: verticalSpacing),
 
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding + (isDesktop ? 8 : 4)),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Text(
-                    "Status: ",
-                    style: TextStyle(fontSize: fontSizeSmall),
+              Expanded(
+                child: Text(
+                  "Place: App Store and Play Store",
+                  style: TextStyle(
+                    fontSize: fontSizeSmall,
+                    color: AppTheme.textPrimaryColor,
+                    fontWeight: FontWeight.w600,
                   ),
-                  Text(
-                    "ON",
-                    style: TextStyle(
-                      fontSize: fontSizeSmall,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                "Amount: \$0.00",
-                style: TextStyle(
-                  fontSize: fontSizeSmall,
-                  fontWeight: FontWeight.w600,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -924,7 +1152,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildAppDownloadDescription() {
     return Padding(
-      padding: EdgeInsets.all(horizontalPadding),
+      padding: EdgeInsets.all(horizontalPadding + (isDesktop ? 8 : 4)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -939,12 +1167,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                   color: AppTheme.textPrimaryColor,
                 ),
               ),
-              // Disabled share button for app download
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: EdgeInsets.symmetric(
+                    horizontal: isSmallMobile ? 10 : 12,
+                    vertical: isSmallMobile ? 6 : 8
+                ),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(cardBorderRadius / 2),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -952,9 +1182,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                     Icon(
                       Icons.share,
                       color: Colors.grey.shade600,
-                      size: 14,
+                      size: fontSizeMedium,
                     ),
-                    SizedBox(width: 4),
+                    SizedBox(width: 6),
                     Text(
                       "Share",
                       style: TextStyle(
@@ -976,7 +1206,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             style: TextStyle(
               fontSize: fontSizeSmall,
               color: AppTheme.textPrimaryColor,
-              height: 1.4,
+              height: 1.5,
             ),
           ),
         ],
@@ -988,7 +1218,10 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: verticalSpacing),
+          padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding + (isDesktop ? 8 : 4),
+              vertical: verticalSpacing + (isDesktop ? 8 : 4)
+          ),
           child: Text(
             "-: Benefits :-",
             style: TextStyle(
@@ -1001,7 +1234,12 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
 
         Padding(
-          padding: EdgeInsets.fromLTRB(horizontalPadding, 0, horizontalPadding, horizontalPadding),
+          padding: EdgeInsets.fromLTRB(
+              horizontalPadding + (isDesktop ? 8 : 4),
+              0,
+              horizontalPadding + (isDesktop ? 8 : 4),
+              horizontalPadding + (isDesktop ? 8 : 4)
+          ),
           child: ValueListenableBuilder<List<String>>(
             valueListenable: _controller.benefits,
             builder: (context, benefits, _) {
@@ -1016,22 +1254,22 @@ class _DashboardScreenState extends State<DashboardScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          margin: const EdgeInsets.only(top: 6),
-                          width: 6,
-                          height: 6,
+                          margin: EdgeInsets.only(top: isDesktop ? 10 : 8),
+                          width: isDesktop ? 10 : 8,
+                          height: isDesktop ? 10 : 8,
                           decoration: BoxDecoration(
                             color: AppTheme.primaryColor,
-                            borderRadius: BorderRadius.circular(3),
+                            borderRadius: BorderRadius.circular(isDesktop ? 5 : 4),
                           ),
                         ),
-                        SizedBox(width: 8),
+                        SizedBox(width: isDesktop ? 16 : 12),
                         Expanded(
                           child: Text(
                             benefit,
                             style: TextStyle(
                               fontSize: fontSizeSmall,
                               color: AppTheme.textPrimaryColor,
-                              height: 1.4,
+                              height: 1.5,
                             ),
                           ),
                         ),

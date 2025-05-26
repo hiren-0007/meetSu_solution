@@ -8,7 +8,6 @@ import 'package:share_plus/share_plus.dart';
 
 class JobOpeningController {
   static const Duration _autoScrollInterval = Duration(seconds: 5);
-  static const Duration _animationDuration = Duration(milliseconds: 300);
   static const String _fallbackBaseUrl = "https://meetsusolutions.com/frontend/web/site/job?id=";
 
   final ApiService _apiService;
@@ -16,11 +15,13 @@ class JobOpeningController {
   // ValueNotifiers for reactive UI updates
   final ValueNotifier<List<Jobs>> jobOpenings = ValueNotifier<List<Jobs>>([]);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(true);
-  final ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
   final ValueNotifier<bool> isSharing = ValueNotifier<bool>(false);
 
   Timer? _autoScrollTimer;
   String? _cachedToken;
+  PageController? _pageController;
+  Function(int)? _onIndexChanged;
+  int _currentIndex = 0;
 
   JobOpeningController({ApiService? apiService})
       : _apiService = apiService ?? ApiService(ApiClient()) {
@@ -36,24 +37,57 @@ class JobOpeningController {
     _cachedToken = SharedPrefsService.instance.getAccessToken();
   }
 
-  // Auto-scroll functionality
+  // Simple auto-scroll setup - Fixed version with infinite scroll support
+  void startAutoScrollWithPageController(PageController pageController, Function(int) onIndexChanged) {
+    _pageController = pageController;
+    _onIndexChanged = onIndexChanged;
+    _currentIndex = 0; // Start from first item
+    _setupAutoScroll();
+  }
+
+  // Add method to update current index from manual swipe
+  void updateCurrentIndex(int index) {
+    _currentIndex = index;
+  }
+
   void _setupAutoScroll() {
     _autoScrollTimer?.cancel();
 
-    if (jobOpenings.value.isEmpty) return;
+    if (jobOpenings.value.isEmpty || _pageController == null) return;
+
+    debugPrint("🔄 Starting auto-scroll for ${jobOpenings.value.length} jobs");
 
     _autoScrollTimer = Timer.periodic(_autoScrollInterval, (timer) {
-      if (jobOpenings.value.isNotEmpty) {
-        final nextIndex = (currentIndex.value + 1) % jobOpenings.value.length;
-        setCurrentIndex(nextIndex);
+      if (jobOpenings.value.isNotEmpty && _pageController != null && _pageController!.hasClients) {
+
+        // Calculate next index (loop back to 0 after last item)
+        _currentIndex = (_currentIndex + 1) % jobOpenings.value.length;
+
+
+        // Get current page and calculate next page for infinite scroll
+        final currentPage = _pageController!.page?.round() ?? 0;
+        final currentRealIndex = currentPage % jobOpenings.value.length;
+
+        int targetPage;
+        if (_currentIndex == 0 && currentRealIndex == jobOpenings.value.length - 1) {
+          // Moving from last to first - go to next group
+          targetPage = currentPage + 1;
+        } else {
+          // Normal forward movement
+          targetPage = currentPage + 1;
+        }
+
+        // Animate to next page smoothly
+        _pageController!.animateToPage(
+          targetPage,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+
+        // Notify UI about index change
+        _onIndexChanged?.call(_currentIndex);
       }
     });
-  }
-
-  void setCurrentIndex(int index) {
-    if (index >= 0 && index < jobOpenings.value.length && currentIndex.value != index) {
-      currentIndex.value = index;
-    }
   }
 
   Future<void> fetchJobOpenings() async {
@@ -61,14 +95,12 @@ class JobOpeningController {
       isLoading.value = true;
       debugPrint("🔄 Fetching job openings...");
 
-      // Use cached token or refresh if needed
       final token = _cachedToken ?? SharedPrefsService.instance.getAccessToken();
 
       if (token == null || token.isEmpty) {
         throw Exception("No authentication token found");
       }
 
-      // Update cached token if it changed
       if (_cachedToken != token) {
         _cachedToken = token;
       }
@@ -95,22 +127,29 @@ class JobOpeningController {
 
       jobOpenings.value = jobsResponse.response!.jobs!;
       debugPrint("✅ Loaded ${jobOpenings.value.length} job openings");
+      debugPrint("🔁 Auto-scroll pattern: ${_generateScrollPattern()}");
 
-      currentIndex.value = 0;
-      _setupAutoScroll();
+      _currentIndex = 0; // Reset to first item
     } else {
       jobOpenings.value = [];
       debugPrint("⚠️ No jobs available or API returned an error: ${jobsResponse.message}");
     }
   }
 
+  String _generateScrollPattern() {
+    if (jobOpenings.value.isEmpty) return "No jobs available";
+
+    final jobCount = jobOpenings.value.length;
+    final pattern = List.generate(jobCount * 2, (index) => (index % jobCount) + 1);
+    return pattern.take(jobCount * 2).join(',');
+  }
+
   void _handleFetchError() {
     jobOpenings.value = [];
-    // Optionally, you could implement retry logic here
   }
 
   Future<void> shareJob(BuildContext context, Jobs job) async {
-    if (isSharing.value) return; // Prevent multiple simultaneous shares
+    if (isSharing.value) return;
 
     try {
       isSharing.value = true;
@@ -151,11 +190,7 @@ class JobOpeningController {
         'medium': 'Whatsapp'
       };
 
-      debugPrint("📤 Share request data: $requestData");
-
       final response = await _apiService.getJobShare(requestData);
-      debugPrint("📥 Share API Response: $response");
-
       return _extractShareLink(response, job);
     } catch (e) {
       debugPrint("⚠️ Failed to get share link from API: $e");
@@ -170,19 +205,16 @@ class JobOpeningController {
 
     String shareLink = "";
 
-    // Try different response structures
     if (response['response']?['link'] != null) {
       shareLink = response['response']['link'];
     } else if (response['link'] != null) {
       shareLink = response['link'];
     }
 
-    // Reformat link if necessary
     if (shareLink.isNotEmpty &&
         !shareLink.contains("job?id=") &&
         shareLink.contains("job-view?refid=")) {
       shareLink = "$_fallbackBaseUrl${job.jobId}";
-      debugPrint("🔧 Reformatted share link: $shareLink");
     }
 
     if (shareLink.isEmpty) {
@@ -231,24 +263,9 @@ class JobOpeningController {
     }
   }
 
-  List<String> getRequirements(Jobs job) {
-    if (job.positionDescription?.isEmpty != false) {
-      return ["No specific requirements listed"];
-    }
-
-    final requirements = job.positionDescription!
-        .split('\n')
-        .map((line) => line.trim())
-        .where((line) => line.isNotEmpty)
-        .toList();
-
-    return requirements.isEmpty ? ["No specific requirements listed"] : requirements;
-  }
-
-  // Control methods
   void retryFetch() {
     debugPrint("🔄 Retrying fetch for job openings");
-    _cacheAuthToken(); // Refresh token cache
+    _cacheAuthToken();
     fetchJobOpenings();
   }
 
@@ -268,10 +285,8 @@ class JobOpeningController {
     debugPrint("🧹 Disposing JobOpeningController resources");
     _autoScrollTimer?.cancel();
 
-    // Dispose ValueNotifiers
     jobOpenings.dispose();
     isLoading.dispose();
-    currentIndex.dispose();
     isSharing.dispose();
   }
 }

@@ -49,8 +49,11 @@ class DashboardController {
   final ValueNotifier<WeatherResponseModel?> getWeatherData =
   ValueNotifier<WeatherResponseModel?>(null);
 
-  // Auto-scroll timer
+  // Auto-scroll timer and PageController management (similar to JobOpeningController)
   Timer? _autoScrollTimer;
+  PageController? _pageController;
+  Function(int)? _onIndexChanged;
+  int _currentAdIndex = 0;
 
   // App benefits
   final ValueNotifier<List<String>> benefits = ValueNotifier<List<String>>([
@@ -72,6 +75,59 @@ class DashboardController {
 
   void _cacheAuthToken() {
     _cachedToken = SharedPrefsService.instance.getAccessToken();
+  }
+
+  // Auto-scroll setup similar to JobOpeningController
+  void startAutoScrollWithPageController(PageController pageController, Function(int) onIndexChanged) {
+    _pageController = pageController;
+    _onIndexChanged = onIndexChanged;
+    _currentAdIndex = 0; // Start from first item
+    _setupAutoScroll();
+  }
+
+  // Add method to update current index from manual swipe
+  void updateCurrentIndex(int index) {
+    _currentAdIndex = index;
+  }
+
+  void _setupAutoScroll() {
+    _autoScrollTimer?.cancel();
+
+    if (adItems.value.isEmpty || _pageController == null) return;
+
+    debugPrint("🔄 Starting auto-scroll for ${adItems.value.length} ads");
+
+    _autoScrollTimer = Timer.periodic(_autoScrollInterval, (timer) {
+      if (adItems.value.isNotEmpty && _pageController != null && _pageController!.hasClients) {
+
+        // Calculate next index (loop back to 0 after last item)
+        _currentAdIndex = (_currentAdIndex + 1) % adItems.value.length;
+
+
+        // Get current page and calculate next page for infinite scroll
+        final currentPage = _pageController!.page?.round() ?? 0;
+        final currentRealIndex = currentPage % adItems.value.length;
+
+        int targetPage;
+        if (_currentAdIndex == 0 && currentRealIndex == adItems.value.length - 1) {
+          // Moving from last to first - go to next group
+          targetPage = currentPage + 1;
+        } else {
+          // Normal forward movement
+          targetPage = currentPage + 1;
+        }
+
+        // Animate to next page smoothly
+        _pageController!.animateToPage(
+          targetPage,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+
+        // Notify UI about index change
+        _onIndexChanged?.call(_currentAdIndex);
+      }
+    });
   }
 
   Future<void> _initialize() async {
@@ -100,7 +156,8 @@ class DashboardController {
 
       // Setup auto scroll after data is loaded
       if (adItems.value.isNotEmpty) {
-        _setupAutoScroll();
+        // Don't setup auto scroll here - will be done when PageController is ready
+        _currentAdIndex = 0; // Reset to first item
       }
     } catch (error) {
       debugPrint("❌ Error during initialization: $error");
@@ -112,21 +169,6 @@ class DashboardController {
 
   void _updateCurrentDate() {
     date.value = DateFormat("MMM dd, yyyy").format(DateTime.now());
-  }
-
-  void _setupAutoScroll() {
-    _autoScrollTimer?.cancel();
-
-    if (adItems.value.isEmpty) return;
-
-    debugPrint("⏱️ Setting up auto-scroll timer for ads");
-
-    _autoScrollTimer = Timer.periodic(_autoScrollInterval, (timer) {
-      if (adItems.value.isNotEmpty) {
-        int nextIndex = (currentIndex.value + 1) % adItems.value.length;
-        setCurrentIndex(nextIndex);
-      }
-    });
   }
 
   void setCurrentIndex(int index) {
@@ -235,7 +277,9 @@ class DashboardController {
 
         adItems.value = processedAds;
         currentIndex.value = 0;
+        _currentAdIndex = 0; // Reset to first item
         debugPrint("✅ Loaded ${processedAds.length} ads");
+        debugPrint("🔁 Auto-scroll pattern: ${_generateScrollPattern()}");
       } else {
         adItems.value = [];
         debugPrint("⚠️ No ads available or API returned error: ${adsResponse.message}");
@@ -244,6 +288,14 @@ class DashboardController {
       debugPrint("❌ Error processing ads response: $e");
       throw Exception("Failed to process ads data");
     }
+  }
+
+  String _generateScrollPattern() {
+    if (adItems.value.isEmpty) return "No ads available";
+
+    final adCount = adItems.value.length;
+    final pattern = List.generate(adCount * 2, (index) => (index % adCount) + 1);
+    return pattern.take(adCount * 2).join(',');
   }
 
   Future<Position?> _getCurrentLocation() async {
@@ -390,10 +442,9 @@ class DashboardController {
         _fetchAdsData(),
       ]);
 
-      // Restart auto-scroll if we have ads
-      if (adItems.value.isNotEmpty) {
-        _setupAutoScroll();
-      }
+      // Reset to first item after refresh
+      _currentAdIndex = 0;
+      currentIndex.value = 0;
 
       debugPrint("✅ Dashboard data refreshed");
     } catch (e) {
@@ -523,7 +574,6 @@ class DashboardController {
 
   void _setErrorMessage(String message) {
     errorMessage.value = message;
-    // Auto-clear error after 5 seconds
     Future.delayed(const Duration(seconds: 5), () {
       if (errorMessage.value == message) {
         errorMessage.value = null;
@@ -531,7 +581,6 @@ class DashboardController {
     });
   }
 
-  // App download methods
   void downloadFromPlayStore(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -554,7 +603,6 @@ class DashboardController {
     debugPrint("📱 Downloading from App Store");
   }
 
-  // Auto-scroll control
   void pauseAutoScroll() {
     _autoScrollTimer?.cancel();
     debugPrint("⏸️ Auto-scroll paused");
@@ -567,7 +615,6 @@ class DashboardController {
     }
   }
 
-  // Retry mechanism
   Future<void> retryFetch() async {
     debugPrint("🔄 Retrying dashboard data fetch");
     _cachedToken = null;
@@ -582,7 +629,6 @@ class DashboardController {
     debugPrint("🧹 Disposing DashboardController resources");
     _autoScrollTimer?.cancel();
 
-    // Dispose all ValueNotifiers
     temperature.dispose();
     date.dispose();
     quote.dispose();

@@ -236,26 +236,6 @@ class _ScheduleScreenState extends State<ScheduleScreen>
     );
   }
 
-  Widget _buildNoticeCard() {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppTheme.primaryColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      child: const Text(
-        "All Hours And Amounts Are Approximate",
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.w700
-        ),
-      ),
-    );
-  }
-
   Widget _buildCompanyInfoCard() {
     return ValueListenableBuilder<bool>(
       valueListenable: _controller.hasData,
@@ -283,43 +263,63 @@ class _ScheduleScreenState extends State<ScheduleScreen>
             ),
             child: Column(
               children: [
-                // Top row - Company and Position
+                // First line - Company and Position
                 Row(
                   children: [
                     Expanded(
-                      child: _buildInfoItem(
-                        label: "Company",
-                        value: firstItem.company ?? 'N/A',
-                        isHighlighted: true,
+                      child: Text(
+                        "Company: ${firstItem.company ?? 'N/A'}",
+                        style: TextStyle(
+                          color: AppTheme.textPrimaryColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    SizedBox(width: 20),
+                    SizedBox(width: 16),
                     Expanded(
-                      child: _buildInfoItem(
-                        label: "Position",
-                        value: firstItem.position ?? 'N/A',
+                      child: Text(
+                        "Position: ${firstItem.position ?? 'N/A'}",
+                        style: TextStyle(
+                          color: AppTheme.textPrimaryColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
                       ),
                     ),
                   ],
                 ),
 
-                SizedBox(height: 12),
+                SizedBox(height: 8),
 
-                // Bottom row - Shift and Rate
+                // Second line - Shift and Rate
                 Row(
                   children: [
                     Expanded(
-                      child: _buildInfoItem(
-                        label: "Shift",
-                        value: firstItem.shift ?? 'N/A',
+                      child: Text(
+                        "Shift: ${firstItem.shift ?? 'N/A'}",
+                        style: TextStyle(
+                          color: AppTheme.textPrimaryColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    SizedBox(width: 20),
+                    SizedBox(width: 16),
                     Expanded(
-                      child: _buildInfoItem(
-                        label: "Rate",
-                        value: "${firstItem.rate ?? 'N/A'}/hr",
-                        isHighlighted: true,
+                      child: Text(
+                        "Rate: \$${firstItem.rate ?? 'N/A'}/hr",
+                        style: TextStyle(
+                          color: AppTheme.primaryColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
                       ),
                     ),
                   ],
@@ -330,6 +330,27 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         }
         return const SizedBox.shrink();
       },
+    );
+  }
+
+  Widget _buildNoticeCard() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppTheme.primaryColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      child: const Text(
+        "All Hours And Amounts Are Approximate",
+        style: TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w700
+        ),
+        textAlign: TextAlign.center, // Center aligned text
+      ),
     );
   }
 

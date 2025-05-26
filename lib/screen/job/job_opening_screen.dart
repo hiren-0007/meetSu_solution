@@ -16,8 +16,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen>
 
   late final JobOpeningController _controller;
   PageController? _pageController;
-  static const int _virtualItemCount = 20000;
-  static const int _initialPage = 10000;
+  int _currentJobIndex = 0;
 
   @override
   bool get wantKeepAlive => true;
@@ -27,58 +26,35 @@ class _JobOpeningScreenState extends State<JobOpeningScreen>
     super.initState();
     _controller = JobOpeningController();
     WidgetsBinding.instance.addObserver(this);
-    _initializeListeners();
+    _setupListeners();
   }
 
-  void _initializeListeners() {
-    _controller.currentIndex.addListener(_handleIndexChange);
-    _controller.jobOpenings.addListener(_handleJobItemsUpdate);
+  void _setupListeners() {
+    _controller.jobOpenings.addListener(_onJobItemsChanged);
   }
 
-  void _handleJobItemsUpdate() {
-    if (!mounted) return;
-
-    final jobOpenings = _controller.jobOpenings.value;
-    if (jobOpenings.isNotEmpty && _pageController == null) {
-      _initializePageController();
+  void _onJobItemsChanged() {
+    final jobs = _controller.jobOpenings.value;
+    if (jobs.isNotEmpty && mounted) {
+      if (_pageController == null) {
+        final middleIndex = jobs.length * 500;
+        _pageController = PageController(initialPage: middleIndex);
+        _currentJobIndex = 0;
+        _startAutoScroll();
+      }
     }
   }
 
-  void _initializePageController() {
-    _pageController?.dispose();
-    _pageController = PageController(initialPage: _initialPage);
-  }
-
-  void _handleIndexChange() {
-    final pageController = _pageController;
-    if (pageController == null ||
-        !pageController.hasClients ||
-        !mounted) return;
-
-    final jobOpenings = _controller.jobOpenings.value;
-    if (jobOpenings.isEmpty) return;
-
-    final currentPage = pageController.page?.round() ?? 0;
-    final jobItemsLength = jobOpenings.length;
-    final currentIndex = currentPage % jobItemsLength;
-    final targetIndex = _controller.currentIndex.value;
-
-    if (currentIndex == jobItemsLength - 1 && targetIndex == 0) {
-      final nextGroup = ((currentPage ~/ jobItemsLength) + 1) * jobItemsLength;
-      _animateToPage(nextGroup);
-      return;
+  void _startAutoScroll() {
+    if (_controller.jobOpenings.value.isNotEmpty) {
+      _controller.startAutoScrollWithPageController(_pageController!, (index) {
+        if (mounted) {
+          setState(() {
+            _currentJobIndex = index;
+          });
+        }
+      });
     }
-
-    final targetPage = (currentPage ~/ jobItemsLength) * jobItemsLength + targetIndex;
-    _animateToPage(targetPage);
-  }
-
-  void _animateToPage(int page) {
-    _pageController?.animateToPage(
-      page,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
   }
 
   @override
@@ -100,14 +76,12 @@ class _JobOpeningScreenState extends State<JobOpeningScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _controller.currentIndex.removeListener(_handleIndexChange);
-    _controller.jobOpenings.removeListener(_handleJobItemsUpdate);
+    _controller.jobOpenings.removeListener(_onJobItemsChanged);
     _pageController?.dispose();
     _controller.dispose();
     super.dispose();
   }
 
-  // Device type detection
   bool get isMobile => MediaQuery.of(context).size.width < 600;
   bool get isTablet => MediaQuery.of(context).size.width >= 600 && MediaQuery.of(context).size.width < 1200;
   bool get isDesktop => MediaQuery.of(context).size.width >= 1200;
@@ -118,7 +92,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen>
 
     return ConnectivityWidget(
       child: Scaffold(
-        backgroundColor: AppTheme.backgroundColor,
+        backgroundColor: Colors.grey.shade50,
         body: SafeArea(
           child: _buildResponsiveBody(),
         ),
@@ -141,14 +115,7 @@ class _JobOpeningScreenState extends State<JobOpeningScreen>
               return _buildEmptyState();
             }
 
-            // Different layouts for different devices
-            if (isDesktop) {
-              return _buildDesktopLayout(jobOpenings);
-            } else if (isTablet) {
-              return _buildTabletLayout(jobOpenings);
-            } else {
-              return _buildMobileLayout(jobOpenings);
-            }
+            return _buildJobPageView(jobOpenings);
           },
         );
       },
@@ -163,7 +130,10 @@ class _JobOpeningScreenState extends State<JobOpeningScreen>
           SizedBox(
             width: isMobile ? 40 : 60,
             height: isMobile ? 40 : 60,
-            child: const CircularProgressIndicator(strokeWidth: 3),
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              color: AppTheme.primaryColor,
+            ),
           ),
           SizedBox(height: isMobile ? 16 : 24),
           Text(
@@ -233,253 +203,72 @@ class _JobOpeningScreenState extends State<JobOpeningScreen>
     );
   }
 
-  // Mobile Layout - Full screen cards
-  Widget _buildMobileLayout(List<Jobs> jobOpenings) {
-    if (_pageController == null) _initializePageController();
-
+  Widget _buildJobPageView(List<Jobs> jobOpenings) {
     return PageView.builder(
       controller: _pageController,
-      itemCount: _virtualItemCount,
+      itemCount: jobOpenings.length * 1000,
       onPageChanged: (index) {
         final realIndex = index % jobOpenings.length;
-        _controller.setCurrentIndex(realIndex);
+        setState(() {
+          _currentJobIndex = realIndex;
+        });
+        _controller.updateCurrentIndex(realIndex);
       },
       itemBuilder: (context, index) {
         final realIndex = index % jobOpenings.length;
-        return JobCard(
-          key: ValueKey('job_${jobOpenings[realIndex].jobId}_$realIndex'),
-          job: jobOpenings[realIndex],
-          controller: _controller,
-          deviceType: DeviceType.mobile,
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: JobCard(
+            job: jobOpenings[realIndex],
+            controller: _controller,
+            isMobile: isMobile,
+            isTablet: isTablet,
+            isDesktop: isDesktop,
+            currentJobIndex: realIndex + 1,
+            totalJobs: jobOpenings.length,
+          ),
         );
       },
     );
   }
-
-  // Tablet Layout - Slightly larger cards with better spacing
-  Widget _buildTabletLayout(List<Jobs> jobOpenings) {
-    if (_pageController == null) _initializePageController();
-
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 800),
-        child: PageView.builder(
-          controller: _pageController,
-          itemCount: _virtualItemCount,
-          onPageChanged: (index) {
-            final realIndex = index % jobOpenings.length;
-            _controller.setCurrentIndex(realIndex);
-          },
-          itemBuilder: (context, index) {
-            final realIndex = index % jobOpenings.length;
-            return JobCard(
-              key: ValueKey('job_${jobOpenings[realIndex].jobId}_$realIndex'),
-              job: jobOpenings[realIndex],
-              controller: _controller,
-              deviceType: DeviceType.tablet,
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  // Desktop Layout - Card in center with navigation
-  Widget _buildDesktopLayout(List<Jobs> jobOpenings) {
-    if (_pageController == null) _initializePageController();
-
-    return Row(
-      children: [
-        // Left Navigation
-        _buildNavigationButton(
-          icon: Icons.chevron_left,
-          onPressed: () => _navigateToJob(-1, jobOpenings.length),
-        ),
-
-        // Main Content
-        Expanded(
-          child: Center(
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 900),
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: _virtualItemCount,
-                onPageChanged: (index) {
-                  final realIndex = index % jobOpenings.length;
-                  _controller.setCurrentIndex(realIndex);
-                },
-                itemBuilder: (context, index) {
-                  final realIndex = index % jobOpenings.length;
-                  return JobCard(
-                    key: ValueKey('job_${jobOpenings[realIndex].jobId}_$realIndex'),
-                    job: jobOpenings[realIndex],
-                    controller: _controller,
-                    deviceType: DeviceType.desktop,
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
-
-        // Right Navigation
-        _buildNavigationButton(
-          icon: Icons.chevron_right,
-          onPressed: () => _navigateToJob(1, jobOpenings.length),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNavigationButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-  }) {
-    return Container(
-      width: 60,
-      height: double.infinity,
-      child: Center(
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onPressed,
-            borderRadius: BorderRadius.circular(30),
-            child: Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(25),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Icon(
-                icon,
-                color: AppTheme.primaryColor,
-                size: 24,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _navigateToJob(int direction, int totalJobs) {
-    final currentIndex = _controller.currentIndex.value;
-    int newIndex;
-
-    if (direction > 0) {
-      newIndex = (currentIndex + 1) % totalJobs;
-    } else {
-      newIndex = (currentIndex - 1 + totalJobs) % totalJobs;
-    }
-
-    _controller.setCurrentIndex(newIndex);
-  }
 }
 
-enum DeviceType { mobile, tablet, desktop }
-
-// Enhanced JobCard with responsive design
 class JobCard extends StatelessWidget {
   final Jobs job;
   final JobOpeningController controller;
-  final DeviceType deviceType;
+  final bool isMobile;
+  final bool isTablet;
+  final bool isDesktop;
+  final int currentJobIndex;
+  final int totalJobs;
 
   const JobCard({
     super.key,
     required this.job,
     required this.controller,
-    required this.deviceType,
+    required this.isMobile,
+    required this.isTablet,
+    required this.isDesktop,
+    required this.currentJobIndex,
+    required this.totalJobs,
   });
 
-  // Responsive values based on device type
-  double get cardMargin {
-    switch (deviceType) {
-      case DeviceType.mobile:
-        return 16;
-      case DeviceType.tablet:
-        return 24;
-      case DeviceType.desktop:
-        return 32;
-    }
-  }
-
-  double get cardPadding {
-    switch (deviceType) {
-      case DeviceType.mobile:
-        return 16;
-      case DeviceType.tablet:
-        return 20;
-      case DeviceType.desktop:
-        return 24;
-    }
-  }
-
-  double get imageHeight {
-    switch (deviceType) {
-      case DeviceType.mobile:
-        return 180;
-      case DeviceType.tablet:
-        return 220;
-      case DeviceType.desktop:
-        return 260;
-    }
-  }
-
-  double get titleFontSize {
-    switch (deviceType) {
-      case DeviceType.mobile:
-        return 18;
-      case DeviceType.tablet:
-        return 22;
-      case DeviceType.desktop:
-        return 26;
-    }
-  }
-
-  double get bodyFontSize {
-    switch (deviceType) {
-      case DeviceType.mobile:
-        return 14;
-      case DeviceType.tablet:
-        return 15;
-      case DeviceType.desktop:
-        return 16;
-    }
-  }
-
-  double get smallFontSize {
-    switch (deviceType) {
-      case DeviceType.mobile:
-        return 12;
-      case DeviceType.tablet:
-        return 13;
-      case DeviceType.desktop:
-        return 14;
-    }
-  }
+  double get cardMargin => isMobile ? 16 : isTablet ? 20 : 24;
+  double get cardPadding => isMobile ? 20 : isTablet ? 24 : 28;
+  double get imageHeight => isMobile ? 200 : isTablet ? 220 : 240;
 
   @override
   Widget build(BuildContext context) {
-    final requirements = controller.getRequirements(job);
-
     return Container(
       margin: EdgeInsets.symmetric(horizontal: cardMargin, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.15),
-            spreadRadius: 2,
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.08),
+            spreadRadius: 0,
+            blurRadius: 20,
             offset: const Offset(0, 4),
           ),
         ],
@@ -488,13 +277,7 @@ class JobCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildJobImage(),
-          _buildJobHeader(),
-          _buildJobDetails(),
-          const Divider(height: 1, thickness: 1),
-          _buildDescription(),
-          Expanded(
-            child: _buildRequirements(requirements),
-          ),
+          _buildJobContent(),
         ],
       ),
     );
@@ -502,7 +285,7 @@ class JobCard extends StatelessWidget {
 
   Widget _buildJobImage() {
     return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       child: job.imageUrl?.isNotEmpty == true
           ? Container(
         width: double.infinity,
@@ -515,12 +298,14 @@ class JobCard extends StatelessWidget {
             return Container(
               height: imageHeight,
               alignment: Alignment.center,
+              color: Colors.grey.shade50,
               child: CircularProgressIndicator(
                 value: loadingProgress.expectedTotalBytes != null
                     ? loadingProgress.cumulativeBytesLoaded /
                     loadingProgress.expectedTotalBytes!
                     : null,
                 strokeWidth: 2,
+                color: AppTheme.primaryColor,
               ),
             );
           },
@@ -546,64 +331,175 @@ class JobCard extends StatelessWidget {
         ),
       ),
       child: Center(
-        child: Icon(
-          Icons.work,
-          size: imageHeight * 0.3,
-          color: AppTheme.primaryColor.withOpacity(0.6),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.work_outline,
+              size: 48,
+              color: AppTheme.primaryColor.withOpacity(0.6),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Job Image",
+              style: TextStyle(
+                color: AppTheme.primaryColor.withOpacity(0.8),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildJobHeader() {
+  Widget _buildJobContent() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(cardPadding, cardPadding, cardPadding, 8),
-      child: Text(
-        job.jobPosition ?? "Unknown Position",
-        style: TextStyle(
-          fontSize: titleFontSize,
-          fontWeight: FontWeight.bold,
-          color: AppTheme.textPrimaryColor,
-          height: 1.2,
-        ),
-        maxLines: deviceType == DeviceType.mobile ? 2 : 3,
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
-
-  Widget _buildJobDetails() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: cardPadding),
+      padding: EdgeInsets.all(cardPadding),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(child: _buildDetailItem(Icons.date_range, "Date", job.positionDate ?? "Unknown")),
-              Expanded(child: _buildDetailItem(Icons.location_on, "Location", job.location ?? "Unknown")),
-            ],
+          // Job Title
+          Text(
+            job.jobPosition ?? "Unknown Position",
+            style: TextStyle(
+              fontSize: isMobile ? 20 : 22,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1A1A1A),
+              height: 1.2,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: deviceType == DeviceType.mobile ? 8 : 12),
-          Row(
-            children: [
-              Expanded(child: _buildDetailItem(Icons.people, "Positions", (job.noOfPositions ?? 1).toString())),
-              Expanded(child: _buildDetailItem(Icons.attach_money, "Salary", job.salary ?? "N/A", isHighlighted: true)),
-            ],
-          ),
+
+          SizedBox(height: 16),
+
+          // Job Details Grid
+          _buildJobDetailsGrid(),
+
+          SizedBox(height: 20),
+
+          // Description Section
+          _buildDescriptionSection(),
         ],
       ),
     );
   }
 
-  Widget _buildDetailItem(IconData icon, String label, String value, {bool isHighlighted = false}) {
-    return Row(
+  Widget _buildJobDetailsGrid() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          icon,
-          size: smallFontSize + 2,
-          color: isHighlighted ? AppTheme.primaryColor : AppTheme.textSecondaryColor,
+        Row(
+          children: [
+            // Date
+            Expanded(
+              child: Row(
+                children: [
+                  Text(
+                    "Date: ",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      job.positionDate ?? "Not specified",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: const Color(0xFF1A1A1A),
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+
+            Expanded(
+              child: Row(
+                children: [
+                  Text(
+                    "Salary: ",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      "${job.salary ?? 'N/A'}",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 4),
+
+        Row(
+          children: [
+            Text(
+              "Location: ",
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Expanded(
+              child: Text(
+                job.location ?? "Not specified",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: const Color(0xFF1A1A1A),
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailItem({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+    bool fullWidth = false,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Icon(
+            icon,
+            size: 16,
+            color: color,
+          ),
+        ),
+        SizedBox(width: 8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -611,18 +507,20 @@ class JobCard extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  color: AppTheme.textSecondaryColor,
-                  fontSize: smallFontSize - 1,
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
                   fontWeight: FontWeight.w500,
                 ),
               ),
+              SizedBox(height: 2),
               Text(
                 value,
                 style: TextStyle(
-                  fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w600,
-                  color: isHighlighted ? AppTheme.primaryColor : AppTheme.textPrimaryColor,
-                  fontSize: smallFontSize,
+                  fontSize: 14,
+                  color: const Color(0xFF1A1A1A),
+                  fontWeight: FontWeight.w600,
                 ),
+                maxLines: fullWidth ? 2 : 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -632,36 +530,40 @@ class JobCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDescription() {
-    return Padding(
-      padding: EdgeInsets.all(cardPadding),
+  Widget _buildDescriptionSection() {
+    return Container(
+      padding: EdgeInsets.all(isMobile ? 12 : 16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 "Description:",
                 style: TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  fontSize: bodyFontSize + 1,
-                  color: AppTheme.textPrimaryColor,
+                  color: const Color(0xFF1A1A1A),
                 ),
               ),
               _buildShareButton(),
             ],
           ),
-          SizedBox(height: deviceType == DeviceType.mobile ? 8 : 12),
+          SizedBox(height: 12),
           Text(
             job.positionDescription ?? "No description available",
             style: TextStyle(
-              color: AppTheme.textPrimaryColor,
-              fontSize: bodyFontSize,
-              height: 1.4,
+              fontSize: 14,
+              color: Colors.grey.shade700,
+              height: 1.5,
             ),
-            maxLines: deviceType == DeviceType.mobile ? 3 : 4,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -676,23 +578,31 @@ class JobCard extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: isSharing ? null : () => controller.shareJob(context, job),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
             child: Container(
               padding: EdgeInsets.symmetric(
-                horizontal: deviceType == DeviceType.mobile ? 12 : 16,
-                vertical: deviceType == DeviceType.mobile ? 8 : 10,
+                horizontal: isMobile ? 12 : 14,
+                vertical: isMobile ? 8 : 10,
               ),
               decoration: BoxDecoration(
-                color: isSharing ? Colors.grey : AppTheme.primaryColor,
-                borderRadius: BorderRadius.circular(12),
+                color: isSharing ? Colors.grey.shade400 : AppTheme.primaryColor,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: (isSharing ? Colors.grey : AppTheme.primaryColor).withOpacity(0.2),
+                    spreadRadius: 0,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (isSharing)
                     SizedBox(
-                      width: 16,
-                      height: 16,
+                      width: 14,
+                      height: 14,
                       child: const CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
@@ -700,17 +610,17 @@ class JobCard extends StatelessWidget {
                     )
                   else
                     Icon(
-                      Icons.share,
+                      Icons.share_outlined,
                       color: Colors.white,
-                      size: deviceType == DeviceType.mobile ? 16 : 18,
+                      size: 14,
                     ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Text(
                     isSharing ? "Sharing..." : "Share",
                     style: TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: smallFontSize,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
                     ),
                   ),
                 ],
@@ -719,60 +629,6 @@ class JobCard extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildRequirements(List<String> requirements) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(cardPadding, 0, cardPadding, cardPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Requirements:",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: bodyFontSize + 1,
-              color: AppTheme.textPrimaryColor,
-            ),
-          ),
-          SizedBox(height: deviceType == DeviceType.mobile ? 8 : 12),
-          Expanded(
-            child: ListView.separated(
-              padding: EdgeInsets.zero,
-              itemCount: requirements.length,
-              separatorBuilder: (context, index) => SizedBox(height: deviceType == DeviceType.mobile ? 6 : 8),
-              itemBuilder: (context, index) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(top: 6),
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        requirements[index],
-                        style: TextStyle(
-                          color: AppTheme.textPrimaryColor,
-                          fontSize: bodyFontSize,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
