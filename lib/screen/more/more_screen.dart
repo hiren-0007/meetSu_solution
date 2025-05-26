@@ -108,7 +108,7 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildHeader(),
+                    SizedBox(height: isSmallScreen ? 16 : 24),
                     _buildHeaderIcon(),
                     SizedBox(height: isSmallScreen ? 16 : 24),
                     _buildLoadingIndicator(),
@@ -151,22 +151,6 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
-      child: Center(
-        child: Text(
-          "More",
-          style: TextStyle(
-            fontSize: titleFontSize,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 0.5,
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildHeaderIcon() {
     return Center(
@@ -182,11 +166,17 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
-        child: Icon(
-          Icons.menu,
-          color: AppTheme.primaryColor,
-          size: iconSize,
+        // child: Icon(
+        //   Icons.menu,
+        //   color: AppTheme.primaryColor,
+        //   size: iconSize,
+        // ),
+        child: Image.asset(
+          'assets/images/logo.png',
+          height: iconSize,
+          width: iconSize,
         ),
+
       ),
     );
   }

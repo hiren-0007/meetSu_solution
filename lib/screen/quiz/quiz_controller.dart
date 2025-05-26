@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:meetsu_solutions/model/quiz/get_quiz_response_model.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
@@ -14,7 +15,7 @@ class QuizController {
   final ValueNotifier<String> question = ValueNotifier<String>("");
   final ValueNotifier<String> correctAnswer = ValueNotifier<String>("");
   final ValueNotifier<bool> quizTaken = ValueNotifier<bool>(false);
-  final ValueNotifier<int> durationMinutes = ValueNotifier<int>(20);
+  final ValueNotifier<int> durationSeconds = ValueNotifier<int>(1200); // 20 minutes default
 
   // User's answer
   final TextEditingController answerController = TextEditingController();
@@ -44,31 +45,47 @@ class QuizController {
     try {
       debugPrint("🧩 Fetching quiz data...");
 
-      final quizData = await _apiService.getQuiz();
-      debugPrint("📥 Quiz API Response: $quizData");
+      final quizDataResponse = await _apiService.getQuiz();
+      debugPrint("📥 Quiz API Response: $quizDataResponse");
 
-      if (quizData.containsKey('quiz')) {
-        final quiz = quizData['quiz'];
-        quizId.value = quiz['id'] ?? 0;
-        question.value = quiz['question'] ?? "";
-        correctAnswer.value = quiz['answer'] ?? "";
-        quizTaken.value = (quiz['taken'] == 1);
+      // Parse the response using the model
+      final quizResponse = GetQuizResponseModel.fromJson(quizDataResponse);
 
-        if (quizData.containsKey('duration')) {
-          durationMinutes.value = quizData['duration'] ?? 20;
-        }
+      // Check if quiz data is valid
+      if (quizResponse.quiz != null) {
+        final quiz = quizResponse.quiz!;
 
-        debugPrint(
-            "✅ Quiz data loaded: ID=${quizId.value}, Question: ${question.value}");
+        // Extract quiz data using the model
+        quizId.value = quiz.id ?? 0;
+        question.value = quiz.question ?? "";
+        correctAnswer.value = quiz.answer ?? "";
+        // Since API doesn't return 'taken' field, we'll manage it locally
+        // quizTaken.value = false; // Always start as not taken
 
+        // Extract duration from the response (in seconds)
+        durationSeconds.value = quizResponse.duration ?? 1200; // Default 20 minutes = 1200 seconds
+
+        debugPrint("✅ Quiz data loaded:");
+        debugPrint("   ID: ${quizId.value}");
+        debugPrint("   Question: ${question.value}");
+        debugPrint("   Duration: ${durationSeconds.value} seconds");
+        debugPrint("   Already taken: ${quizTaken.value}");
+        debugPrint("   Quiz status: ${quiz.status}");
+
+        // Start timer since quiz is available
         if (!quizTaken.value) {
           startQuizTimer();
+          debugPrint("⏰ Quiz timer started for ${durationSeconds.value} seconds");
         }
 
-        return quizData['show'] == 1;
+        // Return whether the quiz should be shown (based on 'show' field)
+        final shouldShow = (quizResponse.show ?? 0) == 1;
+        debugPrint("🎯 Should show quiz: $shouldShow");
+
+        return shouldShow;
       } else {
-        errorMessage.value = "Invalid quiz data received";
-        debugPrint("❌ Invalid quiz data format");
+        errorMessage.value = "No quiz data available";
+        debugPrint("❌ No quiz data found in response");
         return false;
       }
     } catch (e) {
@@ -81,6 +98,11 @@ class QuizController {
   }
 
   Future<Map<String, dynamic>> submitQuizAnswer() async {
+    if (_quizTimer != null) {
+      _quizTimer!.cancel();
+      debugPrint("⏰ Quiz timer stopped - answer submitted");
+    }
+
     isLoading.value = true;
     errorMessage.value = null;
 
@@ -97,32 +119,44 @@ class QuizController {
 
       debugPrint("📥 Submit answer response: $response");
 
-      // Update quiz taken status based on response
-      if (response.containsKey('correct') != null) {
-        quizTaken.value = true;
-      }
+      // Clear the answer field after successful submission
+      answerController.clear();
 
       return response;
     } catch (e) {
       errorMessage.value = "Failed to submit answer: ${e.toString()}";
       debugPrint("❌ Error submitting answer: $e");
-      return {'success': false, 'message': e.toString()};
+      return {
+        'success': false,
+        'message': 'Failed to submit answer. Please try again.'
+      };
     } finally {
       isLoading.value = false;
     }
   }
 
   void startQuizTimer() {
-    remainingSeconds.value = durationMinutes.value * 60;
+    // Set initial time in seconds (duration is already in seconds)
+    remainingSeconds.value = durationSeconds.value;
 
+    // Cancel any existing timer
     _quizTimer?.cancel();
+
+    // Start new timer
     _quizTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (remainingSeconds.value > 0) {
         remainingSeconds.value--;
       } else {
+        // Time's up - cancel timer
         _quizTimer?.cancel();
+        debugPrint("⏰ Quiz time expired!");
       }
     });
+  }
+
+  void stopTimer() {
+    _quizTimer?.cancel();
+    debugPrint("⏰ Quiz timer stopped manually");
   }
 
   String get formattedTime {
@@ -131,17 +165,35 @@ class QuizController {
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
+  // Helper method to check if time is running low (less than 5 minutes)
+  bool get isTimeRunningLow {
+    return remainingSeconds.value < 300; // 5 minutes in seconds
+  }
+
+  // Helper method to check if time is critical (less than 1 minute)
+  bool get isTimeCritical {
+    return remainingSeconds.value < 60; // 1 minute in seconds
+  }
+
   void dispose() {
     debugPrint("🧹 Disposing QuizController resources");
+
+    // Cancel timer
+    _quizTimer?.cancel();
+
+    // Dispose ValueNotifiers
     isLoading.dispose();
     errorMessage.dispose();
     quizId.dispose();
     question.dispose();
     correctAnswer.dispose();
     quizTaken.dispose();
-    durationMinutes.dispose();
+    durationSeconds.dispose();
     remainingSeconds.dispose();
+
+    // Dispose TextEditingController
     answerController.dispose();
-    _quizTimer?.cancel();
+
+    debugPrint("✅ QuizController disposed successfully");
   }
 }

@@ -62,7 +62,7 @@ class HomeController {
       }
 
       if (context.mounted) {
-        showQuiz.value = quizData['show'] == 1;
+        showQuiz.value = quizData['show'] == true;
         quizMessage1.value = quizData['message1'] ?? "";
         quizMessage2.value = quizData['message2'] ?? "";
 
