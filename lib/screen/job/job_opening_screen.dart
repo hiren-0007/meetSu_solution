@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:meetsu_solutions/model/job&ads/job/job_opening_response_model.dart';
 import 'package:meetsu_solutions/screen/job/job_opening_controller.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
@@ -204,33 +205,45 @@ class _JobOpeningScreenState extends State<JobOpeningScreen>
   }
 
   Widget _buildJobPageView(List<Jobs> jobOpenings) {
-    return PageView.builder(
-      controller: _pageController,
-      itemCount: jobOpenings.length * 1000,
-      onPageChanged: (index) {
-        final realIndex = index % jobOpenings.length;
-        setState(() {
-          _currentJobIndex = realIndex;
-        });
-        _controller.updateCurrentIndex(realIndex);
+    return NotificationListener<ScrollNotification>(
+      onNotification: (ScrollNotification notification) {
+        if (notification is ScrollStartNotification) {
+          _controller.pauseAutoScroll();
+        } else if (notification is ScrollEndNotification ||
+            notification is UserScrollNotification && notification.direction == ScrollDirection.idle) {
+          _controller.resumeAutoScroll();
+        }
+        return false;
       },
-      itemBuilder: (context, index) {
-        final realIndex = index % jobOpenings.length;
-        return SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: JobCard(
-            job: jobOpenings[realIndex],
-            controller: _controller,
-            isMobile: isMobile,
-            isTablet: isTablet,
-            isDesktop: isDesktop,
-            currentJobIndex: realIndex + 1,
-            totalJobs: jobOpenings.length,
-          ),
-        );
-      },
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: jobOpenings.length * 1000,
+        onPageChanged: (index) {
+          final realIndex = index % jobOpenings.length;
+          setState(() {
+            _currentJobIndex = realIndex;
+          });
+          _controller.updateCurrentIndex(realIndex);
+        },
+        itemBuilder: (context, index) {
+          final realIndex = index % jobOpenings.length;
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: JobCard(
+              job: jobOpenings[realIndex],
+              controller: _controller,
+              isMobile: isMobile,
+              isTablet: isTablet,
+              isDesktop: isDesktop,
+              currentJobIndex: realIndex + 1,
+              totalJobs: jobOpenings.length,
+            ),
+          );
+        },
+      ),
     );
   }
+
 }
 
 class JobCard extends StatelessWidget {

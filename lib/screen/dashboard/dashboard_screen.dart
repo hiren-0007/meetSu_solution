@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:meetsu_solutions/model/job&ads/ads/ads_response_model.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
@@ -415,25 +416,36 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildAdsPageView(List<Ads> adItems) {
-    return RefreshIndicator(
-      onRefresh: _controller.refreshDashboardData,
-      child: PageView.builder(
-        controller: _pageController,
-        itemCount: adItems.length * 1000,
-        onPageChanged: (index) {
-          final realIndex = index % adItems.length;
-          setState(() {
-            _currentAdIndex = realIndex;
-          });
-          _controller.updateCurrentIndex(realIndex);
-        },
-        itemBuilder: (context, index) {
-          final realIndex = index % adItems.length;
-          return SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: _buildAdCard(adItems[realIndex]),
-          );
-        },
+    return NotificationListener<ScrollNotification>(
+      onNotification: (ScrollNotification notification) {
+        if (notification is ScrollStartNotification) {
+          _controller.pauseAutoScroll();
+        } else if (notification is ScrollEndNotification ||
+            notification is UserScrollNotification && notification.direction == ScrollDirection.idle) {
+          _controller.resumeAutoScroll();
+        }
+        return false;
+      },
+      child: RefreshIndicator(
+        onRefresh: _controller.refreshDashboardData,
+        child: PageView.builder(
+          controller: _pageController,
+          itemCount: adItems.length * 1000,
+          onPageChanged: (index) {
+            final realIndex = index % adItems.length;
+            setState(() {
+              _currentAdIndex = realIndex;
+            });
+            _controller.updateCurrentIndex(realIndex);
+          },
+          itemBuilder: (context, index) {
+            final realIndex = index % adItems.length;
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: _buildAdCard(adItems[realIndex]),
+            );
+          },
+        ),
       ),
     );
   }
