@@ -111,10 +111,8 @@ class DailyAnalyticsController {
   List<dynamic> _extractDataFromResponse(Map<String, dynamic> response) {
     debugPrint("📊 Processing API response");
 
-    // Try different response structures
     List<dynamic> apiData = [];
 
-    // Method 1: Check 'body' key
     if (response.containsKey('body')) {
       apiData = _extractFromBody(response['body']);
       if (apiData.isNotEmpty) {
@@ -123,14 +121,12 @@ class DailyAnalyticsController {
       }
     }
 
-    // Method 2: Check 'data' key
     if (response.containsKey('data') && response['data'] is List) {
       apiData = response['data'] as List<dynamic>;
       debugPrint("📊 Found ${apiData.length} records in 'data' key");
       return apiData;
     }
 
-    // Method 3: Check success response
     if (_isSuccessResponse(response)) {
       final data = response['data'];
       if (data is List) {
@@ -140,7 +136,6 @@ class DailyAnalyticsController {
       }
     }
 
-    // Method 4: Search all values for List type
     apiData = _findListInResponse(response);
     if (apiData.isNotEmpty) {
       debugPrint("📊 Found ${apiData.length} records in response values");
@@ -303,7 +298,6 @@ class DailyAnalyticsController {
 
     final lowerName = name.toLowerCase();
 
-    // Female indicators
     final femaleIndicators = [
       'sharon', 'michelle', 'norelyn', 'kaur', 'roopkaran',
       'priya', 'maya', 'sara', 'rita', 'sita'
@@ -313,7 +307,6 @@ class DailyAnalyticsController {
       return 'Female';
     }
 
-    // Male indicators (or default)
     return 'Male';
   }
 
@@ -326,7 +319,6 @@ class DailyAnalyticsController {
     return '';
   }
 
-  // Public methods for UI interaction
   Future<void> selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -373,7 +365,6 @@ class DailyAnalyticsController {
     return _allApiData.isEmpty || _lastFetchedDate != newDate;
   }
 
-  // Utility methods
   String getTotalCountString() {
     return '${maleCount.value} + ${femaleCount.value} = ${totalCount}';
   }
@@ -381,7 +372,6 @@ class DailyAnalyticsController {
   void dispose() {
     debugPrint("🧹 Disposing DailyAnalyticsController");
 
-    // Dispose all ValueNotifiers
     isLoading.dispose();
     errorMessage.dispose();
     hasData.dispose();
@@ -390,13 +380,10 @@ class DailyAnalyticsController {
     groupedItems.dispose();
     maleCount.dispose();
     femaleCount.dispose();
-
-    // Dispose TextEditingController
     dateController.dispose();
   }
 }
 
-// Optimized AnalyticsItem class with better structure
 class AnalyticsItem {
   final String id;
   final String empId;
@@ -422,7 +409,6 @@ class AnalyticsItem {
     required this.totalHours,
   });
 
-  // Factory constructor for easy creation from API data
   factory AnalyticsItem.fromJson(Map<String, dynamic> json, int index) {
     final name = json['applicantName']?.toString() ?? '';
     final shift = json['shift']?.toString() ?? '';
@@ -463,7 +449,6 @@ class AnalyticsItem {
         : 'Male';
   }
 
-  // Utility methods
   bool get hasPosition => position.isNotEmpty;
   bool get isMale => gender == 'Male';
   bool get isFemale => gender == 'Female';

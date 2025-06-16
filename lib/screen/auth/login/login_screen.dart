@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(height: AppTheme.largeSpacing + 10),
                     _LoginForm(controller: _controller),
                     SizedBox(height: AppTheme.largeSpacing - 10),
-                    _SignupPrompt(controller: _controller),
+                    // _SignupPrompt(controller: _controller),
                   ],
                 ),
               ),
@@ -247,6 +247,7 @@ class _LoginButton extends StatelessWidget {
   }
 }
 
+/*
 class _SignupPrompt extends StatelessWidget {
   const _SignupPrompt({required this.controller});
 
@@ -273,4 +274,4 @@ class _SignupPrompt extends StatelessWidget {
       ),
     );
   }
-}
+}*/

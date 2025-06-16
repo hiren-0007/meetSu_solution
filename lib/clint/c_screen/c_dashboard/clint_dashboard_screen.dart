@@ -18,7 +18,6 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
 
   late final ClientDashboardController _controller;
   PageController? _pageController;
-  int _currentAdIndex = 0;
 
   @override
   bool get wantKeepAlive => true;
@@ -41,7 +40,6 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
       if (_pageController == null) {
         final middleIndex = ads.length * 500;
         _pageController = PageController(initialPage: middleIndex);
-        _currentAdIndex = 0;
         _startAutoScroll();
       }
     }
@@ -52,7 +50,6 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
       _controller.startAutoScrollWithPageController(_pageController!, (index) {
         if (mounted) {
           setState(() {
-            _currentAdIndex = index;
           });
         }
       });
@@ -474,7 +471,6 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
           onPageChanged: (index) {
             final realIndex = index % adItems.length;
             setState(() {
-              _currentAdIndex = realIndex;
             });
             _controller.updateCurrentIndex(realIndex);
           },

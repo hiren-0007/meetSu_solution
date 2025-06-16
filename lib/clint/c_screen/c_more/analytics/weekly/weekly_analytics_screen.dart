@@ -41,13 +41,11 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
             SafeArea(
               child: Column(
                 children: [
-                  // Header with back button and title
                   Padding(
                     padding: const EdgeInsets.all(14.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Back button - smaller size
                         Container(
                           width: 35,
                           height: 35,
@@ -71,7 +69,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                           ),
                         ),
 
-                        // Title
                         const Text(
                           'Weekly Analytics',
                           style: TextStyle(
@@ -108,7 +105,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                     ),
                   ),
 
-                  // Main Content
                   Expanded(
                     child: Container(
                       width: double.infinity,
@@ -133,7 +129,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                             padding: const EdgeInsets.all(14.0),
                             child: Column(
                               children: [
-                                // Date Range selection
                                 Container(
                                   width: double.infinity,
                                   decoration: BoxDecoration(
@@ -194,7 +189,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                       const SizedBox(height: 8),
                                       Row(
                                         children: [
-                                          // Previous button
                                           GestureDetector(
                                             onTap: () => _controller.navigateToPreviousPeriod(),
                                             child: Container(
@@ -221,7 +215,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          // Start Date Picker
                                           Expanded(
                                             child: ValueListenableBuilder<String>(
                                               valueListenable: _controller.startDate,
@@ -269,7 +262,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          // End Date Picker
                                           Expanded(
                                             child: ValueListenableBuilder<String>(
                                               valueListenable: _controller.endDate,
@@ -317,7 +309,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          // Next button
                                           GestureDetector(
                                             onTap: () => _controller.navigateToNextPeriod(),
                                             child: Container(
@@ -352,7 +343,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                             ),
                           ),
 
-                          // Employee Cards List
                           Expanded(
                             child: _buildMainContent(),
                           ),
@@ -369,7 +359,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
     );
   }
 
-  // Main content builder with error handling
   Widget _buildMainContent() {
     return ValueListenableBuilder<bool>(
       valueListenable: _controller.isLoading,
@@ -446,7 +435,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
     );
   }
 
-  // Error widget builder
   Widget _buildErrorWidget(String error) {
     return Center(
       child: Column(
@@ -530,7 +518,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
           itemBuilder: (context, index) {
             final item = items[index];
 
-            // Employee card
             return Container(
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
@@ -565,7 +552,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Card Header - ID and Name
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
                     decoration: BoxDecoration(
@@ -655,12 +641,10 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                     ),
                   ),
 
-                  // Week attendance data
                   Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Column(
                       children: item.days.map((day) {
-                        // Determine if this is the current day
                         final now = DateTime.now();
                         final today = DateFormat('yyyy-MM-dd').format(now);
                         final dayDate = day.date.contains('-')
@@ -668,7 +652,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                             : DateFormat('yyyy-MM-dd').format(DateFormat('MMM dd, yyyy').parse(day.date));
                         final isCurrentDay = dayDate == today;
 
-                        // Show each day's attendance data
                         return Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.all(10),
@@ -690,7 +673,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Day and Date
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
@@ -775,7 +757,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                               ),
                               const SizedBox(height: 8),
 
-                              // Shift information
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                                 decoration: BoxDecoration(
@@ -813,10 +794,8 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                               ),
                               const SizedBox(height: 8),
 
-                              // Check-in and Check-out times
                               Row(
                                 children: [
-                                  // Check In
                                   Expanded(
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
@@ -885,7 +864,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
 
                                   const SizedBox(width: 8),
 
-                                  // Check Out
                                   Expanded(
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
@@ -960,7 +938,6 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                     ),
                   ),
 
-                  // Total weekly hours
                   Container(
                     margin: const EdgeInsets.all(10),
                     padding: const EdgeInsets.all(12),
@@ -1086,7 +1063,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
   String _formatDate(String dateStr) {
     try {
       if (dateStr.contains(',')) {
-        return dateStr.split(',')[0]; // Just the "Jun 09" part
+        return dateStr.split(',')[0];
       }
 
       final dateParts = dateStr.split(' ');

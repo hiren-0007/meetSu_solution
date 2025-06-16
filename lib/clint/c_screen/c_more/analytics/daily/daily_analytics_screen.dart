@@ -98,7 +98,7 @@ class _DailyAnalyticsScreenState extends State<DailyAnalyticsScreen> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 3,
             offset: const Offset(0, 2),
           ),
@@ -138,7 +138,7 @@ class _DailyAnalyticsScreenState extends State<DailyAnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 3,
             offset: const Offset(0, 2),
           ),
@@ -167,7 +167,7 @@ class _DailyAnalyticsScreenState extends State<DailyAnalyticsScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -365,7 +365,6 @@ class _DailyAnalyticsScreenState extends State<DailyAnalyticsScreen> {
   }
 }
 
-// Helper Widgets
 class _FilterSection extends StatelessWidget {
   final String label;
   final Widget child;
@@ -558,7 +557,7 @@ class _AnalyticsHeaderCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(screenWidth * 0.03),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        color: Colors.blue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -566,7 +565,7 @@ class _AnalyticsHeaderCard extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(screenWidth * 0.02),
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.2),
+              color: Colors.blue.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -628,7 +627,7 @@ class _AnalyticsTable extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade300),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -826,7 +825,7 @@ class _NoDataWidget extends StatelessWidget {
           Icon(
             Icons.search_off_outlined,
             size: screenWidth * 0.12,
-            color: Colors.grey.withOpacity(0.5),
+            color: Colors.grey.withValues(alpha: 0.5),
           ),
           SizedBox(height: screenHeight * 0.015),
           Text(
@@ -873,7 +872,7 @@ class _ErrorView extends StatelessWidget {
           Icon(
             Icons.error_outline,
             size: screenWidth * 0.15,
-            color: Colors.red.withOpacity(0.5),
+            color: Colors.red.withValues(alpha: 0.5),
           ),
           SizedBox(height: screenHeight * 0.02),
           Text(

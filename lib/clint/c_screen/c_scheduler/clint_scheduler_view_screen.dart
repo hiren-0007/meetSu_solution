@@ -49,7 +49,6 @@ class _ClintSchedulerViewScreenState extends State<ClintSchedulerViewScreen> {
       return;
     }
 
-    // Show loading dialog first
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -61,16 +60,13 @@ class _ClintSchedulerViewScreenState extends State<ClintSchedulerViewScreen> {
     try {
       final jobDetails = await _controller.fetchJobDetails(schedule.jobPositionId!);
 
-      // Close loading dialog
       Navigator.of(context).pop();
 
-      // Show job details dialog with the API call ID as Order ID
       showDialog(
         context: context,
         builder: (context) => _buildJobDetailsDialog(jobDetails, schedule.jobPositionId!),
       );
     } catch (e) {
-      // Close loading dialog
       Navigator.of(context).pop();
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -277,7 +273,6 @@ class _ClintSchedulerViewScreenState extends State<ClintSchedulerViewScreen> {
             },
           ),
         ),
-        // Only show task cards in Day view
         ValueListenableBuilder<String>(
           valueListenable: selectedView,
           builder: (context, view, _) {
@@ -365,7 +360,6 @@ class _ClintSchedulerViewScreenState extends State<ClintSchedulerViewScreen> {
 
     return Column(
       children: [
-        // Week navigation
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -389,7 +383,6 @@ class _ClintSchedulerViewScreenState extends State<ClintSchedulerViewScreen> {
         ),
         SizedBox(height: _screenHeight * 0.02),
 
-        // Week days grid
         Row(
           children: days.map((day) {
             final bool isSelected = selectedDate.value.day == day.day &&
@@ -438,7 +431,6 @@ class _ClintSchedulerViewScreenState extends State<ClintSchedulerViewScreen> {
 
         SizedBox(height: _screenHeight * 0.03),
 
-        // Show selected day's schedule in week view
         Expanded(
           child: Container(
             padding: EdgeInsets.all(_screenWidth * 0.04),
@@ -574,7 +566,6 @@ class _ClintSchedulerViewScreenState extends State<ClintSchedulerViewScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Day navigation
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -598,7 +589,6 @@ class _ClintSchedulerViewScreenState extends State<ClintSchedulerViewScreen> {
         ),
         SizedBox(height: _screenHeight * 0.03),
 
-        // Day content
         Expanded(
           child: Container(
             padding: EdgeInsets.all(_screenWidth * 0.04),
@@ -802,7 +792,6 @@ class _ClintSchedulerViewScreenState extends State<ClintSchedulerViewScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header with gradient background
             Container(
               padding: EdgeInsets.all(_screenWidth * 0.04),
               decoration: BoxDecoration(
@@ -819,7 +808,6 @@ class _ClintSchedulerViewScreenState extends State<ClintSchedulerViewScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // First row: Date | Shift | Position and Close button
                   Row(
                     children: [
                       Expanded(
@@ -854,7 +842,6 @@ class _ClintSchedulerViewScreenState extends State<ClintSchedulerViewScreen> {
                   ),
                   SizedBox(height: _screenHeight * 0.01),
 
-                  // Second row: Order ID and Stats
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -915,7 +902,6 @@ class _ClintSchedulerViewScreenState extends State<ClintSchedulerViewScreen> {
               ),
             ),
 
-            // Content
             Flexible(
               child: Padding(
                 padding: EdgeInsets.all(_screenWidth * 0.04),
@@ -991,7 +977,6 @@ class _ClintSchedulerViewScreenState extends State<ClintSchedulerViewScreen> {
               ),
             ),
 
-            // Bottom action
             Container(
               padding: EdgeInsets.symmetric(
                 horizontal: _screenWidth * 0.04,

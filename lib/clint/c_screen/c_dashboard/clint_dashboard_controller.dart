@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
@@ -141,7 +139,6 @@ class ClientDashboardController {
 
       _updateCurrentDate();
 
-      // Run all fetch operations concurrently
       await Future.wait([
         _fetchWeatherData(),
         _fetchQuoteData(),
@@ -188,22 +185,20 @@ class ClientDashboardController {
       final response = await _apiService.getQuote().timeout(_apiTimeout);
       debugPrint("📥 Quote API Response received");
 
-      if (response != null) {
-        final quoteText = response['quoteText']?.toString().trim();
-        final authorText = response['quoteAuthor']?.toString().trim();
+      final quoteText = response['quoteText']?.toString().trim();
+      final authorText = response['quoteAuthor']?.toString().trim();
 
-        quote.value = quoteText?.isNotEmpty == true
-            ? quoteText!
-            : "Success is not the key to happiness. Happiness is the key to success.";
+      quote.value = quoteText?.isNotEmpty == true
+          ? quoteText!
+          : "Success is not the key to happiness. Happiness is the key to success.";
 
-        quoteAuthor.value = authorText?.isNotEmpty == true
-            ? authorText!
-            : "Albert Schweitzer";
+      quoteAuthor.value = authorText?.isNotEmpty == true
+          ? authorText!
+          : "Albert Schweitzer";
 
-        _lastQuoteFetch = DateTime.now();
-        debugPrint("✅ Quote Updated: ${quote.value} - ${quoteAuthor.value}");
-      }
-    } catch (e) {
+      _lastQuoteFetch = DateTime.now();
+      debugPrint("✅ Quote Updated: ${quote.value} - ${quoteAuthor.value}");
+        } catch (e) {
       debugPrint("❌ Error fetching quote: $e");
     }
   }
@@ -417,7 +412,6 @@ class ClientDashboardController {
       isLoading.value = true;
       errorMessage.value = null;
 
-      // Clear cache to force refresh
       _lastWeatherFetch = null;
       _lastQuoteFetch = null;
       _lastAdsFetch = null;
@@ -445,7 +439,6 @@ class ClientDashboardController {
     }
   }
 
-  // Sharing methods for client ads
   Future<void> shareAd(BuildContext context, Ads ad) async {
     if (isSharing.value) return;
 

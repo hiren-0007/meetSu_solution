@@ -37,7 +37,6 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
       backgroundColor: AppTheme.backgroundColor,
       body: Stack(
         children: [
-          // Blue gradient header
           Positioned(
             top: 0,
             left: 0,
@@ -163,7 +162,7 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
                                       color: Colors.white,
                                       size: 28,
                                     ),
-                                    SizedBox(width: 12),
+                                    SizedBox(width: 10),
                                     const Text(
                                       'Job Request Details',
                                       style: TextStyle(
@@ -182,15 +181,15 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     _buildShiftField(),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 14),
                                     _buildDateField(),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 14),
                                     _buildPositionField(),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 14),
                                     _buildNoOfPersonsField(),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 14),
                                     _buildTypeField(),
-                                    const SizedBox(height: 32),
+                                    const SizedBox(height: 30),
                                     _buildSendButton(),
                                   ],
                                 ),

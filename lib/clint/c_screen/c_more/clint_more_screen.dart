@@ -34,7 +34,6 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
         backgroundColor: AppTheme.backgroundColor,
         body: Stack(
           children: [
-            // Blue gradient header
             Positioned(
               top: 0,
               left: 0,
@@ -49,16 +48,13 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
                 onRefresh: _controller.fetchDashboardData,
                 child: Column(
                   children: [
-                    // Title and Profile Section
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          // Title row with logo in left corner
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              // Logo in left corner
                               Container(
                                 height: 35,
                                 width: 35,
@@ -67,7 +63,7 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
+                                      color: Colors.black.withValues(alpha: 0.1),
                                       blurRadius: 4,
                                       offset: const Offset(0, 2),
                                     ),
@@ -83,7 +79,6 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
                                   ),
                                 ),
                               ),
-                              // More Options text in center
                               const Text(
                                 "MEETsu Solutions",
                                 style: TextStyle(
@@ -92,12 +87,10 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
                                   color: Colors.white,
                                 ),
                               ),
-                              // Empty container for alignment
                               const SizedBox(width: 30),
                             ],
                           ),
                           const SizedBox(height: 20),
-                          // User info card
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
@@ -105,7 +98,7 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
                               borderRadius: BorderRadius.circular(15),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 10,
                                   offset: const Offset(0, 5),
                                 ),
@@ -117,7 +110,7 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
                                   width: 60,
                                   height: 60,
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryClintColor.withOpacity(0.1),
+                                    color: AppTheme.primaryClintColor.withValues(alpha: 0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Center(
@@ -161,7 +154,7 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                   decoration: BoxDecoration(
-                                    color: Colors.green.withOpacity(0.2),
+                                    color: Colors.green.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(15),
                                   ),
                                   child: const Text(
@@ -179,7 +172,6 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
                       ),
                     ),
 
-                    // Menu Options
                     Expanded(
                       child: Container(
                         width: double.infinity,
@@ -218,14 +210,11 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
                                 return ListView(
                                   padding: const EdgeInsets.only(top: 8, bottom: 20),
                                   children: [
-                                    // Analytics menu item with dropdown
                                     _buildAnalyticsMenuOption(context),
 
-                                    // Show Analytics options when expanded
                                     if (_showAnalyticsOptions)
                                       _buildAnalyticsSubOptions(context),
 
-                                    // Profile menu item
                                     _buildMenuOption(
                                       context: context,
                                       icon: Icons.person_outline,
@@ -233,7 +222,6 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
                                       route: "/clint-profile",
                                     ),
 
-                                    // Logout menu item - special styling
                                     _buildMenuOption(
                                       context: context,
                                       icon: Icons.logout,
@@ -263,10 +251,10 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: AppTheme.primaryClintColor.withOpacity(0.05),
+        color: AppTheme.primaryClintColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.primaryClintColor.withOpacity(0.2),
+          color: AppTheme.primaryClintColor.withValues(alpha: 0.2),
         ),
       ),
       child: ListTile(
@@ -279,7 +267,7 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: AppTheme.primaryClintColor.withOpacity(0.2),
+            color: AppTheme.primaryClintColor.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
@@ -299,7 +287,7 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
         trailing: Icon(
           _showAnalyticsOptions ? Icons.keyboard_arrow_up : Icons.arrow_forward_ios,
           size: 20,
-          color: AppTheme.primaryClintColor.withOpacity(0.7),
+          color: AppTheme.primaryClintColor.withValues(alpha: 0.7),
         ),
       ),
     );
@@ -310,14 +298,12 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
       margin: const EdgeInsets.only(left: 32, right: 16),
       child: Column(
         children: [
-          // Daily Analytics option
           _buildSubOption(
             context: context,
             icon: Icons.calendar_today_outlined,
             title: "Daily",
             route: "/analytics/daily",
           ),
-          // Weekly Analytics option
           _buildSubOption(
             context: context,
             icon: Icons.date_range_outlined,
@@ -341,7 +327,7 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: AppTheme.primaryClintColor.withOpacity(0.1),
+          color: AppTheme.primaryClintColor.withValues(alpha: 0.1),
         ),
       ),
       child: ListTile(
@@ -365,7 +351,7 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
         trailing: Icon(
           Icons.arrow_forward_ios,
           size: 14,
-          color: AppTheme.primaryClintColor.withOpacity(0.5),
+          color: AppTheme.primaryClintColor.withValues(alpha: 0.5),
         ),
       ),
     );
@@ -381,11 +367,11 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
     final Color textColor = isLogout ? Colors.red : Colors.black87;
     final Color iconColor = isLogout ? Colors.red : AppTheme.primaryClintColor;
     final Color backgroundColor = isLogout
-        ? Colors.red.withOpacity(0.1)
-        : AppTheme.primaryClintColor.withOpacity(0.05);
+        ? Colors.red.withValues(alpha: 0.1)
+        : AppTheme.primaryClintColor.withValues(alpha: 0.05);
     final Color borderColor = isLogout
-        ? Colors.red.withOpacity(0.3)
-        : AppTheme.primaryClintColor.withOpacity(0.2);
+        ? Colors.red.withValues(alpha: 0.3)
+        : AppTheme.primaryClintColor.withValues(alpha: 0.2);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -409,8 +395,8 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: isLogout
-                ? Colors.red.withOpacity(0.2)
-                : AppTheme.primaryClintColor.withOpacity(0.2),
+                ? Colors.red.withValues(alpha: 0.2)
+                : AppTheme.primaryClintColor.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
@@ -430,7 +416,7 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
         trailing: Icon(
           Icons.arrow_forward_ios,
           size: 16,
-          color: iconColor.withOpacity(0.7),
+          color: iconColor.withValues(alpha: 0.7),
         ),
       ),
     );
@@ -444,7 +430,7 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
           Icon(
             Icons.error_outline,
             size: 64,
-            color: AppTheme.errorColor.withOpacity(0.5),
+            color: AppTheme.errorColor.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Padding(

@@ -33,8 +33,7 @@ class ClientHomeController {
 
     try {
       debugPrint("🔄 Refreshing client dashboard data...");
-      // API call to refresh dashboard data would go here
-      await Future.delayed(const Duration(seconds: 1)); // Simulating API call
+      await Future.delayed(const Duration(seconds: 1));
       debugPrint("✅ Client dashboard data refreshed");
     } catch (e) {
       errorMessage.value = "Failed to refresh dashboard data: ${e.toString()}";
@@ -46,12 +45,10 @@ class ClientHomeController {
 
   void navigateToProfile(BuildContext context) {
     debugPrint("👤 Navigate to client profile screen");
-    // Navigation code would go here
   }
 
   void navigateToSettings(BuildContext context) {
     debugPrint("⚙️ Navigate to client settings screen");
-    // Navigation code would go here
   }
 
   Future<void> logout(BuildContext context) async {
@@ -78,7 +75,7 @@ class ClientHomeController {
       debugPrint("✅ Local preferences cleared");
 
       if (context.mounted) {
-        Navigator.of(context).pop(); // Dismiss loading dialog
+        Navigator.of(context).pop();
         Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
         debugPrint("✅ Redirected to login screen");
       }
@@ -87,7 +84,7 @@ class ClientHomeController {
       debugPrint("❌ Error during client logout: $e");
 
       if (context.mounted) {
-        Navigator.of(context).pop(); // Dismiss loading dialog
+        Navigator.of(context).pop();
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

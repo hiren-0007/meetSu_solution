@@ -109,7 +109,6 @@ class ClientProfileController extends ChangeNotifier {
         throw Exception("Please log in to continue");
       }
 
-      // Simulate save operation
       await Future.delayed(const Duration(milliseconds: 500));
 
       _successMessage = "Profile updated successfully!";

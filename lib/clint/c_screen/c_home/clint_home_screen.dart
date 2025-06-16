@@ -6,7 +6,6 @@ import 'package:meetsu_solutions/clint/c_screen/c_scheduler/clint_scheduler_view
 import 'package:meetsu_solutions/clint/c_screen/cs_job/clint_send_job_request_screen.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
-import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 
 class ClientHomeScreen extends StatefulWidget {
   const ClientHomeScreen({super.key});

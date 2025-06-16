@@ -96,24 +96,19 @@ class ClintMoreController {
       isLoading.value = true;
       debugPrint("🔄 Performing logout...");
 
-      // Call logout API
       await _apiService.getClintLogout();
 
-      // Clear local storage
       await SharedPrefsService.instance.clear();
 
       debugPrint("✅ Logout successful");
 
-      // Close dialog and navigate to login
       Navigator.of(context).pop();
       Navigator.of(context).pushReplacementNamed('/login');
     } catch (e) {
       debugPrint("❌ Error during logout: $e");
 
-      // Close dialog
       Navigator.of(context).pop();
 
-      // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error during logout: ${e.toString()}'),

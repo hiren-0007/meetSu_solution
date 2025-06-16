@@ -7,9 +7,9 @@ import 'dart:convert';
 
 class ScheduleData {
   final String type;
-  final int totalSlots;    // positionCount
-  final int booked;        // assignCount
-  final int available;     // leftCount
+  final int totalSlots;
+  final int booked;
+  final int available;
   final List<AppointmentData> appointments;
   final String? date;
   final int? jobPositionId;
@@ -24,14 +24,13 @@ class ScheduleData {
     this.jobPositionId,
   });
 
-  // Factory constructor for API data
   factory ScheduleData.fromJson(Map<String, dynamic> json) {
     return ScheduleData(
       type: json['title']?.toString() ?? '',
       totalSlots: int.tryParse(json['positionCount']?.toString() ?? '0') ?? 0,
       booked: int.tryParse(json['assignCount']?.toString() ?? '0') ?? 0,
       available: int.tryParse(json['leftCount']?.toString() ?? '0') ?? 0,
-      appointments: [], // API doesn't provide detailed appointments
+      appointments: [],
       date: json['date']?.toString(),
       jobPositionId: int.tryParse(json['job_position_id']?.toString() ?? '0'),
     );
@@ -85,11 +84,8 @@ class AppointmentData {
 }
 
 class ClintSchedulerViewController {
-  // Private fields
   final ApiService _apiService;
-  DateTime _currentWeekStart = DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
 
-  // State notifiers
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
   final ValueNotifier<bool> hasData = ValueNotifier<bool>(false);
@@ -117,7 +113,6 @@ class ClintSchedulerViewController {
 
   void _setInitialWeek() {
     final monday = DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
-    _currentWeekStart = monday;
     currentWeekStart.value = monday;
   }
 
@@ -125,7 +120,6 @@ class ClintSchedulerViewController {
     debugPrint("🔄 Client Scheduler Controller initialized");
   }
 
-  // Week navigation methods
   String getFormattedWeekRange() {
     final DateFormat monthDayFormat = DateFormat('MMM d');
     final start = currentWeekStart.value;
@@ -141,7 +135,6 @@ class ClintSchedulerViewController {
   void previousWeek() {
     final newWeekStart = currentWeekStart.value.subtract(const Duration(days: 7));
     currentWeekStart.value = newWeekStart;
-    _currentWeekStart = newWeekStart;
     fetchDashboardData();
     debugPrint("📅 Navigated to previous week: ${getFormattedWeekRange()}");
   }
@@ -149,20 +142,17 @@ class ClintSchedulerViewController {
   void nextWeek() {
     final newWeekStart = currentWeekStart.value.add(const Duration(days: 7));
     currentWeekStart.value = newWeekStart;
-    _currentWeekStart = newWeekStart;
     fetchDashboardData();
     debugPrint("📅 Navigated to next week: ${getFormattedWeekRange()}");
   }
 
-  // Data fetching from real API
   Future<void> fetchDashboardData() async {
-    if (isLoading.value) return; // Prevent multiple simultaneous calls
+    if (isLoading.value) return;
 
     try {
       _setLoadingState(true);
       debugPrint("🔄 Fetching scheduler data for week: ${getFormattedWeekRange()}");
 
-      // Prepare API request body
       final DateFormat apiDateFormat = DateFormat('yyyy-MM-dd');
       final startDate = apiDateFormat.format(currentWeekStart.value);
       final endDate = apiDateFormat.format(currentWeekStart.value.add(const Duration(days: 6)));
@@ -174,22 +164,18 @@ class ClintSchedulerViewController {
 
       debugPrint("📡 API Request: $requestBody");
 
-      // Make actual API call
       final response = await _apiService.getClientSchedule(requestBody);
 
       debugPrint("📡 API Response: $response");
 
-      // Extract data from response - similar to WeeklyAnalyticsController approach
       List<dynamic> apiData = [];
 
-      // First check if 'body' key exists and contains the data
       if (response.containsKey('body')) {
         final bodyData = response['body'];
         if (bodyData is List) {
           apiData = bodyData;
           debugPrint("📊 Found data in 'body' key: ${apiData.length} records");
         } else if (bodyData is String) {
-          // If body is a string, it might be JSON that needs parsing
           try {
             final parsedBody = jsonDecode(bodyData);
             if (parsedBody is List) {
@@ -202,7 +188,6 @@ class ClintSchedulerViewController {
         }
       }
 
-      // Fallback: check other common keys
       if (apiData.isEmpty) {
         if (response.containsKey('data') && response['data'] is List) {
           apiData = response['data'] as List<dynamic>;
@@ -216,7 +201,6 @@ class ClintSchedulerViewController {
         }
       }
 
-      // Final fallback: check if any value in response is a List
       if (apiData.isEmpty) {
         for (var value in response.values) {
           if (value is List) {
@@ -230,14 +214,12 @@ class ClintSchedulerViewController {
       debugPrint("📊 Final parsed API Data: Found ${apiData.length} records");
 
       if (apiData.isNotEmpty) {
-        // Convert API data to ScheduleData objects
         final List<ScheduleData> scheduleList = apiData
             .map((item) => ScheduleData.fromJson(item))
             .toList();
 
         scheduleDataList.value = scheduleList;
 
-        // Group data by type for easier access
         final Map<String, List<ScheduleData>> grouped = {};
         for (var schedule in scheduleList) {
           if (!grouped.containsKey(schedule.type)) {
@@ -253,7 +235,6 @@ class ClintSchedulerViewController {
         debugPrint("✅ Scheduler data processed successfully. Items: ${scheduleList.length}");
         debugPrint("📊 Grouped data: ${grouped.keys.toList()}");
 
-        // Log sample data for debugging
         for (var schedule in scheduleList.take(3)) {
           debugPrint("📋 Sample: ${schedule.toString()}");
         }
@@ -288,7 +269,6 @@ class ClintSchedulerViewController {
     debugPrint("❌ Error fetching scheduler data: $error");
   }
 
-  // Get schedule data for specific day and type
   List<ScheduleData> getScheduleForDayAndType(DateTime date, String scheduleType) {
     final DateFormat apiDateFormat = DateFormat('yyyy-MM-dd');
     final targetDate = apiDateFormat.format(date);
@@ -298,7 +278,6 @@ class ClintSchedulerViewController {
     return allSchedules.where((schedule) => schedule.date == targetDate).toList();
   }
 
-  // Get all schedule data for a specific day
   List<ScheduleData> getScheduleForDay(DateTime date) {
     final DateFormat apiDateFormat = DateFormat('yyyy-MM-dd');
     final targetDate = apiDateFormat.format(date);
@@ -306,12 +285,10 @@ class ClintSchedulerViewController {
     return scheduleDataList.value.where((schedule) => schedule.date == targetDate).toList();
   }
 
-  // Get unique schedule types
   List<String> getScheduleTypes() {
     return groupedScheduleData.value.keys.toList();
   }
 
-  // Statistics methods
   int getTotalBookedForWeek() {
     return scheduleDataList.value.fold(0, (sum, schedule) => sum + schedule.booked);
   }
@@ -331,7 +308,6 @@ class ClintSchedulerViewController {
     return totalSlots > 0 ? (bookedSlots / totalSlots) : 0.0;
   }
 
-  // Get aggregated data for a specific schedule type across the week
   Map<String, int> getWeekSummaryForType(String scheduleType) {
     final typeSchedules = groupedScheduleData.value[scheduleType] ?? [];
 
@@ -346,7 +322,6 @@ class ClintSchedulerViewController {
     };
   }
 
-  // Date utility methods
   bool isCurrentWeek(DateTime date) {
     final now = DateTime.now();
     final currentWeekStart = now.subtract(Duration(days: now.weekday - 1));
@@ -372,16 +347,14 @@ class ClintSchedulerViewController {
   }
 
   bool isWeekend(DateTime date) {
-    return date.weekday > 5; // Saturday = 6, Sunday = 7
+    return date.weekday > 5;
   }
 
-  // Navigation helpers
   void goToCurrentWeek() {
     final now = DateTime.now();
     final monday = now.subtract(Duration(days: now.weekday - 1));
 
     currentWeekStart.value = monday;
-    _currentWeekStart = monday;
     fetchDashboardData();
 
     debugPrint("📅 Navigated to current week: ${getFormattedWeekRange()}");
@@ -391,39 +364,32 @@ class ClintSchedulerViewController {
     final monday = date.subtract(Duration(days: date.weekday - 1));
 
     currentWeekStart.value = monday;
-    _currentWeekStart = monday;
     fetchDashboardData();
 
     debugPrint("📅 Navigated to specific week: ${getFormattedWeekRange()}");
   }
 
-  // Fetch job details with assigned applicants
   Future<Map<String, dynamic>> fetchJobDetails(int jobPositionId) async {
     try {
       debugPrint("🔄 Fetching job details for ID: $jobPositionId");
 
-      // Make API call to get job details and assigned applicants
       final response = await _apiService.getJobDetails(jobPositionId);
 
       debugPrint("📡 Job Details API Response: $response");
 
-      // Parse the response based on your API structure
       Map<String, dynamic> result = {
         'jobDetails': {},
         'assignedApplicants': [],
       };
 
-      // Extract job details
       if (response.containsKey('jobDetails')) {
         result['jobDetails'] = response['jobDetails'];
       } else if (response.containsKey('data')) {
         result['jobDetails'] = response['data'];
       } else {
-        // If the response structure is different, adapt accordingly
         result['jobDetails'] = response;
       }
 
-      // Extract assigned applicants
       if (response.containsKey('assignedApplicants')) {
         result['assignedApplicants'] = response['assignedApplicants'];
       } else if (response.containsKey('applicants')) {
@@ -443,11 +409,9 @@ class ClintSchedulerViewController {
       throw Exception("Failed to load job details: $e");
     }
   }
-  // Cleanup
   void dispose() {
     debugPrint("🧹 Disposing ClientSchedulerController resources");
 
-    // Dispose all ValueNotifiers
     isLoading.dispose();
     errorMessage.dispose();
     hasData.dispose();
