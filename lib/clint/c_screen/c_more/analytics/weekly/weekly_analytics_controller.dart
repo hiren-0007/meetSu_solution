@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
@@ -22,7 +23,7 @@ class WeeklyAnalyticsController {
   final ValueNotifier<List<WeeklyAnalyticsItem>> analyticsItems = ValueNotifier<List<WeeklyAnalyticsItem>>([]);
   final ValueNotifier<int> currentPage = ValueNotifier<int>(1);
   final ValueNotifier<int> totalPages = ValueNotifier<int>(1);
-  final ValueNotifier<int> totalItems = ValueNotifier<int>(40);
+  final ValueNotifier<int> totalItems = ValueNotifier<int>(0);
   final ValueNotifier<int> itemsPerPage = ValueNotifier<int>(20);
 
   WeeklyAnalyticsController({ApiService? apiService})
@@ -41,8 +42,8 @@ class WeeklyAnalyticsController {
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
     final endOfWeek = startOfWeek.add(Duration(days: 6));
 
-    startDate.value = DateFormat('MMM dd, yyyy').format(startOfWeek);
-    endDate.value = DateFormat('MMM dd, yyyy').format(endOfWeek);
+    startDate.value = DateFormat('yyyy-MM-dd').format(startOfWeek);
+    endDate.value = DateFormat('yyyy-MM-dd').format(endOfWeek);
 
     debugPrint("🔄 Initializing Weekly Analytics Controller...");
 
@@ -56,80 +57,183 @@ class WeeklyAnalyticsController {
       errorMessage.value = null;
 
       debugPrint("🔄 Fetching weekly analytics data...");
+      debugPrint("📅 Date range: ${startDate.value} to ${endDate.value}");
 
-      // Simulate API call with demo data
-      await Future.delayed(const Duration(seconds: 1));
+      // Call the real API
+      final response = await _apiService.getWeeklyReport(startDate.value, endDate.value);
 
-      // Mock data based on the image
-      final List<WeeklyAnalyticsItem> items = [
-        WeeklyAnalyticsItem(
-            logId: '14476',
-            applicantName: 'HIREN PANCHAL',
-            days: _generateDaysForPerson(1),
-            totalHours: '32.50'
-        ),
-        WeeklyAnalyticsItem(
-            logId: '5345',
-            applicantName: 'JOY BUENCAMINO',
-            days: _generateDaysForPerson(2),
-            totalHours: '32.50'
-        ),
-        WeeklyAnalyticsItem(
-            logId: '26670',
-            applicantName: 'MICHELLE MONTIEL',
-            days: _generateDaysForPerson(3),
-            totalHours: '32.50'
-        ),
-        WeeklyAnalyticsItem(
-            logId: '30482',
-            applicantName: 'NORELYN ESPIRITU',
-            days: _generateDaysForPerson(4),
-            totalHours: '32.50'
-        ),
-      ];
+      debugPrint("📊 API Response: $response");
 
-      analyticsItems.value = items;
-      hasData.value = true;
-      debugPrint("✅ Weekly analytics data fetched successfully");
+      // Extract data from response
+      List<dynamic> apiData = [];
+
+      // First check if 'body' key exists and contains the data
+      if (response.containsKey('body')) {
+        final bodyData = response['body'];
+        if (bodyData is List) {
+          apiData = bodyData;
+          debugPrint("📊 Found data in 'body' key: ${apiData.length} records");
+        } else if (bodyData is String) {
+          // If body is a string, it might be JSON that needs parsing
+          try {
+            final parsedBody = json.decode(bodyData);
+            if (parsedBody is List) {
+              apiData = parsedBody;
+              debugPrint("📊 Parsed JSON from 'body' string: ${apiData.length} records");
+            }
+          } catch (e) {
+            debugPrint("❌ Error parsing body string: $e");
+          }
+        }
+      }
+
+      // Fallback: check other common keys
+      if (apiData.isEmpty) {
+        if (response.containsKey('data') && response['data'] is List) {
+          apiData = response['data'] as List<dynamic>;
+          debugPrint("📊 Found data in 'data' key: ${apiData.length} records");
+        } else if (response['success'] == true || response['status'] == 'success') {
+          final data = response['data'];
+          if (data is List) {
+            apiData = data;
+            debugPrint("📊 Found data in success response: ${apiData.length} records");
+          }
+        }
+      }
+
+      // Final fallback: check if any value in response is a List
+      if (apiData.isEmpty) {
+        for (var value in response.values) {
+          if (value is List) {
+            apiData = value;
+            debugPrint("📊 Found List data in response values: ${apiData.length} records");
+            break;
+          }
+        }
+      }
+
+      debugPrint("📊 Final parsed API Data: Found ${apiData.length} records");
+
+      if (apiData.isNotEmpty) {
+        // Group data by employee (logId + applicantName)
+        final Map<String, List<Map<String, dynamic>>> groupedData = {};
+
+        for (var item in apiData) {
+          final Map<String, dynamic> itemMap = item as Map<String, dynamic>;
+          final key = "${itemMap['logId']}_${itemMap['applicantName']}";
+          if (!groupedData.containsKey(key)) {
+            groupedData[key] = [];
+          }
+          groupedData[key]!.add(itemMap);
+        }
+
+        debugPrint("📊 Grouped data: Found ${groupedData.length} employees");
+
+        // Convert grouped data to WeeklyAnalyticsItem
+        final List<WeeklyAnalyticsItem> items = groupedData.entries.map((entry) {
+          final employeeData = entry.value;
+          final firstRecord = employeeData.first;
+
+          // Create day entries from the API data
+          final List<DayEntry> days = employeeData.map((dayData) {
+            return DayEntry(
+              dayName: _getDayName(dayData['date']?.toString() ?? ''),
+              date: dayData['date']?.toString() ?? '',
+              shift: dayData['shift']?.toString() ?? 'Morning Shift',
+              checkIn: _formatTime(dayData['clockIn']?.toString()),
+              checkOut: _formatTime(dayData['clockOut']?.toString()),
+              hours: dayData['totalHours']?.toString() ?? '0.0',
+              isNotYet: dayData['clockIn'] == null || dayData['clockOut'] == null,
+            );
+          }).toList();
+
+          // Sort days by date
+          days.sort((a, b) {
+            try {
+              final dateA = DateTime.parse(a.date);
+              final dateB = DateTime.parse(b.date);
+              return dateA.compareTo(dateB);
+            } catch (e) {
+              return 0;
+            }
+          });
+
+          // Calculate total hours
+          double totalHours = 0.0;
+          for (var dayData in employeeData) {
+            if (dayData['totalHours'] != null) {
+              totalHours += double.tryParse(dayData['totalHours'].toString()) ?? 0.0;
+            }
+          }
+
+          return WeeklyAnalyticsItem(
+            logId: firstRecord['logId']?.toString() ?? '',
+            applicantName: firstRecord['applicantName']?.toString() ?? '',
+            days: days,
+            totalHours: totalHours.toStringAsFixed(2),
+          );
+        }).toList();
+
+        analyticsItems.value = items;
+        hasData.value = items.isNotEmpty;
+        totalItems.value = items.length;
+
+        debugPrint("✅ Weekly analytics data processed successfully. Found ${items.length} employees");
+      } else {
+        analyticsItems.value = [];
+        hasData.value = false;
+        debugPrint("⚠️ No data found in API response");
+      }
     } catch (e) {
       errorMessage.value = "Failed to load data: ${e.toString()}";
       hasData.value = false;
+      analyticsItems.value = [];
       debugPrint("❌ Error fetching weekly analytics data: $e");
     } finally {
       isLoading.value = false;
     }
   }
 
-  List<DayEntry> _generateDaysForPerson(int personId) {
-    final now = DateTime.now();
-    final monday = now.subtract(Duration(days: now.weekday - 1));
+  String _getDayName(String dateStr) {
+    try {
+      if (dateStr.isEmpty) return 'Unknown';
+      final date = DateTime.parse(dateStr);
+      return DateFormat('EEEE').format(date);
+    } catch (e) {
+      debugPrint("Error parsing date: $dateStr - $e");
+      return 'Unknown';
+    }
+  }
 
-    final List<DayEntry> days = [];
-
-    for (int i = 0; i < 5; i++) {
-      final currentDay = monday.add(Duration(days: i));
-      final dayName = DateFormat('EEEE').format(currentDay);
-      final date = DateFormat('MMM dd, yyyy').format(currentDay);
-
-      final shift = (personId <= 2)
-          ? 'Morning Shift (10:00 to 18:00)'
-          : 'Morning Shift (07:30 to 15:30)';
-
-      final checkIn = (personId <= 2) ? '10:00' : '07:30';
-      final checkOut = (personId <= 2) ? '18:00' : '15:30';
-
-      days.add(DayEntry(
-          dayName: dayName,
-          date: date,
-          shift: shift,
-          checkIn: checkIn,
-          checkOut: checkOut,
-          hours: '7.50',
-          isNotYet: i >= 4 // Friday is "not yet" in the example
-      ));
+  String _formatTime(String? timeStr) {
+    if (timeStr == null || timeStr.isEmpty || timeStr == 'null') {
+      return '00:00';
     }
 
-    return days;
+    try {
+      // If it's a full datetime string like "2025-06-09 10:00:00"
+      if (timeStr.contains(' ')) {
+        final parts = timeStr.split(' ');
+        if (parts.length > 1) {
+          final timePart = parts[1];
+          // Return just HH:MM part
+          if (timePart.contains(':')) {
+            final timeParts = timePart.split(':');
+            return "${timeParts[0]}:${timeParts[1]}";
+          }
+        }
+      }
+      // If it's already just time format
+      if (timeStr.contains(':')) {
+        final timeParts = timeStr.split(':');
+        return "${timeParts[0]}:${timeParts[1]}";
+      }
+
+      return timeStr;
+    } catch (e) {
+      debugPrint("Error formatting time: $timeStr - $e");
+      return '00:00';
+    }
   }
 
   // Function to show date picker for start date
@@ -141,7 +245,7 @@ class WeeklyAnalyticsController {
       lastDate: DateTime(2101),
     );
     if (picked != null) {
-      startDate.value = DateFormat('MMM dd, yyyy').format(picked);
+      startDate.value = DateFormat('yyyy-MM-dd').format(picked);
       fetchAnalyticsData(); // Reload data with new date
     }
   }
@@ -155,14 +259,14 @@ class WeeklyAnalyticsController {
       lastDate: DateTime(2101),
     );
     if (picked != null) {
-      endDate.value = DateFormat('MMM dd, yyyy').format(picked);
+      endDate.value = DateFormat('yyyy-MM-dd').format(picked);
       fetchAnalyticsData(); // Reload data with new date
     }
   }
 
   DateTime _parseDate(String dateStr) {
     try {
-      return DateFormat('MMM dd, yyyy').parse(dateStr);
+      return DateTime.parse(dateStr);
     } catch (e) {
       return DateTime.now();
     }
@@ -176,8 +280,8 @@ class WeeklyAnalyticsController {
     final newStart = start.subtract(const Duration(days: 7));
     final newEnd = end.subtract(const Duration(days: 7));
 
-    startDate.value = DateFormat('MMM dd, yyyy').format(newStart);
-    endDate.value = DateFormat('MMM dd, yyyy').format(newEnd);
+    startDate.value = DateFormat('yyyy-MM-dd').format(newStart);
+    endDate.value = DateFormat('yyyy-MM-dd').format(newEnd);
 
     fetchAnalyticsData();
   }
@@ -190,15 +294,36 @@ class WeeklyAnalyticsController {
     final newStart = start.add(const Duration(days: 7));
     final newEnd = end.add(const Duration(days: 7));
 
-    startDate.value = DateFormat('MMM dd, yyyy').format(newStart);
-    endDate.value = DateFormat('MMM dd, yyyy').format(newEnd);
+    startDate.value = DateFormat('yyyy-MM-dd').format(newStart);
+    endDate.value = DateFormat('yyyy-MM-dd').format(newEnd);
 
     fetchAnalyticsData();
   }
 
   // Function to search by log ID and applicant name
   void search() {
-    fetchAnalyticsData();
+    // Filter the existing data based on search criteria
+    final allItems = analyticsItems.value;
+    final logIdFilter = logIdController.text.trim().toLowerCase();
+    final nameFilter = applicantNameController.text.trim().toLowerCase();
+
+    if (logIdFilter.isEmpty && nameFilter.isEmpty) {
+      // If no filters, reload all data
+      fetchAnalyticsData();
+      return;
+    }
+
+    final filteredItems = allItems.where((item) {
+      final matchesLogId = logIdFilter.isEmpty ||
+          item.logId.toLowerCase().contains(logIdFilter);
+      final matchesName = nameFilter.isEmpty ||
+          item.applicantName.toLowerCase().contains(nameFilter);
+
+      return matchesLogId && matchesName;
+    }).toList();
+
+    analyticsItems.value = filteredItems;
+    hasData.value = filteredItems.isNotEmpty;
   }
 
   // Function to navigate to specific page
@@ -230,6 +355,16 @@ class WeeklyAnalyticsController {
     final int start = ((currentPage.value - 1) * itemsPerPage.value) + 1;
     final int end = start + analyticsItems.value.length - 1;
     return "Showing $start-$end of ${totalItems.value} items.";
+  }
+
+  // Helper method to format date for display
+  String formatDateForDisplay(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      return DateFormat('MMM dd, yyyy').format(date);
+    } catch (e) {
+      return dateStr;
+    }
   }
 
   void dispose() {

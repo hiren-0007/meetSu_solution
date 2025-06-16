@@ -63,7 +63,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         borderRadius: BorderRadius.circular(15),
         boxShadow: [AppTheme.primaryShadow],
       ),
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       child: Column(
         children: [
@@ -244,7 +244,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
           final firstItem = _controller.scheduleItems.value.first;
           return Container(
             width: double.infinity,
-            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+            margin: const EdgeInsets.fromLTRB(16, 5, 16, 0),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -271,7 +271,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         "Company: ${firstItem.company ?? 'N/A'}",
                         style: TextStyle(
                           color: AppTheme.textPrimaryColor,
-                          fontSize: 10,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -283,7 +283,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         "Position: ${firstItem.position ?? 'N/A'}",
                         style: TextStyle(
                           color: AppTheme.textPrimaryColor,
-                          fontSize: 10,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -303,10 +303,10 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         "Shift: ${firstItem.shift ?? 'N/A'}",
                         style: TextStyle(
                           color: AppTheme.textPrimaryColor,
-                          fontSize: 10,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
-                        overflow: TextOverflow.ellipsis,
+                        overflow: TextOverflow.clip,
                       ),
                     ),
                     SizedBox(width: 16),
@@ -315,7 +315,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         "Rate: \$${firstItem.rate ?? 'N/A'}/hr",
                         style: TextStyle(
                           color: AppTheme.primaryColor,
-                          fontSize: 10,
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -340,14 +340,14 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         color: AppTheme.primaryColor,
         borderRadius: BorderRadius.circular(12),
       ),
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       child: const Text(
         "All Hours And Amounts Are Approximate",
         style: TextStyle(
             color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.w700
+            fontSize: 14,
+            fontWeight: FontWeight.w600
         ),
         textAlign: TextAlign.center, // Center aligned text
       ),
@@ -366,7 +366,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
           "$label:",
           style: TextStyle(
             color: AppTheme.textSecondaryColor,
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.3,
           ),
@@ -376,7 +376,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
           value,
           style: TextStyle(
             color: isHighlighted ? AppTheme.primaryColor : AppTheme.textPrimaryColor,
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w600,
             letterSpacing: 0.2,
           ),
@@ -405,7 +405,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                     "No data found for this date range",
                     style: TextStyle(
                       color: AppTheme.textSecondaryColor,
-                      fontSize: 16,
+                      fontSize: 17,
                     ),
                   ),
                 );
@@ -422,7 +422,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
       valueListenable: _controller.scheduleItems,
       builder: (context, scheduleItems, _) {
         return Container(
-          margin: const EdgeInsets.all(16),
+          margin: const EdgeInsets.fromLTRB(16,8,16,8),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
@@ -455,7 +455,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: 13,
                         ),
                       ),
                     ),
@@ -466,7 +466,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: 13,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -478,7 +478,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: 13,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -490,7 +490,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: 13,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -502,7 +502,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: 13,
                         ),
                         textAlign: TextAlign.right,
                       ),
@@ -574,7 +574,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                               formattedDate,
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                fontSize: 12,
+                                fontSize: 13,
                               ),
                             ),
                           ),
@@ -584,7 +584,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                               startTime,
                               style: TextStyle(
                                 color: AppTheme.textSecondaryColor,
-                                fontSize: 12,
+                                fontSize: 13,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -595,7 +595,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                               endTime,
                               style: TextStyle(
                                 color: AppTheme.textSecondaryColor,
-                                fontSize: 12,
+                                fontSize: 13,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -606,7 +606,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                               item.hours ?? "0.00",
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                fontSize: 12,
+                                fontSize: 13,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -618,7 +618,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: AppTheme.primaryColor,
-                                fontSize: 12,
+                                fontSize: 13,
                               ),
                               textAlign: TextAlign.right,
                             ),
@@ -652,7 +652,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
           }
 
           return Container(
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+            margin: const EdgeInsets.fromLTRB(16, 4, 16, 10),
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(

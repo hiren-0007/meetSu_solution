@@ -163,4 +163,42 @@ class ApiService {
   Future<Map<String, dynamic>> submitQuizAnswer(Map<String, dynamic> answerData) async {
     return await _client.post(ApiEndpoints.quizAnswer, body: answerData);
   }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+
+  Future<Map<String, dynamic>> getClintLogout() async {
+    return await _client.get(ApiEndpoints.clintLogout);
+  }
+
+  Future<Map<String, dynamic>> getClintProfile() async {
+    return await _client.get(ApiEndpoints.getClintProfile);
+  }
+
+  Future<Map<String, dynamic>> getClintShift() async {
+    return await _client.get(ApiEndpoints.getClintShift);
+  }
+
+  Future<Map<String, dynamic>> getClintPositions() async {
+    return await _client.get(ApiEndpoints.getClintPositions);
+  }
+
+  Future<Map<String, dynamic>> createJobRequest(Map<String, dynamic> jobRequestData) async {
+    return await _client.post(ApiEndpoints.createJobRequest, body: jobRequestData, useFormData: true);
+  }
+
+  Future<Map<String, dynamic>> getWeeklyReport(String startDate, String endDate) async {
+    return await _client.get('${ApiEndpoints.weeklyReport}?start_date=$startDate&end_date=$endDate');
+  }
+
+  Future<Map<String, dynamic>> getClientSchedule(Map<String, dynamic> body) async {
+    return await _client.post(ApiEndpoints.clintSchedule, body: body);
+  }
+
+  Future<Map<String, dynamic>> showClientWeather(Map<String, dynamic> body) async {
+    return await _client.post(ApiEndpoints.showClientWeather, body: body);
+  }
+
+  Future<Map<String, dynamic>> getJobDetails(int jobPositionId) async {
+    return await _client.post('${ApiEndpoints.showAssignedApplicants}?id=$jobPositionId');
+  }
 }

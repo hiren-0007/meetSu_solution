@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +16,8 @@ class DashboardController {
   static const Duration _autoScrollInterval = Duration(seconds: 5);
   static const Duration _apiTimeout = Duration(seconds: 30);
   static const Duration _locationTimeout = Duration(seconds: 10);
+  static const String _fallbackBaseUrl =
+      "https://meetsusolutions.com/frontend/web/site/ads?id=";
 
   final ApiService _apiService;
 
@@ -102,7 +105,6 @@ class DashboardController {
 
         // Calculate next index (loop back to 0 after last item)
         _currentAdIndex = (_currentAdIndex + 1) % adItems.value.length;
-
 
         // Get current page and calculate next page for infinite scroll
         final currentPage = _pageController!.page?.round() ?? 0;
@@ -321,8 +323,10 @@ class DashboardController {
       }
 
       return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: _locationTimeout,
+        locationSettings: LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: _locationTimeout,
+        ),
       );
     } catch (e) {
       debugPrint('❌ Error getting location: $e');
@@ -455,8 +459,13 @@ class DashboardController {
     }
   }
 
+  // ==============================================================================
+  // ENHANCED SHARING METHODS - Same as JobOpeningController
+  // ==============================================================================
+
+  // Original shareAd method - maintained for backward compatibility
   Future<void> shareAd(BuildContext context, Ads ad) async {
-    if (isSharing.value) return; // Prevent multiple simultaneous shares
+    if (isSharing.value) return;
 
     try {
       isSharing.value = true;
@@ -465,7 +474,7 @@ class DashboardController {
       final shareLink = await _getAdShareLink(ad);
       final shareText = _buildAdShareText(ad, shareLink);
 
-      await Share.share(shareText, subject: ad.subjectLine);
+      await Share.share(shareText, subject: ad.subjectLine ?? 'Advertisement');
       debugPrint("✅ Ad shared successfully");
 
       if (context.mounted) {
@@ -482,22 +491,267 @@ class DashboardController {
     }
   }
 
+  // Enhanced sharing method with rich content support
+  Future<void> shareAdWithRichContent(
+      BuildContext context,
+      Ads ad,
+      String shareText,
+      String? imageUrl,
+      ) async {
+    if (isSharing.value) return;
+
+    try {
+      isSharing.value = true;
+      debugPrint(
+          "🔄 Sharing ad with rich content: ${ad.subjectLine} (ID: ${ad.adsId})");
+
+      if (Platform.isIOS) {
+        // iOS के लिए rich sharing
+        await _shareForIOS(shareText, imageUrl);
+      } else {
+        // Android के लिए rich sharing
+        await _shareForAndroid(shareText, imageUrl);
+      }
+
+      debugPrint("✅ Ad shared successfully with rich content");
+
+      if (context.mounted) {
+        _showShareSuccess(context);
+      }
+    } catch (e) {
+      debugPrint("❌ Error during rich content sharing: $e");
+
+      if (context.mounted) {
+        // Fallback to original sharing method
+        await shareAd(context, ad);
+      }
+    } finally {
+      isSharing.value = false;
+    }
+  }
+
+  Future<void> _shareForIOS(String text, String? imageUrl) async {
+    try {
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        // iOS में enhanced text के साथ share करने के लिए
+        final enhancedText = '''
+$text
+
+📸 Ad Image: $imageUrl
+
+📱 Download our app for more opportunities!
+        ''';
+
+        await Share.share(
+          enhancedText,
+          subject: 'Advertisement - MeetSu Solutions',
+        );
+      } else {
+        await Share.share(
+          text,
+          subject: 'Advertisement - MeetSu Solutions',
+        );
+      }
+    } catch (e) {
+      debugPrint("❌ iOS sharing error: $e");
+      await Share.share(text);
+    }
+  }
+
+  Future<void> _shareForAndroid(String text, String? imageUrl) async {
+    try {
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        // Android में rich preview के लिए enhanced format
+        final enhancedText = '''
+$text
+
+🖼️ View Ad Image: $imageUrl
+
+📲 Get the MeetSu Solutions app for instant updates!
+        ''';
+
+        await Share.share(
+          enhancedText,
+          subject: 'Advertisement - MeetSu Solutions',
+        );
+      } else {
+        await Share.share(
+          text,
+          subject: 'Advertisement - MeetSu Solutions',
+        );
+      }
+    } catch (e) {
+      debugPrint("❌ Android sharing error: $e");
+      await Share.share(text);
+    }
+  }
+
+  // Custom share dialog method
+  Future<void> shareAdWithCustomDialog(
+      BuildContext context,
+      Ads ad,
+      ) async {
+    if (isSharing.value) return;
+
+    try {
+      isSharing.value = true;
+      debugPrint("🔄 Opening custom share dialog for: ${ad.subjectLine}");
+
+      final String shareContent = _buildUnifiedShareContent(ad);
+
+      // Custom share options के साथ
+      await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => AdShareOptionsBottomSheet(
+          shareContent: shareContent,
+          imageUrl: ad.imageUrl,
+          adTitle: ad.subjectLine ?? 'Advertisement',
+          onShare: (platform) async {
+            Navigator.pop(context);
+            await _shareOnSpecificPlatform(
+                platform, shareContent, ad.imageUrl);
+          },
+        ),
+      );
+    } catch (e) {
+      debugPrint("❌ Custom sharing error: $e");
+      await shareAd(context, ad); // Fallback
+    } finally {
+      isSharing.value = false;
+    }
+  }
+
+  String _buildUnifiedShareContent(Ads ad) {
+    final shareLink = _getFallbackAdShareLink(ad);
+
+    return '''
+🎯 ${ad.subjectLine ?? "Advertisement"}
+
+📍 Location: ${ad.place ?? "Not specified"}
+💰 Amount: ${ad.amount ?? "Negotiable"}
+📅 Date: ${ad.date ?? "Not specified"}
+
+📝 Description:
+${ad.description ?? "No description available"}
+
+🔗 View Now: $shareLink
+
+#Advertisement #Opportunity #MeetsuSolutions
+    ''';
+  }
+
+  Future<void> _shareOnSpecificPlatform(
+      String platform,
+      String content,
+      String? imageUrl,
+      ) async {
+    try {
+      switch (platform) {
+        case 'whatsapp':
+          await _shareToWhatsApp(content, imageUrl);
+          break;
+        case 'telegram':
+          await _shareToTelegram(content, imageUrl);
+          break;
+        case 'email':
+          await _shareToEmail(content, imageUrl);
+          break;
+        case 'sms':
+          await _shareToSMS(content);
+          break;
+        case 'general':
+        default:
+          await Share.share(content);
+          break;
+      }
+    } catch (e) {
+      debugPrint("❌ Platform-specific sharing error: $e");
+      await Share.share(content); // Fallback
+    }
+  }
+
+  Future<void> _shareToWhatsApp(String text, String? imageUrl) async {
+    try {
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        final whatsappText = '''
+$text
+
+📸 $imageUrl
+        ''';
+        await Share.share(whatsappText);
+      } else {
+        await Share.share(text);
+      }
+    } catch (e) {
+      debugPrint("❌ WhatsApp sharing error: $e");
+      await Share.share(text);
+    }
+  }
+
+  Future<void> _shareToTelegram(String text, String? imageUrl) async {
+    try {
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        final telegramText = '''
+$text
+
+🖼️ Image: $imageUrl
+        ''';
+        await Share.share(telegramText);
+      } else {
+        await Share.share(text);
+      }
+    } catch (e) {
+      debugPrint("❌ Telegram sharing error: $e");
+      await Share.share(text);
+    }
+  }
+
+  Future<void> _shareToEmail(String text, String? imageUrl) async {
+    try {
+      final emailText = imageUrl != null && imageUrl.isNotEmpty
+          ? '$text\n\nAd Image: $imageUrl'
+          : text;
+
+      await Share.share(
+        emailText,
+        subject: 'Advertisement - MeetSu Solutions',
+      );
+    } catch (e) {
+      debugPrint("❌ Email sharing error: $e");
+      await Share.share(text);
+    }
+  }
+
+  Future<void> _shareToSMS(String text) async {
+    try {
+      final smsText = text.length > 160 ? '${text.substring(0, 157)}...' : text;
+
+      await Share.share(smsText);
+    } catch (e) {
+      debugPrint("❌ SMS sharing error: $e");
+      await Share.share(text);
+    }
+  }
+
   Future<String> _getAdShareLink(Ads ad) async {
     try {
-      final token = _cachedToken ?? SharedPrefsService.instance.getAccessToken();
-      if (token?.isEmpty != false) {
+      final token =
+          _cachedToken ?? SharedPrefsService.instance.getAccessToken();
+      if (token == null || token.isEmpty) {
         throw Exception("No authentication token found");
       }
 
-      _apiService.client.addAuthToken(token!);
+      _apiService.client.addAuthToken(token);
 
-      Map<String, dynamic> requestData = {
+      final requestData = {
         'id': ad.adsId.toString(),
-        'job_or_ad': '2',
+        'job_or_ad': '2',  // 2 for ads
         'medium': 'Whatsapp'
       };
 
-      final response = await _apiService.getJobShare(requestData).timeout(_apiTimeout);
+      final response = await _apiService.getJobShare(requestData);
       return _extractAdShareLink(response, ad);
     } catch (e) {
       debugPrint("⚠️ Failed to get share link from API: $e");
@@ -518,12 +772,10 @@ class DashboardController {
       shareLink = response['link'];
     }
 
-    // Fix link format if necessary
     if (shareLink.isNotEmpty &&
         !shareLink.contains("ads?id=") &&
         shareLink.contains("ads-view?refid=")) {
-      shareLink = "https://meetsusolutions.com/frontend/web/site/ads?id=${ad.adsId}";
-      debugPrint("🔧 Reformatted share link: $shareLink");
+      shareLink = "$_fallbackBaseUrl${ad.adsId}";
     }
 
     if (shareLink.isEmpty) {
@@ -534,15 +786,15 @@ class DashboardController {
   }
 
   String _getFallbackAdShareLink(Ads ad) {
-    return "https://meetsusolutions.com/frontend/web/site/ads?id=${ad.adsId}";
+    return "$_fallbackBaseUrl${ad.adsId}";
   }
 
   String _buildAdShareText(Ads ad, String shareLink) {
-    final adTitle = ad.subjectLine?.isNotEmpty == true
-        ? ad.subjectLine!
-        : "Advertisement";
+    final description = ad.shareDescription?.isNotEmpty == true
+        ? ad.shareDescription!
+        : ad.subjectLine ?? 'Advertisement';
 
-    return "$adTitle\n$shareLink";
+    return "$description\n$shareLink";
   }
 
   void _showShareSuccess(BuildContext context) {
@@ -559,7 +811,7 @@ class DashboardController {
     final fallbackLink = _getFallbackAdShareLink(ad);
     final shareText = _buildAdShareText(ad, fallbackLink);
 
-    await Share.share(shareText, subject: ad.subjectLine);
+    await Share.share(shareText, subject: ad.subjectLine ?? 'Advertisement');
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -641,5 +893,172 @@ class DashboardController {
     errorMessage.dispose();
     isSharing.dispose();
     getWeatherData.dispose();
+  }
+}
+
+// Custom Share Options Widget for Ads
+class AdShareOptionsBottomSheet extends StatelessWidget {
+  final String shareContent;
+  final String? imageUrl;
+  final String adTitle;
+  final Function(String) onShare;
+
+  const AdShareOptionsBottomSheet({
+    Key? key,
+    required this.shareContent,
+    this.imageUrl,
+    required this.adTitle,
+    required this.onShare,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, -5),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            margin: EdgeInsets.only(top: 8),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Text(
+                  'Share "$adTitle"',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 20),
+
+                // Share options grid
+                GridView.count(
+                  shrinkWrap: true,
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 20,
+                  mainAxisSpacing: 20,
+                  children: [
+                    _buildShareOption(
+                      'WhatsApp',
+                      Icons.chat,
+                      Colors.green,
+                          () => onShare('whatsapp'),
+                    ),
+                    _buildShareOption(
+                      'Telegram',
+                      Icons.send,
+                      Colors.blue,
+                          () => onShare('telegram'),
+                    ),
+                    _buildShareOption(
+                      'Email',
+                      Icons.email,
+                      Colors.red,
+                          () => onShare('email'),
+                    ),
+                    _buildShareOption(
+                      'SMS',
+                      Icons.sms,
+                      Colors.orange,
+                          () => onShare('sms'),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 20),
+
+                // More options button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => onShare('general'),
+                    icon: Icon(Icons.share),
+                    label: Text('More Options'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey.shade100,
+                      foregroundColor: Colors.grey.shade800,
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: MediaQuery.of(context).padding.bottom),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShareOption(
+      String label,
+      IconData icon,
+      Color color,
+      VoidCallback onTap,
+      ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: color.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 24,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade700,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
   }
 }

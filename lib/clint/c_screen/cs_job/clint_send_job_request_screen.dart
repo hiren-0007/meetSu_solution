@@ -8,55 +8,25 @@ class ClintSendJobRequestScreen extends StatefulWidget {
   const ClintSendJobRequestScreen({super.key});
 
   @override
-  State<ClintSendJobRequestScreen> createState() => _ClintSendJobRequestScreenState();
+  State<ClintSendJobRequestScreen> createState() =>
+      _ClintSendJobRequestScreenState();
 }
 
 class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
   final ClintSendJobRequestController _controller = ClintSendJobRequestController();
   final TextEditingController _dateController = TextEditingController();
-
-  // Lists to manage multiple position rows
-  final List<TextEditingController> _personsControllers = [];
-  final List<String?> _selectedPositions = [];
-  final List<String?> _selectedTypes = [];
+  final TextEditingController _personsController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _dateController.text = DateFormat('MMM dd, yyyy').format(DateTime.now());
-
-    // Add initial position row
-    _addPositionRow();
-  }
-
-  void _addPositionRow() {
-    setState(() {
-      _personsControllers.add(TextEditingController());
-      _selectedPositions.add(null);
-      _selectedTypes.add(null);
-    });
-  }
-
-  void _removePositionRow(int index) {
-    if (_personsControllers.length <= 1) {
-      // Don't remove if it's the last row
-      return;
-    }
-
-    setState(() {
-      _personsControllers[index].dispose();
-      _personsControllers.removeAt(index);
-      _selectedPositions.removeAt(index);
-      _selectedTypes.removeAt(index);
-    });
   }
 
   @override
   void dispose() {
     _dateController.dispose();
-    for (var controller in _personsControllers) {
-      controller.dispose();
-    }
+    _personsController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -81,10 +51,21 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Logo in left corner
+                      // Logo
                       Container(
                         height: 35,
                         width: 35,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
                         child: Center(
                           child: Padding(
                             padding: const EdgeInsets.all(2.0),
@@ -96,9 +77,9 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
                         ),
                       ),
 
-                      // Title in center
+                      // Title
                       const Text(
-                        'Send Job Request',
+                        'MEETsu Solutions',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -106,7 +87,7 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
                         ),
                       ),
 
-                      // Username in right corner
+                      // Username
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
@@ -128,6 +109,7 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
               ),
             ),
           ),
+
           // Content
           Positioned(
             top: MediaQuery.of(context).size.height * 0.16,
@@ -150,162 +132,80 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(AppTheme.mediumBorderRadius),
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    children: [
-                      // Header
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          gradient: AppTheme.primaryClintGradient,
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.work_outline,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                            SizedBox(width: 12),
-                            const Text(
-                              'Job Request Details',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: _controller.hasData,
+                    builder: (context, hasData, _) {
+                      return ValueListenableBuilder<bool>(
+                        valueListenable: _controller.isLoading,
+                        builder: (context, isLoading, _) {
+                          if (isLoading && !hasData) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(50.0),
+                                child: CircularProgressIndicator(),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildAddMoreButton(),
-                            const SizedBox(height: 20),
-                            // Shift and Date section
-                            _buildShiftField(),
-                            const SizedBox(height: 16),
-                            _buildDateField(),
-                            const SizedBox(height: 24),
+                            );
+                          }
 
-                            // Multiple position rows
-                            ..._buildPositionRows(),
+                          return ListView(
+                            padding: EdgeInsets.zero,
+                            children: [
+                              // Header
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  gradient: AppTheme.primaryClintGradient,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.work_outline,
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
+                                    SizedBox(width: 12),
+                                    const Text(
+                                      'Job Request Details',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
 
-                            const SizedBox(height: 24),
-                            _buildSendButton(),
-                          ],
-                        ),
-                      ),
-                    ],
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildShiftField(),
+                                    const SizedBox(height: 16),
+                                    _buildDateField(),
+                                    const SizedBox(height: 16),
+                                    _buildPositionField(),
+                                    const SizedBox(height: 16),
+                                    _buildNoOfPersonsField(),
+                                    const SizedBox(height: 16),
+                                    _buildTypeField(),
+                                    const SizedBox(height: 32),
+                                    _buildSendButton(),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
                   ),
                 ),
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  List<Widget> _buildPositionRows() {
-    final List<Widget> rows = [];
-
-    for (int i = 0; i < _personsControllers.length; i++) {
-      // Only add a divider after the first row
-      if (i > 0) {
-        rows.add(
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Container(
-              height: 1,
-              color: Colors.grey.shade200,
-            ),
-          ),
-        );
-      }
-
-      rows.add(
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.blue.shade50,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blue.shade100),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryClintColor.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Position ${i + 1}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  if (_personsControllers.length > 1)
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      onPressed: () => _removePositionRow(i),
-                      tooltip: 'Remove',
-                    ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Position field
-              _buildPositionField(i),
-              const SizedBox(height: 16),
-
-              // No Of Persons field
-              _buildNoOfPersonsField(i),
-              const SizedBox(height: 16),
-
-              // Type field
-              _buildTypeField(i),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return rows;
-  }
-
-  Widget _buildAddMoreButton() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: TextButton.icon(
-        onPressed: _addPositionRow,
-        icon: const Icon(Icons.add_circle_outline, color: AppTheme.primaryClintColor),
-        label: const Text(
-          'Add Position',
-          style: TextStyle(
-            color: AppTheme.primaryClintColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: AppTheme.primaryClintColor.withOpacity(0.5)),
-          ),
-          backgroundColor: AppTheme.primaryClintColor.withOpacity(0.1),
-        ),
       ),
     );
   }
@@ -321,34 +221,39 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
             border: Border.all(color: Colors.grey.shade300),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: ValueListenableBuilder<List<String>>(
+          child: ValueListenableBuilder<List<Map<String, dynamic>>>(
             valueListenable: _controller.shiftOptions,
             builder: (context, shiftOptions, _) {
-              return DropdownButtonFormField<String>(
-                value: _controller.selectedShift.value,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  border: InputBorder.none,
-                  prefixIcon: Icon(
-                    Icons.access_time,
-                    color: AppTheme.primaryClintColor,
-                  ),
-                ),
-                items: shiftOptions.map((String shift) {
-                  return DropdownMenuItem<String>(
-                    value: shift,
-                    child: Text(shift),
+              return ValueListenableBuilder<String?>(
+                valueListenable: _controller.selectedShift,
+                builder: (context, selectedShift, _) {
+                  return DropdownButtonFormField<String>(
+                    value: selectedShift,
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      border: InputBorder.none,
+                      prefixIcon: Icon(
+                        Icons.access_time,
+                        color: AppTheme.primaryClintColor,
+                      ),
+                    ),
+                    items: shiftOptions.map((Map<String, dynamic> shift) {
+                      return DropdownMenuItem<String>(
+                        value: shift['id'],
+                        child: Text(shift['display'] ?? shift['name']),
+                      );
+                    }).toList(),
+                    onChanged: (String? value) {
+                      if (value != null) {
+                        _controller.selectedShift.value = value;
+                      }
+                    },
+                    hint: const Text('Select Shift'),
+                    isExpanded: true,
+                    icon: const Icon(Icons.arrow_drop_down, color: AppTheme.primaryClintColor),
+                    dropdownColor: Colors.white,
                   );
-                }).toList(),
-                onChanged: (String? value) {
-                  if (value != null) {
-                    _controller.selectedShift.value = value;
-                  }
                 },
-                hint: const Text('Select Shift'),
-                isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color: AppTheme.primaryClintColor),
-                dropdownColor: Colors.white,
               );
             },
           ),
@@ -379,58 +284,19 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
                 Icons.calendar_today,
                 color: AppTheme.primaryClintColor,
               ),
-              suffixIcon: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.grey),
-                    onPressed: () {
-                      _dateController.clear();
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.calendar_month, color: AppTheme.primaryClintColor),
-                    onPressed: () => _selectDate(context),
-                  ),
-                ],
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.calendar_month, color: AppTheme.primaryClintColor),
+                onPressed: () => _selectDate(context),
               ),
             ),
-            style: const TextStyle(
-              fontSize: 16,
-            ),
+            style: const TextStyle(fontSize: 16),
           ),
         ),
       ],
     );
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppTheme.primaryClintColor,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null) {
-      _dateController.text = DateFormat('MMM dd, yyyy').format(picked);
-      _controller.setSelectedDate(picked);
-    }
-  }
-
-  Widget _buildPositionField(int index) {
+  Widget _buildPositionField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -442,34 +308,37 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
             borderRadius: BorderRadius.circular(10),
             color: Colors.white,
           ),
-          child: ValueListenableBuilder<List<String>>(
+          child: ValueListenableBuilder<List<Map<String, dynamic>>>(
             valueListenable: _controller.positionOptions,
             builder: (context, positionOptions, _) {
-              return DropdownButtonFormField<String>(
-                value: _selectedPositions[index],
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  border: InputBorder.none,
-                  prefixIcon: Icon(
-                    Icons.work,
-                    color: AppTheme.primaryClintColor,
-                  ),
-                ),
-                items: positionOptions.map((String position) {
-                  return DropdownMenuItem<String>(
-                    value: position,
-                    child: Text(position),
+              return ValueListenableBuilder<String?>(
+                valueListenable: _controller.selectedPosition,
+                builder: (context, selectedPosition, _) {
+                  return DropdownButtonFormField<String>(
+                    value: selectedPosition,
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      border: InputBorder.none,
+                      prefixIcon: Icon(
+                        Icons.work,
+                        color: AppTheme.primaryClintColor,
+                      ),
+                    ),
+                    items: positionOptions.map((Map<String, dynamic> position) {
+                      return DropdownMenuItem<String>(
+                        value: position['id'],
+                        child: Text(position['display'] ?? position['name']),
+                      );
+                    }).toList(),
+                    onChanged: (String? value) {
+                      _controller.selectedPosition.value = value;
+                    },
+                    hint: const Text('Select Position'),
+                    isExpanded: true,
+                    icon: const Icon(Icons.arrow_drop_down, color: AppTheme.primaryClintColor),
+                    dropdownColor: Colors.white,
                   );
-                }).toList(),
-                onChanged: (String? value) {
-                  setState(() {
-                    _selectedPositions[index] = value;
-                  });
                 },
-                hint: const Text('Select Position'),
-                isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color: AppTheme.primaryClintColor),
-                dropdownColor: Colors.white,
               );
             },
           ),
@@ -478,7 +347,7 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
     );
   }
 
-  Widget _buildNoOfPersonsField(int index) {
+  Widget _buildNoOfPersonsField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -491,7 +360,7 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
             color: Colors.white,
           ),
           child: TextField(
-            controller: _personsControllers[index],
+            controller: _personsController,
             decoration: InputDecoration(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               border: InputBorder.none,
@@ -502,16 +371,21 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
               hintText: 'Enter number of persons',
             ),
             keyboardType: TextInputType.number,
-            style: const TextStyle(
-              fontSize: 16,
-            ),
+            style: const TextStyle(fontSize: 16),
+            onChanged: (value) {
+              if (value.isNotEmpty) {
+                _controller.setNumberOfPersons(int.tryParse(value) ?? 0);
+              } else {
+                _controller.setNumberOfPersons(0);
+              }
+            },
           ),
         ),
       ],
     );
   }
 
-  Widget _buildTypeField(int index) {
+  Widget _buildTypeField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -526,31 +400,34 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
           child: ValueListenableBuilder<List<String>>(
             valueListenable: _controller.typeOptions,
             builder: (context, typeOptions, _) {
-              return DropdownButtonFormField<String>(
-                value: _selectedTypes[index],
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  border: InputBorder.none,
-                  prefixIcon: Icon(
-                    Icons.category,
-                    color: AppTheme.primaryClintColor,
-                  ),
-                ),
-                items: typeOptions.map((String type) {
-                  return DropdownMenuItem<String>(
-                    value: type,
-                    child: Text(type),
+              return ValueListenableBuilder<String?>(
+                valueListenable: _controller.selectedType,
+                builder: (context, selectedType, _) {
+                  return DropdownButtonFormField<String>(
+                    value: selectedType,
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      border: InputBorder.none,
+                      prefixIcon: Icon(
+                        Icons.category,
+                        color: AppTheme.primaryClintColor,
+                      ),
+                    ),
+                    items: typeOptions.map((String type) {
+                      return DropdownMenuItem<String>(
+                        value: type,
+                        child: Text(type),
+                      );
+                    }).toList(),
+                    onChanged: (String? value) {
+                      _controller.selectedType.value = value;
+                    },
+                    hint: const Text('Select Type'),
+                    isExpanded: true,
+                    icon: const Icon(Icons.arrow_drop_down, color: AppTheme.primaryClintColor),
+                    dropdownColor: Colors.white,
                   );
-                }).toList(),
-                onChanged: (String? value) {
-                  setState(() {
-                    _selectedTypes[index] = value;
-                  });
                 },
-                hint: const Text('Select Type'),
-                isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color: AppTheme.primaryClintColor),
-                dropdownColor: Colors.white,
               );
             },
           ),
@@ -591,7 +468,7 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
           width: double.infinity,
           margin: const EdgeInsets.only(top: 8),
           child: ElevatedButton.icon(
-            onPressed: isLoading ? null : () => _sendJobRequests(),
+            onPressed: isLoading ? null : () => _sendJobRequest(),
             icon: isLoading
                 ? const SizedBox(
               width: 20,
@@ -601,7 +478,7 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
                 strokeWidth: 2,
               ),
             )
-                : const Icon(Icons.send),
+                : const Icon(Icons.send, color: Colors.white),
             label: Text(isLoading ? 'Sending...' : 'SEND REQUEST'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryClintColor,
@@ -623,7 +500,33 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
     );
   }
 
-  void _sendJobRequests() {
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppTheme.primaryClintColor,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      _dateController.text = DateFormat('MMM dd, yyyy').format(picked);
+      _controller.setSelectedDate(picked);
+    }
+  }
+
+  void _sendJobRequest() {
     // Validate form
     if (_controller.selectedShift.value == null) {
       _showErrorMessage('Please select a shift');
@@ -635,79 +538,33 @@ class _ClintSendJobRequestScreenState extends State<ClintSendJobRequestScreen> {
       return;
     }
 
-    // Prepare job requests from all position rows
-    final List<Map<String, dynamic>> requests = [];
-    bool hasError = false;
-
-    for (int i = 0; i < _personsControllers.length; i++) {
-      // Skip empty rows
-      if (_selectedPositions[i] == null &&
-          _personsControllers[i].text.isEmpty &&
-          _selectedTypes[i] == null) {
-        continue;
-      }
-
-      // Validate position row
-      if (_selectedPositions[i] == null) {
-        _showErrorMessage('Please select a position for row ${i + 1}');
-        hasError = true;
-        break;
-      }
-
-      if (_personsControllers[i].text.isEmpty) {
-        _showErrorMessage('Please enter number of persons for row ${i + 1}');
-        hasError = true;
-        break;
-      }
-
-      if (_selectedTypes[i] == null) {
-        _showErrorMessage('Please select a type for row ${i + 1}');
-        hasError = true;
-        break;
-      }
-
-      // Add valid request
-      requests.add({
-        'shift': _controller.selectedShift.value,
-        'date': _controller.selectedDate.value,
-        'position': _selectedPositions[i],
-        'numberOfPersons': int.parse(_personsControllers[i].text),
-        'type': _selectedTypes[i],
-      });
-    }
-
-    if (hasError) {
+    if (_controller.selectedPosition.value == null) {
+      _showErrorMessage('Please select a position');
       return;
     }
 
-    if (requests.isEmpty) {
-      _showErrorMessage('Please add at least one valid position request');
+    if (_personsController.text.isEmpty || _controller.numberOfPersons.value <= 0) {
+      _showErrorMessage('Please enter number of persons');
       return;
     }
 
-    // Send all job requests
-    _controller.jobRequests.value = requests;
+    if (_controller.selectedType.value == null) {
+      _showErrorMessage('Please select a type');
+      return;
+    }
+
+    // Send job request
     _controller.sendJobRequest().then((_) {
       if (_controller.errorMessage.value == null) {
-        _showSuccessMessage('Job requests sent successfully!');
+        _showSuccessMessage('Job request sent successfully!');
 
         // Reset form
         setState(() {
           _controller.selectedShift.value = null;
+          _controller.selectedPosition.value = null;
+          _controller.selectedType.value = null;
+          _personsController.clear();
           _dateController.text = DateFormat('MMM dd, yyyy').format(DateTime.now());
-
-          // Clear all position rows except first
-          for (int i = _personsControllers.length - 1; i > 0; i--) {
-            _personsControllers[i].dispose();
-            _personsControllers.removeAt(i);
-            _selectedPositions.removeAt(i);
-            _selectedTypes.removeAt(i);
-          }
-
-          // Clear first row
-          _personsControllers[0].clear();
-          _selectedPositions[0] = null;
-          _selectedTypes[0] = null;
         });
       } else {
         _showErrorMessage(_controller.errorMessage.value!);

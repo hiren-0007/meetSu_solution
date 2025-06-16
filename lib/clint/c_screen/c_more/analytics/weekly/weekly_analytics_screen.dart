@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:meetsu_solutions/clint/c_screen/c_more/analytics/weekly/weekly_analytics_controller.dart';
+import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 
@@ -32,7 +34,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
               left: 0,
               right: 0,
               child: Container(
-                height: MediaQuery.of(context).size.height * 0.25,
+                height: MediaQuery.of(context).size.height * 0.22,
                 decoration: AppTheme.headerClintContainerDecoration,
               ),
             ),
@@ -41,19 +43,21 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                 children: [
                   // Header with back button and title
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(14.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Back button in white container with improved shadow
+                        // Back button - smaller size
                         Container(
+                          width: 35,
+                          height: 35,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 4,
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 3,
                                 offset: const Offset(0, 2),
                               ),
                             ],
@@ -61,41 +65,41 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                           child: IconButton(
                             icon: const Icon(Icons.arrow_back, color: Colors.blue),
                             onPressed: () => Navigator.of(context).pop(),
-                            padding: const EdgeInsets.all(4),
+                            padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
-                            iconSize: 20,
+                            iconSize: 16,
                           ),
                         ),
 
-                        // Title with enhanced styling
+                        // Title
                         const Text(
                           'Weekly Analytics',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 20,
+                            fontSize: 19,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
 
-                        // ID Badge with improved styling
+                        // ID Badge
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 4,
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 3,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          child: const Text(
-                            'M14476',
-                            style: TextStyle(
+                          child: Text(
+                            SharedPrefsService.instance.getUsername(),
+                            style: const TextStyle(
                               color: Colors.black87,
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -104,32 +108,32 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                     ),
                   ),
 
-                  // Main Content with enhanced styling
+                  // Main Content
                   Expanded(
                     child: Container(
                       width: double.infinity,
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      margin: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
+                          topLeft: Radius.circular(18),
+                          topRight: Radius.circular(18),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, -3),
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, -2),
                           ),
                         ],
                       ),
                       child: Column(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.all(16.0),
+                            padding: const EdgeInsets.all(14.0),
                             child: Column(
                               children: [
-                                // Date Range selection with enhanced styling
+                                // Date Range selection
                                 Container(
                                   width: double.infinity,
                                   decoration: BoxDecoration(
@@ -137,13 +141,13 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.blue.withOpacity(0.3),
-                                        blurRadius: 8,
+                                        color: Colors.blue.withValues(alpha: 0.3),
+                                        blurRadius: 6,
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
                                   ),
-                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                                   child: Column(
                                     children: [
                                       Row(
@@ -153,7 +157,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                             children: [
                                               const Icon(
                                                 Icons.date_range_outlined,
-                                                size: 16,
+                                                size: 15,
                                                 color: Colors.white,
                                               ),
                                               const SizedBox(width: 4),
@@ -161,7 +165,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                                 "Start Date",
                                                 style: TextStyle(
                                                   color: Colors.white,
-                                                  fontSize: 13,
+                                                  fontSize: 12,
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                               ),
@@ -171,7 +175,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                             children: [
                                               const Icon(
                                                 Icons.date_range_outlined,
-                                                size: 16,
+                                                size: 15,
                                                 color: Colors.white,
                                               ),
                                               const SizedBox(width: 4),
@@ -179,7 +183,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                                 "End Date",
                                                 style: TextStyle(
                                                   color: Colors.white,
-                                                  fontSize: 13,
+                                                  fontSize: 12,
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                               ),
@@ -190,18 +194,18 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                       const SizedBox(height: 8),
                                       Row(
                                         children: [
-                                          // Previous button with improved styling
+                                          // Previous button
                                           GestureDetector(
                                             onTap: () => _controller.navigateToPreviousPeriod(),
                                             child: Container(
-                                              width: 36,
-                                              height: 36,
+                                              width: 32,
+                                              height: 32,
                                               decoration: BoxDecoration(
                                                 color: Colors.white,
                                                 borderRadius: BorderRadius.circular(8),
                                                 boxShadow: [
                                                   BoxShadow(
-                                                    color: Colors.black.withOpacity(0.05),
+                                                    color: Colors.black.withValues(alpha: 0.05),
                                                     blurRadius: 2,
                                                     offset: const Offset(0, 1),
                                                   ),
@@ -210,14 +214,14 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                               child: const Center(
                                                 child: Icon(
                                                   Icons.chevron_left,
-                                                  size: 24,
+                                                  size: 20,
                                                   color: Colors.blue,
                                                 ),
                                               ),
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          // Start Date Picker with improved styling
+                                          // Start Date Picker
                                           Expanded(
                                             child: ValueListenableBuilder<String>(
                                               valueListenable: _controller.startDate,
@@ -226,13 +230,13 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                                   onTap: () => _controller.selectStartDate(context),
                                                   child: Container(
                                                     padding: const EdgeInsets.symmetric(
-                                                        vertical: 8, horizontal: 12),
+                                                        vertical: 8, horizontal: 10),
                                                     decoration: BoxDecoration(
                                                       color: Colors.white,
                                                       borderRadius: BorderRadius.circular(8),
                                                       boxShadow: [
                                                         BoxShadow(
-                                                          color: Colors.black.withOpacity(0.05),
+                                                          color: Colors.black.withValues(alpha: 0.05),
                                                           blurRadius: 2,
                                                           offset: const Offset(0, 1),
                                                         ),
@@ -242,16 +246,16 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                                       children: [
                                                         const Icon(
                                                           Icons.calendar_month_outlined,
-                                                          size: 18,
+                                                          size: 16,
                                                           color: Colors.blue,
                                                         ),
                                                         const SizedBox(width: 4),
                                                         Expanded(
                                                           child: Text(
-                                                            _formatDateForDisplay(startDate),
+                                                            _controller.formatDateForDisplay(startDate),
                                                             style: const TextStyle(
                                                               color: Colors.black87,
-                                                              fontSize: 13,
+                                                              fontSize: 12,
                                                               fontWeight: FontWeight.w500,
                                                             ),
                                                             textAlign: TextAlign.center,
@@ -265,7 +269,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          // End Date Picker with improved styling
+                                          // End Date Picker
                                           Expanded(
                                             child: ValueListenableBuilder<String>(
                                               valueListenable: _controller.endDate,
@@ -274,13 +278,13 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                                   onTap: () => _controller.selectEndDate(context),
                                                   child: Container(
                                                     padding: const EdgeInsets.symmetric(
-                                                        vertical: 8, horizontal: 12),
+                                                        vertical: 8, horizontal: 10),
                                                     decoration: BoxDecoration(
                                                       color: Colors.white,
                                                       borderRadius: BorderRadius.circular(8),
                                                       boxShadow: [
                                                         BoxShadow(
-                                                          color: Colors.black.withOpacity(0.05),
+                                                          color: Colors.black.withValues(alpha: 0.05),
                                                           blurRadius: 2,
                                                           offset: const Offset(0, 1),
                                                         ),
@@ -290,16 +294,16 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                                       children: [
                                                         const Icon(
                                                           Icons.calendar_month_outlined,
-                                                          size: 18,
+                                                          size: 16,
                                                           color: Colors.blue,
                                                         ),
                                                         const SizedBox(width: 4),
                                                         Expanded(
                                                           child: Text(
-                                                            _formatDateForDisplay(endDate),
+                                                            _controller.formatDateForDisplay(endDate),
                                                             style: const TextStyle(
                                                               color: Colors.black87,
-                                                              fontSize: 13,
+                                                              fontSize: 12,
                                                               fontWeight: FontWeight.w500,
                                                             ),
                                                             textAlign: TextAlign.center,
@@ -313,18 +317,18 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          // Next button with improved styling
+                                          // Next button
                                           GestureDetector(
                                             onTap: () => _controller.navigateToNextPeriod(),
                                             child: Container(
-                                              width: 36,
-                                              height: 36,
+                                              width: 32,
+                                              height: 32,
                                               decoration: BoxDecoration(
                                                 color: Colors.white,
                                                 borderRadius: BorderRadius.circular(8),
                                                 boxShadow: [
                                                   BoxShadow(
-                                                    color: Colors.black.withOpacity(0.05),
+                                                    color: Colors.black.withValues(alpha: 0.05),
                                                     blurRadius: 2,
                                                     offset: const Offset(0, 1),
                                                   ),
@@ -333,7 +337,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                               child: const Center(
                                                 child: Icon(
                                                   Icons.chevron_right,
-                                                  size: 24,
+                                                  size: 20,
                                                   color: Colors.blue,
                                                 ),
                                               ),
@@ -344,177 +348,13 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                     ],
                                   ),
                                 ),
-
-                                const SizedBox(height: 16),
-
-                                // Search Fields with improved styling
-                                Row(
-                                  children: [
-                                    // Log ID field with improved styling
-                                    Expanded(
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: Colors.grey.shade300),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withOpacity(0.03),
-                                              blurRadius: 4,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ],
-                                          color: Colors.white,
-                                        ),
-                                        child: TextField(
-                                          controller: _controller.logIdController,
-                                          decoration: InputDecoration(
-                                            hintText: 'Enter Log ID',
-                                            hintStyle: TextStyle(color: Colors.grey.shade400),
-                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                            border: InputBorder.none,
-                                            prefixIcon: Icon(
-                                              Icons.numbers_outlined,
-                                              color: Colors.grey.shade400,
-                                              size: 20,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    // Applicant Name field with improved styling
-                                    Expanded(
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: Colors.grey.shade300),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withOpacity(0.03),
-                                              blurRadius: 4,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ],
-                                          color: Colors.white,
-                                        ),
-                                        child: TextField(
-                                          controller: _controller.applicantNameController,
-                                          decoration: InputDecoration(
-                                            hintText: 'Enter Applicant Name',
-                                            hintStyle: TextStyle(color: Colors.grey.shade400),
-                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                            border: InputBorder.none,
-                                            prefixIcon: Icon(
-                                              Icons.person_outline,
-                                              color: Colors.grey.shade400,
-                                              size: 20,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    // Search button with improved styling
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue,
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.blue.withOpacity(0.3),
-                                            blurRadius: 4,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        child: InkWell(
-                                          borderRadius: BorderRadius.circular(12),
-                                          onTap: _controller.search,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(10.0),
-                                            child: const Icon(
-                                              Icons.search,
-                                              color: Colors.white,
-                                              size: 24,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
                               ],
                             ),
                           ),
 
-                          // Card-based employee ID view
+                          // Employee Cards List
                           Expanded(
-                            child: ValueListenableBuilder<bool>(
-                              valueListenable: _controller.isLoading,
-                              builder: (context, isLoading, _) {
-                                if (isLoading) {
-                                  return Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const CircularProgressIndicator(
-                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                                        ),
-                                        const SizedBox(height: 16),
-                                        Text(
-                                          "Loading analytics data...",
-                                          style: TextStyle(
-                                            color: Colors.grey.shade600,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                } else {
-                                  return ValueListenableBuilder<bool>(
-                                    valueListenable: _controller.hasData,
-                                    builder: (context, hasData, _) {
-                                      if (hasData) {
-                                        return _buildEmployeeCards();
-                                      } else {
-                                        return Center(
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.search_off_outlined,
-                                                size: 64,
-                                                color: Colors.grey.withOpacity(0.5),
-                                              ),
-                                              const SizedBox(height: 16),
-                                              const Text(
-                                                "No data found for this date range",
-                                                style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 8),
-                                              Text(
-                                                "Try adjusting your search criteria",
-                                                style: TextStyle(
-                                                  color: Colors.grey.shade500,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  );
-                                }
-                              },
-                            ),
+                            child: _buildMainContent(),
                           ),
                         ],
                       ),
@@ -529,7 +369,133 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
     );
   }
 
-// Improved employee cards
+  // Main content builder with error handling
+  Widget _buildMainContent() {
+    return ValueListenableBuilder<bool>(
+      valueListenable: _controller.isLoading,
+      builder: (context, isLoading, _) {
+        if (isLoading) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  "Loading analytics data...",
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return ValueListenableBuilder<String?>(
+            valueListenable: _controller.errorMessage,
+            builder: (context, errorMessage, _) {
+              if (errorMessage != null) {
+                return _buildErrorWidget(errorMessage);
+              } else {
+                return ValueListenableBuilder<bool>(
+                  valueListenable: _controller.hasData,
+                  builder: (context, hasData, _) {
+                    if (hasData) {
+                      return _buildEmployeeCards();
+                    } else {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off_outlined,
+                              size: 56,
+                              color: Colors.grey.withValues(alpha: 0.5),
+                            ),
+                            const SizedBox(height: 14),
+                            const Text(
+                              "No data found for this date range",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              "Try adjusting your search criteria",
+                              style: TextStyle(
+                                color: Colors.grey.shade500,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                );
+              }
+            },
+          );
+        }
+      },
+    );
+  }
+
+  // Error widget builder
+  Widget _buildErrorWidget(String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 56,
+            color: Colors.red.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            "Error loading data",
+            style: TextStyle(
+              color: Colors.red.shade700,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Text(
+              error,
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 13,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 14),
+          ElevatedButton(
+            onPressed: () => _controller.fetchAnalyticsData(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            ),
+            child: const Text("Retry", style: TextStyle(fontSize: 13)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildEmployeeCards() {
     return ValueListenableBuilder<List<WeeklyAnalyticsItem>>(
       valueListenable: _controller.analyticsItems,
@@ -541,15 +507,15 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
               children: [
                 Icon(
                   Icons.search_off_outlined,
-                  size: 64,
-                  color: Colors.grey.withOpacity(0.5),
+                  size: 56,
+                  color: Colors.grey.withValues(alpha: 0.5),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 const Text(
                   "No data available for the selected filters",
                   style: TextStyle(
                     color: Colors.grey,
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -559,14 +525,14 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           itemCount: items.length,
           itemBuilder: (context, index) {
             final item = items[index];
 
-            // Create a single card for each employee showing all week's data
+            // Employee card
             return Container(
-              margin: const EdgeInsets.only(bottom: 20),
+              margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -576,19 +542,19 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                     Colors.grey.shade50,
                   ],
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.05),
-                    blurRadius: 10,
+                    color: Colors.blue.withValues(alpha: 0.05),
+                    blurRadius: 8,
                     spreadRadius: 1,
                     offset: const Offset(0, 2),
                   ),
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    blurRadius: 20,
+                    color: Colors.grey.withValues(alpha: 0.1),
+                    blurRadius: 15,
                     spreadRadius: 0,
-                    offset: const Offset(0, 5),
+                    offset: const Offset(0, 4),
                   ),
                 ],
                 border: Border.all(
@@ -599,9 +565,9 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Card Header - ID and Name with improved styling and gradient
+                  // Card Header - ID and Name
                   Container(
-                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -612,14 +578,14 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                         ],
                       ),
                       borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        topRight: Radius.circular(16),
+                        topLeft: Radius.circular(14),
+                        topRight: Radius.circular(14),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.blue.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
+                          color: Colors.blue.withValues(alpha: 0.2),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
@@ -628,10 +594,10 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.25),
+                            color: Colors.white.withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                               width: 1,
                             ),
                           ),
@@ -640,7 +606,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                              fontSize: 12,
                             ),
                           ),
                         ),
@@ -650,7 +616,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                             item.applicantName,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 15,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                               shadows: [
                                 Shadow(
@@ -662,17 +628,17 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                             ),
                           ),
                         ),
-                        // Role badge with improved styling
+                        // Role badge
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 3,
+                                offset: const Offset(0, 1),
                               ),
                             ],
                           ),
@@ -680,7 +646,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                             index % 2 == 0 ? 'Office Help' : 'Door Monitor',
                             style: TextStyle(
                               color: Colors.blue.shade700,
-                              fontSize: 11,
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -689,307 +655,315 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                     ),
                   ),
 
-                  // All week attendance data in a single card
-                  Column(
-                    children: item.days.map((day) {
-                      // Determine if this is the current day
-                      final isCurrentDay = day.dayName.contains("Fri") && day.date.contains("May 09");
+                  // Week attendance data
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Column(
+                      children: item.days.map((day) {
+                        // Determine if this is the current day
+                        final now = DateTime.now();
+                        final today = DateFormat('yyyy-MM-dd').format(now);
+                        final dayDate = day.date.contains('-')
+                            ? day.date
+                            : DateFormat('yyyy-MM-dd').format(DateFormat('MMM dd, yyyy').parse(day.date));
+                        final isCurrentDay = dayDate == today;
 
-                      // Show each day's attendance data with improved styling
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isCurrentDay ? Colors.blue.withOpacity(0.05) : Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isCurrentDay ? Colors.blue.shade100 : Colors.grey.shade200,
-                            width: 1,
-                          ),
-                          boxShadow: isCurrentDay ? [
-                            BoxShadow(
-                              color: Colors.blue.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
+                        // Show each day's attendance data
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isCurrentDay ? Colors.blue.withValues(alpha: 0.05) : Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isCurrentDay ? Colors.blue.shade100 : Colors.grey.shade200,
+                              width: 1,
                             ),
-                          ] : null,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Day and Date with improved styling
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
+                            boxShadow: isCurrentDay ? [
+                              BoxShadow(
+                                color: Colors.blue.withValues(alpha: 0.1),
+                                blurRadius: 3,
+                                offset: const Offset(0, 1),
+                              ),
+                            ] : null,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Day and Date
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: isCurrentDay ? [
+                                              Colors.blue.shade400,
+                                              Colors.blue.shade600,
+                                            ] : [
+                                              Colors.grey.shade300,
+                                              Colors.grey.shade400,
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(6),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: (isCurrentDay ? Colors.blue : Colors.grey).withValues(alpha: 0.2),
+                                              blurRadius: 2,
+                                              offset: const Offset(0, 1),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Text(
+                                          day.dayName.length > 3 ? day.dayName.substring(0, 3) : day.dayName,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 11,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        _formatDate(day.date),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 13,
+                                          color: isCurrentDay ? Colors.blue.shade700 : Colors.black87,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: day.isNotYet ? [
+                                          Colors.grey.shade200,
+                                          Colors.grey.shade300,
+                                        ] : [
+                                          Colors.blue.shade100,
+                                          Colors.blue.shade200,
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: (day.isNotYet ? Colors.grey : Colors.blue).withValues(alpha: 0.2),
+                                          blurRadius: 2,
+                                          offset: const Offset(0, 1),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      day.isNotYet ? "Not yet" : "${day.hours} hrs",
+                                      style: TextStyle(
+                                        color: day.isNotYet ? Colors.grey.shade700 : Colors.blue.shade800,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Shift information
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Colors.grey.shade200,
+                                  ),
+                                ),
+                                child: Row(
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      padding: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Icon(
+                                        Icons.access_time_rounded,
+                                        size: 13,
+                                        color: Colors.blue.shade700,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      _formatShift(day.shift),
+                                      style: TextStyle(
+                                        color: Colors.grey.shade700,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Check-in and Check-out times
+                              Row(
+                                children: [
+                                  // Check In
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
-                                          colors: isCurrentDay ? [
-                                            Colors.blue.shade400,
-                                            Colors.blue.shade600,
-                                          ] : [
-                                            Colors.grey.shade300,
-                                            Colors.grey.shade400,
+                                          colors: [
+                                            Colors.white,
+                                            Colors.grey.shade50,
                                           ],
                                         ),
                                         borderRadius: BorderRadius.circular(8),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: (isCurrentDay ? Colors.blue : Colors.grey).withOpacity(0.2),
-                                            blurRadius: 2,
+                                            color: Colors.black.withValues(alpha: 0.03),
+                                            blurRadius: 3,
+                                            spreadRadius: 0,
                                             offset: const Offset(0, 1),
                                           ),
                                         ],
-                                      ),
-                                      child: Text(
-                                        day.dayName.substring(0, 3),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                          color: Colors.white,
+                                        border: Border.all(
+                                          color: Colors.green.withValues(alpha: 0.2),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      _formatDate(day.date),
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14,
-                                        color: isCurrentDay ? Colors.blue.shade700 : Colors.black87,
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(3),
+                                            decoration: BoxDecoration(
+                                              color: Colors.green.withValues(alpha: 0.1),
+                                              borderRadius: BorderRadius.circular(3),
+                                            ),
+                                            child: const Icon(
+                                              Icons.login_outlined,
+                                              size: 13,
+                                              color: Colors.green,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Check In",
+                                                style: TextStyle(
+                                                  color: Colors.grey.shade600,
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              Text(
+                                                day.isNotYet ? "00:00" : day.checkIn,
+                                                style: TextStyle(
+                                                  color: day.isNotYet ? Colors.grey : Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: day.isNotYet ? [
-                                        Colors.grey.shade200,
-                                        Colors.grey.shade300,
-                                      ] : [
-                                        Colors.blue.shade100,
-                                        Colors.blue.shade200,
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: (day.isNotYet ? Colors.grey : Colors.blue).withOpacity(0.2),
-                                        blurRadius: 2,
-                                        offset: const Offset(0, 1),
-                                      ),
-                                    ],
                                   ),
-                                  child: Text(
-                                    day.isNotYet ? "Not yet" : "${day.hours} hrs",
-                                    style: TextStyle(
-                                      color: day.isNotYet ? Colors.grey.shade700 : Colors.blue.shade800,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
 
-                            // Shift information with improved styling
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade50,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.grey.shade200,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Icon(
-                                      Icons.access_time_rounded,
-                                      size: 14,
-                                      color: Colors.blue.shade700,
-                                    ),
-                                  ),
                                   const SizedBox(width: 8),
-                                  Text(
-                                    _formatShift(day.shift),
-                                    style: TextStyle(
-                                      color: Colors.grey.shade700,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
+
+                                  // Check Out
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Colors.white,
+                                            Colors.grey.shade50,
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.03),
+                                            blurRadius: 3,
+                                            spreadRadius: 0,
+                                            offset: const Offset(0, 1),
+                                          ),
+                                        ],
+                                        border: Border.all(
+                                          color: Colors.red.withValues(alpha: 0.2),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(3),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red.withValues(alpha: 0.1),
+                                              borderRadius: BorderRadius.circular(3),
+                                            ),
+                                            child: const Icon(
+                                              Icons.logout_outlined,
+                                              size: 13,
+                                              color: Colors.red,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Check Out",
+                                                style: TextStyle(
+                                                  color: Colors.grey.shade600,
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              Text(
+                                                day.isNotYet ? "00:00" : day.checkOut,
+                                                style: TextStyle(
+                                                  color: day.isNotYet ? Colors.grey : Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                            const SizedBox(height: 10),
-
-                            // Check-in and Check-out times with improved styling
-                            Row(
-                              children: [
-                                // Check In
-                                Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                        colors: [
-                                          Colors.white,
-                                          Colors.grey.shade50,
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(10),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.03),
-                                          blurRadius: 4,
-                                          spreadRadius: 0,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                      border: Border.all(
-                                        color: Colors.green.withOpacity(0.2),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            color: Colors.green.withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: const Icon(
-                                            Icons.login_outlined,
-                                            size: 14,
-                                            color: Colors.green,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "Check In",
-                                              style: TextStyle(
-                                                color: Colors.grey.shade600,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                            Text(
-                                              day.isNotYet ? "00:00" : day.checkIn,
-                                              style: TextStyle(
-                                                color: day.isNotYet ? Colors.grey : Colors.black,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-
-                                const SizedBox(width: 10),
-
-                                // Check Out
-                                Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                        colors: [
-                                          Colors.white,
-                                          Colors.grey.shade50,
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(10),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.03),
-                                          blurRadius: 4,
-                                          spreadRadius: 0,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                      border: Border.all(
-                                        color: Colors.red.withOpacity(0.2),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            color: Colors.red.withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: const Icon(
-                                            Icons.logout_outlined,
-                                            size: 14,
-                                            color: Colors.red,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "Check Out",
-                                              style: TextStyle(
-                                                color: Colors.grey.shade600,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                            Text(
-                                              day.isNotYet ? "00:00" : day.checkOut,
-                                              style: TextStyle(
-                                                color: day.isNotYet ? Colors.grey : Colors.black,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
 
-                  // Total weekly hours with improved styling
+                  // Total weekly hours
                   Container(
-                    margin: const EdgeInsets.all(8),
-                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -999,11 +973,11 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                           Colors.blue.shade100,
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.blue.withOpacity(0.1),
-                          blurRadius: 8,
+                          color: Colors.blue.withValues(alpha: 0.1),
+                          blurRadius: 6,
                           spreadRadius: 0,
                           offset: const Offset(0, 2),
                         ),
@@ -1019,7 +993,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(7),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.topLeft,
@@ -1032,19 +1006,19 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.blue.withOpacity(0.3),
-                                    blurRadius: 6,
+                                    color: Colors.blue.withValues(alpha: 0.3),
+                                    blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
                                 ],
                               ),
                               child: const Icon(
                                 Icons.summarize_outlined,
-                                size: 18,
+                                size: 16,
                                 color: Colors.white,
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 10),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -1052,14 +1026,14 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                   "Weekly Total",
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     color: Colors.blue.shade800,
                                   ),
                                 ),
                                 Text(
                                   "All shifts combined",
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 11,
                                     color: Colors.blue.shade700,
                                   ),
                                 ),
@@ -1068,7 +1042,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                           ],
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
@@ -1078,11 +1052,11 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                                 Colors.blue.shade700,
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.blue.withOpacity(0.3),
-                                blurRadius: 6,
+                                color: Colors.blue.withValues(alpha: 0.3),
+                                blurRadius: 4,
                                 spreadRadius: 0,
                                 offset: const Offset(0, 2),
                               ),
@@ -1093,7 +1067,7 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                              fontSize: 14,
                             ),
                           ),
                         ),
@@ -1108,258 +1082,16 @@ class _WeeklyAnalyticsScreenState extends State<WeeklyAnalyticsScreen> {
       },
     );
   }
-/*
-  Widget _buildEmployeeCards() {
-    return ValueListenableBuilder<List<WeeklyAnalyticsItem>>(
-      valueListenable: _controller.analyticsItems,
-      builder: (context, items, _) {
-        if (items.isEmpty) {
-          return const Center(
-            child: Text("No data available for the selected filters"),
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: items.length,
-          itemBuilder: (context, index) {
-            final item = items[index];
-
-            // Create a single card for each employee showing all week's data
-            return Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Card Header - ID and Name
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Text(
-                          "ID: ${item.logId}",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          "|",
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            item.applicantName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                        // Role badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            index % 2 == 0 ? 'Office Help' : 'Door Monitor',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // All week attendance data in a single card
-                  Column(
-                    children: item.days.map((day) {
-                      // Show each day's attendance data
-                      return Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Colors.grey.shade200,
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Day and Date
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "${day.dayName.substring(0, 3)}, ${_formatDate(day.date)}",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                Text(
-                                  day.isNotYet ? "Not yet" : "${day.hours} hrs",
-                                  style: TextStyle(
-                                    color: day.isNotYet ? Colors.grey : Colors.blue,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-
-                            // Shift information
-                            Text(
-                              _formatShift(day.shift),
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 12,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-
-                            // Check-in and Check-out times
-                            Row(
-                              children: [
-                                // Check In
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        "Check In: ",
-                                        style: TextStyle(
-                                          color: Colors.grey.shade600,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      Text(
-                                        day.isNotYet ? "00:00" : day.checkIn,
-                                        style: TextStyle(
-                                          color: day.isNotYet ? Colors.grey : Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                // Check Out
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        "Check Out: ",
-                                        style: TextStyle(
-                                          color: Colors.grey.shade600,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      Text(
-                                        day.isNotYet ? "00:00" : day.checkOut,
-                                        style: TextStyle(
-                                          color: day.isNotYet ? Colors.grey : Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-
-                  // Total weekly hours
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Weekly Total",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                        Text(
-                          "${item.totalHours} hrs",
-                          style: const TextStyle(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }*/
 
   String _formatDate(String dateStr) {
     try {
-      // If already formatted, return as is
       if (dateStr.contains(',')) {
-        return dateStr.split(',')[0]; // Just the "May 05" part
+        return dateStr.split(',')[0]; // Just the "Jun 09" part
       }
 
       final dateParts = dateStr.split(' ');
       if (dateParts.length > 1) {
         return "${dateParts[0]} ${dateParts[1].replaceAll(',', '')}";
-      }
-      return dateStr;
-    } catch (e) {
-      return dateStr;
-    }
-  }
-
-  String _formatDateForDisplay(String dateStr) {
-    try {
-      final dateParts = dateStr.split(',');
-      if (dateParts.length > 1) {
-        return "${dateParts[0]},${dateParts[1]}"; // Format as "May 05, 2025"
       }
       return dateStr;
     } catch (e) {

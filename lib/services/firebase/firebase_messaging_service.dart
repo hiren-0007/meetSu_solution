@@ -63,9 +63,32 @@ class FirebaseMessagingService {
     }
   }
 
+  /// Check if FCM token should be sent based on login type
+  bool _shouldSendFcmToken() {
+    final loginType = SharedPrefsService.instance.getLoginType();
+
+    // Only send FCM token for applicant users, not for client users
+    if (loginType == null || loginType.isEmpty) {
+      print('Login type not found, skipping FCM token');
+      return false;
+    }
+
+    final shouldSend = loginType.toLowerCase() == 'applicant';
+    print('Login type: $loginType, Should send FCM token: $shouldSend');
+
+    return shouldSend;
+  }
+
   Future<void> saveAndSendTokenToServer(String? token) async {
     if (token != null) {
+      // Always save token locally
       await SharedPrefsService.saveFcmToken(token);
+
+      // Check if we should send token to server based on login type
+      if (!_shouldSendFcmToken()) {
+        print('Skipping FCM token API call - user is not an applicant');
+        return;
+      }
 
       final accessToken = SharedPrefsService.instance.getAccessToken();
       if (accessToken == null || accessToken.isEmpty) {
@@ -167,9 +190,9 @@ class FirebaseMessagingService {
 
     const DarwinInitializationSettings initializationSettingsIOS =
     DarwinInitializationSettings(
-      requestAlertPermission: false, 
-      requestBadgePermission: false, 
-      requestSoundPermission: false, 
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
     );
 
     const InitializationSettings initializationSettings = InitializationSettings(

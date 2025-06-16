@@ -79,18 +79,24 @@ class JobPortalApp extends StatelessWidget {
         home: const SplashScreen(),
         navigatorKey: navigatorKey,
         routes: {
+          // Login and Authentication
+          '/login': (context) => const LoginScreen(),
+
+          // Applicant Routes
+          '/home': (context) => const HomeScreen(),
           '/profile': (context) => const ProfileScreen(),
-          '/clint-profile': (context) => const ClientProfileScreen(),
           '/contact': (context) => const ContactScreen(),
           '/trainings': (context) => const TrainingScreen(),
           '/send-request': (context) => const SendRequestScreen(),
           '/quiz-result': (context) => const QuizResultScreen(),
-          '/login': (context) => LoginScreen(),
-          '/home': (context) => const HomeScreen(),
-          // '/home': (context) => const ClientHomeScreen(),
           '/quiz': (context) => const QuizScreen(),
+
+          // Client Routes
+          '/client-home': (context) => const ClientHomeScreen(),
+          '/client-profile': (context) => const ClientProfileScreen(),
           '/analytics/daily': (context) => const DailyAnalyticsScreen(),
           '/analytics/weekly': (context) => const WeeklyAnalyticsScreen(),
+          '/clint-profile': (context) => const ClientProfileScreen(),
         },
       ),
     );

@@ -97,7 +97,7 @@ class ClintMoreController {
       debugPrint("🔄 Performing logout...");
 
       // Call logout API
-      await _apiService.getUserLogout();
+      await _apiService.getClintLogout();
 
       // Clear local storage
       await SharedPrefsService.instance.clear();

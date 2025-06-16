@@ -62,6 +62,17 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
                               Container(
                                 height: 35,
                                 width: 35,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
                                 child: Center(
                                   child: Padding(
                                     padding: const EdgeInsets.all(2.0),
@@ -74,7 +85,7 @@ class _ClintMoreScreenState extends State<ClintMoreScreen> {
                               ),
                               // More Options text in center
                               const Text(
-                                "More Options",
+                                "MEETsu Solutions",
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,

@@ -1,231 +1,143 @@
 import 'package:flutter/material.dart';
+import 'package:meetsu_solutions/model/client/profile/client_profile_response_model.dart';
+import 'package:meetsu_solutions/services/api/api_service.dart';
+import 'package:meetsu_solutions/services/api/api_client.dart';
+import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 
-enum TabType {
-  contact,
-  address,
-  company,
-  password,
-}
+enum ProfileTab { contact, address, company }
 
 class ClientProfileController extends ChangeNotifier {
-  // Selected tab
-  TabType _selectedTab = TabType.contact;
-  TabType get selectedTab => _selectedTab;
+  final ApiService _apiService;
 
-  // Password protection
-  bool _isPasswordProtected = true;
-  bool get isPasswordProtected => _isPasswordProtected;
+  // State
+  bool _isLoading = false;
+  String? _errorMessage;
+  String? _successMessage;
+  ProfileTab _selectedTab = ProfileTab.contact;
 
-  // Password controllers
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  // Data
+  Client? _client;
+  Company? _company;
 
-  // Contact Details Tab
-  String _contactName = 'Hiren Panchal';
-  String _email = 'hiren@gmail.com';
-  String _telephone = '123 123 1213';
-  String _ext = '';
-  String _alternateContactNo = '';
-  String _username = 'hiren';
-  String _fax = '';
+  // Getters
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+  String? get successMessage => _successMessage;
+  ProfileTab get selectedTab => _selectedTab;
+  Client? get client => _client;
+  Company? get company => _company;
+  bool get hasData => _client != null && _company != null;
 
-  // Address Details Tab
-  String _address = '99A - Dundas Street East';
-  String _address2 = '2nd Floor';
-  String _country = 'Canada';
-  String _province = 'Ontario';
-  String _city = 'Mississauga';
-  String _postalCode = 'L5A 1W7';
+  // Constructor
+  ClientProfileController({ApiService? apiService})
+      : _apiService = apiService ?? ApiService(ApiClient());
 
-  // Company Details Tab
-  String _companyName = 'MEETsu Solutions';
-  String _shortName = 'MEETsu';
-  String _companyEmail = 'reg@meetsusolutions.com';
-  String _companyTelephone = '905 232 5200';
-  String _companyContactName = 'Reg Christian';
-  String _companyFax = '';
-  String _companyLogo = 'https://example.com/logo.png'; // Replace with actual logo URL or asset path
+  // Contact getters
+  String get contactName => _client?.contactName ?? '';
+  String get email => _client?.email ?? '';
+  String get telephone => _client?.telephone ?? '';
+  String get ext => _client?.ext?.toString() ?? '';
+  String get alternateContactNo => _client?.alternateContactNo ?? '';
+  String get username => _client?.username ?? '';
+  String get fax => _client?.fax ?? '';
 
-  // Getters for Contact Details
-  String get contactName => _contactName;
-  String get email => _email;
-  String get telephone => _telephone;
-  String get ext => _ext;
-  String get alternateContactNo => _alternateContactNo;
-  String get username => _username;
-  String get fax => _fax;
+  // Address getters
+  String get address => _company?.address ?? '';
+  String get address2 => _company?.address2 ?? '';
+  String get country => _company?.countryName ?? '';
+  String get province => _company?.provinceName ?? '';
+  String get city => _company?.cityName ?? '';
+  String get postalCode => _company?.postalCode ?? '';
 
-  // Getters for Address Details
-  String get address => _address;
-  String get address2 => _address2;
-  String get country => _country;
-  String get province => _province;
-  String get city => _city;
-  String get postalCode => _postalCode;
+  // Company getters
+  String get companyName => _company?.companyName ?? '';
+  String get shortName => _company?.shortName ?? '';
+  String get companyEmail => _company?.email ?? '';
+  String get companyTelephone => _company?.telephone ?? '';
+  String get companyContactName => _company?.contactPerson ?? '';
+  String get companyFax => _company?.fax ?? '';
+  String get companyLogo => _company?.logoFullPath ?? '';
 
-  // Getters for Company Details
-  String get companyName => _companyName;
-  String get shortName => _shortName;
-  String get companyEmail => _companyEmail;
-  String get companyTelephone => _companyTelephone;
-  String get companyContactName => _companyContactName;
-  String get companyFax => _companyFax;
-  String get companyLogo => _companyLogo;
-
-  // Methods to change tab
-  void setSelectedTab(TabType tab) {
+  void setSelectedTab(ProfileTab tab) {
     _selectedTab = tab;
     notifyListeners();
   }
 
-  // Methods to update Contact Details
-  void setContactName(String value) {
-    _contactName = value;
+  void clearMessages() {
+    _errorMessage = null;
+    _successMessage = null;
     notifyListeners();
   }
 
-  void setEmail(String value) {
-    _email = value;
-    notifyListeners();
-  }
+  Future<bool> loadProfileData() async {
+    _setLoading(true);
+    clearMessages();
 
-  void setTelephone(String value) {
-    _telephone = value;
-    notifyListeners();
-  }
+    try {
+      final token = SharedPrefsService.instance.getAccessToken();
+      if (token?.isEmpty ?? true) {
+        throw Exception("Please log in to continue");
+      }
 
-  void setExt(String value) {
-    _ext = value;
-    notifyListeners();
-  }
+      _apiService.client.addAuthToken(token!);
+      final response = await _apiService.getClintProfile();
 
-  void setAlternateContactNo(String value) {
-    _alternateContactNo = value;
-    notifyListeners();
-  }
+      final profileResponse = ClientProfileResponseModel.fromJson(response);
 
-  void setUsername(String value) {
-    _username = value;
-    notifyListeners();
-  }
-
-  void setFax(String value) {
-    _fax = value;
-    notifyListeners();
-  }
-
-  // Methods to update Address Details
-  void setAddress(String value) {
-    _address = value;
-    notifyListeners();
-  }
-
-  void setAddress2(String value) {
-    _address2 = value;
-    notifyListeners();
-  }
-
-  void setCountry(String value) {
-    _country = value;
-    notifyListeners();
-  }
-
-  void setProvince(String value) {
-    _province = value;
-    notifyListeners();
-  }
-
-  void setCity(String value) {
-    _city = value;
-    notifyListeners();
-  }
-
-  void setPostalCode(String value) {
-    _postalCode = value;
-    notifyListeners();
-  }
-
-  // Methods to update Company Details
-  void setCompanyName(String value) {
-    _companyName = value;
-    notifyListeners();
-  }
-
-  void setShortName(String value) {
-    _shortName = value;
-    notifyListeners();
-  }
-
-  void setCompanyEmail(String value) {
-    _companyEmail = value;
-    notifyListeners();
-  }
-
-  void setCompanyTelephone(String value) {
-    _companyTelephone = value;
-    notifyListeners();
-  }
-
-  void setCompanyContactName(String value) {
-    _companyContactName = value;
-    notifyListeners();
-  }
-
-  void setCompanyFax(String value) {
-    _companyFax = value;
-    notifyListeners();
-  }
-
-  // Method to update company logo
-  void updateCompanyLogo() {
-    // Implementation would use ImagePicker or similar to choose a new logo
-    // For now we just simulate a change
-    _companyLogo = 'https://example.com/updated_logo.png';
-    notifyListeners();
-  }
-
-  // Method to update password
-  void updatePassword() {
-    if (passwordController.text.isEmpty || confirmPasswordController.text.isEmpty) {
-      // Show error: fields cannot be empty
-      return;
+      if (profileResponse.success == true) {
+        _client = profileResponse.client;
+        _company = profileResponse.company;
+        return true;
+      } else {
+        throw Exception("Failed to load profile data");
+      }
+    } catch (e) {
+      _errorMessage = _getErrorMessage(e);
+      return false;
+    } finally {
+      _setLoading(false);
     }
+  }
 
-    if (passwordController.text != confirmPasswordController.text) {
-      // Show error: passwords don't match
-      return;
+  Future<bool> saveProfileData() async {
+    _setLoading(true);
+    clearMessages();
+
+    try {
+      final token = SharedPrefsService.instance.getAccessToken();
+      if (token?.isEmpty ?? true) {
+        throw Exception("Please log in to continue");
+      }
+
+      // Simulate save operation
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      _successMessage = "Profile updated successfully!";
+      return true;
+    } catch (e) {
+      _errorMessage = _getErrorMessage(e);
+      return false;
+    } finally {
+      _setLoading(false);
     }
+  }
 
-    // Simulate password update success
-    passwordController.clear();
-    confirmPasswordController.clear();
-
-    // Toggle password protection (for demonstration)
-    _isPasswordProtected = !_isPasswordProtected;
-
+  void _setLoading(bool loading) {
+    _isLoading = loading;
     notifyListeners();
   }
 
-  // Load profile data from API/database
-  Future<void> loadProfileData() async {
-    // Implementation would fetch data from API
-    // This is just a placeholder for the actual implementation
-    await Future.delayed(const Duration(milliseconds: 300));
-    notifyListeners();
-  }
+  String _getErrorMessage(dynamic error) {
+    final errorStr = error.toString().toLowerCase();
 
-  // Save profile data to API/database
-  Future<void> saveProfileData() async {
-    // Implementation would save data to API
-    // This is just a placeholder for the actual implementation
-    await Future.delayed(const Duration(milliseconds: 300));
-    notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    passwordController.dispose();
-    confirmPasswordController.dispose();
-    super.dispose();
+    if (errorStr.contains("401") || errorStr.contains("unauthorized")) {
+      return "Session expired. Please log in again.";
+    } else if (errorStr.contains("network") || errorStr.contains("connection")) {
+      return "Network error. Please check your connection.";
+    } else if (errorStr.contains("timeout")) {
+      return "Request timed out. Please try again.";
+    } else {
+      return "Failed to load profile data. Please try again.";
+    }
   }
 }

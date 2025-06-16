@@ -51,4 +51,17 @@ class ApiEndpoints {
   static const String getQuiz = 'flutter/quiz';
 
   static const String quizAnswer = 'flutter/quiz-answer';
+
+
+  //////////////////////////////////////////////////////////////////////
+
+  static const String clintLogout = 'client/logout';
+  static const String getClintProfile = 'client/profile';
+  static const String getClintShift = 'client/shifts';
+  static const String getClintPositions = 'client/positions';
+  static const String createJobRequest = 'client/create-job-request';
+  static const String weeklyReport = 'client/weekly-report';
+  static const String clintSchedule = 'client/schedule';
+  static const String showAssignedApplicants = 'client/show-assigned-applicants';
+  static const String showClientWeather = 'client/weather';
 }

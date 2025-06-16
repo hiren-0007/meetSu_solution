@@ -227,23 +227,19 @@ class _JobOpeningScreenState extends State<JobOpeningScreen>
         },
         itemBuilder: (context, index) {
           final realIndex = index % jobOpenings.length;
-          return SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: JobCard(
-              job: jobOpenings[realIndex],
-              controller: _controller,
-              isMobile: isMobile,
-              isTablet: isTablet,
-              isDesktop: isDesktop,
-              currentJobIndex: realIndex + 1,
-              totalJobs: jobOpenings.length,
-            ),
+          return JobCard(
+            job: jobOpenings[realIndex],
+            controller: _controller,
+            isMobile: isMobile,
+            isTablet: isTablet,
+            isDesktop: isDesktop,
+            currentJobIndex: realIndex + 1,
+            totalJobs: jobOpenings.length,
           );
         },
       ),
     );
   }
-
 }
 
 class JobCard extends StatelessWidget {
@@ -267,31 +263,34 @@ class JobCard extends StatelessWidget {
   });
 
   double get cardMargin => isMobile ? 16 : isTablet ? 20 : 24;
-  double get cardPadding => isMobile ? 20 : isTablet ? 24 : 28;
-  double get imageHeight => isMobile ? 200 : isTablet ? 220 : 240;
+  double get cardPadding => isMobile ? 16 : isTablet ? 20 : 24;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: cardMargin, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            spreadRadius: 0,
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildJobImage(),
-          _buildJobContent(),
-        ],
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: cardMargin, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              spreadRadius: 0,
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildJobImage(),
+            _buildJobContent(),
+          ],
+        ),
       ),
     );
   }
@@ -302,14 +301,18 @@ class JobCard extends StatelessWidget {
       child: job.imageUrl?.isNotEmpty == true
           ? Container(
         width: double.infinity,
-        height: imageHeight,
+        constraints: BoxConstraints(
+          minHeight: isMobile ? 180 : isTablet ? 200 : 220,
+          maxHeight: isMobile ? 280 : isTablet ? 320 : 360,
+        ),
         child: Image.network(
           job.imageUrl!,
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
+          width: double.infinity,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
             return Container(
-              height: imageHeight,
+              height: 200,
               alignment: Alignment.center,
               color: Colors.grey.shade50,
               child: CircularProgressIndicator(
@@ -331,7 +334,7 @@ class JobCard extends StatelessWidget {
 
   Widget _buildFallbackImage() {
     return Container(
-      height: imageHeight,
+      height: isMobile ? 200 : isTablet ? 220 : 240,
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -372,12 +375,13 @@ class JobCard extends StatelessWidget {
       padding: EdgeInsets.all(cardPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Job Title
           Text(
             job.jobPosition ?? "Unknown Position",
             style: TextStyle(
-              fontSize: isMobile ? 20 : 22,
+              fontSize: isMobile ? 18 : 20,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF1A1A1A),
               height: 1.2,
@@ -386,12 +390,12 @@ class JobCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
 
-          SizedBox(height: 16),
+          SizedBox(height: 12),
 
           // Job Details Grid
           _buildJobDetailsGrid(),
 
-          SizedBox(height: 20),
+          SizedBox(height: 16),
 
           // Description Section
           _buildDescriptionSection(),
@@ -403,149 +407,58 @@ class JobCard extends StatelessWidget {
   Widget _buildJobDetailsGrid() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Row(
           children: [
             // Date
             Expanded(
-              child: Row(
-                children: [
-                  Text(
-                    "Date: ",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      job.positionDate ?? "Not specified",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: const Color(0xFF1A1A1A),
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
+              child: _buildCompactDetailItem("Date:", job.positionDate ?? "Not specified"),
             ),
-
-
+            SizedBox(width: 12),
+            // Salary
             Expanded(
-              child: Row(
-                children: [
-                  Text(
-                    "Salary: ",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      "${job.salary ?? 'N/A'}",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppTheme.primaryColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
+              child: _buildCompactDetailItem("Salary:", "${job.salary ?? 'N/A'}"),
             ),
           ],
         ),
-
-        Row(
-          children: [
-            Text(
-              "Location: ",
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            Expanded(
-              child: Text(
-                job.location ?? "Not specified",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: const Color(0xFF1A1A1A),
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
+        SizedBox(height: 12),
+        // Location
+        _buildCompactDetailItem("Location:", job.location ?? "Not specified"),
       ],
     );
   }
 
-  Widget _buildDetailItem({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-    bool fullWidth = false,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(6),
+  Widget _buildCompactDetailItem(String label, String value) {
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: label,
+            style: TextStyle(
+              fontSize: isMobile ? 14 : 15,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          child: Icon(
-            icon,
-            size: 16,
-            color: color,
+          TextSpan(
+            text: " $value",
+            style: TextStyle(
+              fontSize: isMobile ? 14 : 15,
+              color: label.contains("Salary") ? AppTheme.primaryColor : const Color(0xFF1A1A1A),
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: const Color(0xFF1A1A1A),
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: fullWidth ? 2 : 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
   Widget _buildDescriptionSection() {
     return Container(
-      padding: EdgeInsets.all(isMobile ? 12 : 16),
+      padding: EdgeInsets.all(isMobile ? 16 : 18),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(8),
@@ -553,6 +466,7 @@ class JobCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -561,7 +475,7 @@ class JobCard extends StatelessWidget {
               Text(
                 "Description:",
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: isMobile ? 16 : 18,
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF1A1A1A),
                 ),
@@ -573,10 +487,12 @@ class JobCard extends StatelessWidget {
           Text(
             job.positionDescription ?? "No description available",
             style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-              height: 1.5,
+              fontSize: isMobile ? 14 : 15,
+              color: Colors.grey.shade800,
+              height: 1.6,
+              letterSpacing: 0.2,
             ),
+            textAlign: TextAlign.justify,
           ),
         ],
       ),
@@ -594,8 +510,8 @@ class JobCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             child: Container(
               padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 12 : 14,
-                vertical: isMobile ? 8 : 10,
+                horizontal: isMobile ? 10 : 12,
+                vertical: isMobile ? 6 : 8,
               ),
               decoration: BoxDecoration(
                 color: isSharing ? Colors.grey.shade400 : AppTheme.primaryColor,
@@ -614,8 +530,8 @@ class JobCard extends StatelessWidget {
                 children: [
                   if (isSharing)
                     SizedBox(
-                      width: 14,
-                      height: 14,
+                      width: 12,
+                      height: 12,
                       child: const CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
@@ -625,15 +541,15 @@ class JobCard extends StatelessWidget {
                     Icon(
                       Icons.share_outlined,
                       color: Colors.white,
-                      size: 14,
+                      size: 12,
                     ),
-                  SizedBox(width: 6),
+                  SizedBox(width: 4),
                   Text(
                     isSharing ? "Sharing..." : "Share",
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
-                      fontSize: 12,
+                      fontSize: 11,
                     ),
                   ),
                 ],

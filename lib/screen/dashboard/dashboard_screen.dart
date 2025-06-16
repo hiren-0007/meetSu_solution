@@ -84,59 +84,15 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.dispose();
   }
 
-  // Responsive breakpoints
+  // Responsive values - optimized for clean layout
   bool get isSmallMobile => MediaQuery.of(context).size.width < 400;
   bool get isMobile => MediaQuery.of(context).size.width < 600;
-  bool get isTablet => MediaQuery.of(context).size.width >= 600 && MediaQuery.of(context).size.width < 1200;
-  bool get isDesktop => MediaQuery.of(context).size.width >= 1200;
 
-  double get screenWidth => MediaQuery.of(context).size.width;
-  double get screenHeight => MediaQuery.of(context).size.height;
-
-  double get horizontalPadding {
-    if (isSmallMobile) return 16;
-    if (isMobile) return 16;
-    if (isTablet) return 20;
-    return 24;
-  }
-
-  double get cardPadding {
-    if (isSmallMobile) return 16;
-    if (isMobile) return 16;
-    return 20;
-  }
-
-  double get verticalSpacing {
-    if (isSmallMobile) return 12;
-    if (isMobile) return 12;
-    return 16;
-  }
-
-  double get cardBorderRadius => 12;
-
-  double get fontSizeSmall {
-    if (isSmallMobile) return 12;
-    if (isMobile) return 12;
-    return 13;
-  }
-
-  double get fontSizeMedium {
-    if (isSmallMobile) return 14;
-    if (isMobile) return 14;
-    return 15;
-  }
-
-  double get fontSizeLarge {
-    if (isSmallMobile) return 16;
-    if (isMobile) return 16;
-    return 18;
-  }
-
-  double get imageHeight {
-    if (isSmallMobile) return 200;
-    if (isMobile) return 220;
-    return 240;
-  }
+  double get horizontalPadding => 16;
+  double get cardPadding => 16;
+  double get smallSpacing => 4;
+  double get mediumSpacing => 8;
+  double get largeSpacing => 12;
 
   @override
   Widget build(BuildContext context) {
@@ -159,125 +115,107 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildCompactHeader() {
     return Container(
-      margin: EdgeInsets.fromLTRB(horizontalPadding, horizontalPadding, horizontalPadding, 8),
+      margin: EdgeInsets.all(horizontalPadding),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(cardBorderRadius),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withOpacity(0.25),
+            color: AppTheme.primaryColor.withOpacity(0.3),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: RefreshIndicator(
-        onRefresh: _controller.refreshDashboardData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: EdgeInsets.all(cardPadding),
-            child: Column(
-              children: [
-                // Weather and Date Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.wb_sunny, color: Colors.white, size: 16),
-                    const SizedBox(width: 6),
-                    ValueListenableBuilder<String>(
-                      valueListenable: _controller.temperature,
-                      builder: (context, temperature, _) {
-                        return ValueListenableBuilder<String>(
-                          valueListenable: _controller.date,
-                          builder: (context, date, _) {
-                            return Flexible(
-                              child: Text(
-                                "$temperature • $date",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: fontSizeSmall,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: verticalSpacing),
-
-                // Quote Section
-                Text(
-                  "Quote of the day",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: fontSizeMedium,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                SizedBox(height: verticalSpacing / 2),
-
-                ValueListenableBuilder<String>(
-                  valueListenable: _controller.quote,
-                  builder: (context, quote, _) {
+      child: Padding(
+        padding: EdgeInsets.all(cardPadding),
+        child: Column(
+          children: [
+            // Weather and Date
+            ValueListenableBuilder<String>(
+              valueListenable: _controller.temperature,
+              builder: (context, temperature, _) {
+                return ValueListenableBuilder<String>(
+                  valueListenable: _controller.date,
+                  builder: (context, date, _) {
                     return Text(
-                      '"$quote"',
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      "$temperature • $date",
+                      style: const TextStyle(
                         color: Colors.white,
-                        fontSize: fontSizeSmall,
-                        fontStyle: FontStyle.italic,
-                        height: 1.3,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     );
                   },
-                ),
-
-                SizedBox(height: verticalSpacing / 2),
-
-                ValueListenableBuilder<String>(
-                  valueListenable: _controller.quoteAuthor,
-                  builder: (context, author, _) {
-                    return Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        "- $author",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: fontSizeSmall - 1,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                SizedBox(height: verticalSpacing),
-
-                // Section Title
-                Text(
-                  "Advertisements",
-                  style: TextStyle(
-                    fontSize: fontSizeLarge,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+                );
+              },
             ),
-          ),
+
+            SizedBox(height: largeSpacing),
+
+            // Quote Section
+            const Text(
+              "Quote of the day",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            SizedBox(height: mediumSpacing),
+
+            ValueListenableBuilder<String>(
+              valueListenable: _controller.quote,
+              builder: (context, quote, _) {
+                return Text(
+                  '"$quote"',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                    height: 1.3,
+                  ),
+                );
+              },
+            ),
+
+            SizedBox(height: mediumSpacing),
+
+            ValueListenableBuilder<String>(
+              valueListenable: _controller.quoteAuthor,
+              builder: (context, author, _) {
+                return Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    "- $author",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            SizedBox(height: largeSpacing),
+
+            // Advertisements Title
+            const Text(
+              "Advertisements",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -319,16 +257,15 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget _buildLoadingState() {
     return Center(
       child: Container(
-        margin: EdgeInsets.only(top: verticalSpacing),
         padding: EdgeInsets.all(cardPadding * 2),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(cardBorderRadius),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -336,19 +273,18 @@ class _DashboardScreenState extends State<DashboardScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 50,
-              height: 50,
+              width: 40,
+              height: 40,
               child: CircularProgressIndicator(
                 strokeWidth: 3,
                 color: AppTheme.primaryColor,
               ),
             ),
-            SizedBox(height: verticalSpacing),
-            Text(
+            SizedBox(height: largeSpacing),
+            const Text(
               "Loading advertisements...",
               style: TextStyle(
-                color: AppTheme.textSecondaryColor,
-                fontSize: fontSizeMedium,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -361,16 +297,15 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget _buildErrorState(String errorMessage) {
     return Center(
       child: Container(
-        margin: EdgeInsets.only(top: verticalSpacing),
-        padding: EdgeInsets.all(cardPadding * 1.5),
+        padding: EdgeInsets.all(cardPadding),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(cardBorderRadius),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -379,33 +314,29 @@ class _DashboardScreenState extends State<DashboardScreen>
           children: [
             Icon(
               Icons.error_outline,
-              size: 48,
+              size: 40,
               color: Colors.red.shade400,
             ),
-            SizedBox(height: verticalSpacing),
+            SizedBox(height: largeSpacing),
             Text(
               errorMessage,
-              style: TextStyle(
-                color: AppTheme.textSecondaryColor,
-                fontSize: fontSizeMedium,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(fontSize: 14),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: verticalSpacing * 1.5),
+            SizedBox(height: largeSpacing),
             ElevatedButton.icon(
               onPressed: _controller.retryFetch,
-              icon: Icon(Icons.refresh, size: fontSizeMedium + 2),
+              icon: const Icon(Icons.refresh, size: 16),
               label: const Text("Retry"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(
                   horizontal: cardPadding,
-                  vertical: verticalSpacing,
+                  vertical: mediumSpacing,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(cardBorderRadius / 2),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
@@ -452,15 +383,14 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildAdCard(Ads ad) {
     return Container(
-      margin: EdgeInsets.only(bottom: verticalSpacing),
+      margin: EdgeInsets.only(bottom: mediumSpacing),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(cardBorderRadius),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.15),
-            spreadRadius: 1,
-            blurRadius: 6,
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -477,21 +407,20 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildAdImage(Ads ad) {
     return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(cardBorderRadius)),
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       child: ad.imageUrl?.isNotEmpty == true
-          ? Container(
+          ? SizedBox(
         width: double.infinity,
-        height: imageHeight,
-        color: Colors.grey.shade50,
+        height: 200,
         child: Image.network(
           ad.imageUrl!,
           fit: BoxFit.contain,
           width: double.infinity,
-          height: imageHeight,
+          height: 200,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
             return Container(
-              height: imageHeight,
+              height: 200,
               alignment: Alignment.center,
               color: Colors.grey.shade50,
               child: CircularProgressIndicator(
@@ -499,7 +428,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ? loadingProgress.cumulativeBytesLoaded /
                     loadingProgress.expectedTotalBytes!
                     : null,
-                strokeWidth: 3,
+                strokeWidth: 2,
                 color: AppTheme.primaryColor,
               ),
             );
@@ -513,7 +442,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildFallbackImage() {
     return Container(
-      height: imageHeight,
+      height: 200,
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -521,7 +450,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           end: Alignment.bottomRight,
           colors: [
             AppTheme.primaryColor.withOpacity(0.1),
-            AppTheme.primaryColor.withOpacity(0.25),
+            AppTheme.primaryColor.withOpacity(0.2),
           ],
         ),
       ),
@@ -531,15 +460,15 @@ class _DashboardScreenState extends State<DashboardScreen>
           children: [
             Icon(
               Icons.campaign,
-              size: imageHeight * 0.25,
+              size: 40,
               color: AppTheme.primaryColor.withOpacity(0.7),
             ),
-            SizedBox(height: verticalSpacing),
+            SizedBox(height: mediumSpacing),
             Text(
               "Image not available",
               style: TextStyle(
-                color: AppTheme.primaryColor.withOpacity(0.8),
-                fontSize: fontSizeSmall,
+                color: AppTheme.primaryColor.withOpacity(0.7),
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -558,98 +487,78 @@ class _DashboardScreenState extends State<DashboardScreen>
           // Title
           Text(
             ad.subjectLine ?? "No Subject",
-            style: TextStyle(
-              fontSize: fontSizeLarge,
+            style: const TextStyle(
+              fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimaryColor,
               height: 1.2,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
 
-          SizedBox(height: verticalSpacing),
+          SizedBox(height: mediumSpacing),
 
-          // Details Row
+          // Date and Salary
           Row(
             children: [
               Expanded(
-                flex: 3,
                 child: Text(
                   "Date: ${ad.date ?? "Unknown"}",
-                  style: TextStyle(
-                    fontSize: fontSizeSmall,
-                    color: AppTheme.textPrimaryColor,
+                  style: const TextStyle(
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  "Salary: ${ad.amount ?? '0.00'}",
-                  style: TextStyle(
-                    fontSize: fontSizeSmall,
-                    color: AppTheme.primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.end,
+              Text(
+                "Salary: ${ad.amount ?? '0.00'}",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.primaryColor,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
 
-          SizedBox(height: verticalSpacing / 2),
+          SizedBox(height: smallSpacing),
 
           // Location
           Text(
             "Location: ${ad.place ?? "Unknown"}",
-            style: TextStyle(
-              fontSize: fontSizeSmall,
-              color: AppTheme.textPrimaryColor,
+            style: const TextStyle(
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
             overflow: TextOverflow.ellipsis,
           ),
 
-          SizedBox(height: verticalSpacing),
+          SizedBox(height: mediumSpacing),
 
-          // Divider
-          Divider(
-            height: 1,
-            color: Colors.grey.shade200,
-            thickness: 0.5,
-          ),
-
-          SizedBox(height: verticalSpacing),
-
-          // Description Section
+          // Description Header with Share Button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 "Description:",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: fontSizeSmall,
-                  color: AppTheme.textPrimaryColor,
+                  fontSize: 14,
                 ),
               ),
               _buildShareButton(ad),
             ],
           ),
 
-          SizedBox(height: verticalSpacing / 2),
+          SizedBox(height: smallSpacing),
 
+          // Description Text
           Text(
             ad.description ?? "No description available",
-            style: TextStyle(
-              color: AppTheme.textPrimaryColor,
-              fontSize: fontSizeSmall - 1,
-              height: 1.3,
+            style: const TextStyle(
+              fontSize: 13,
+              height: 1.4,
             ),
           ),
         ],
@@ -665,48 +574,38 @@ class _DashboardScreenState extends State<DashboardScreen>
           color: Colors.transparent,
           child: InkWell(
             onTap: isSharing ? null : () => _controller.shareAd(context, ad),
-            borderRadius: BorderRadius.circular(cardBorderRadius / 2),
+            borderRadius: BorderRadius.circular(20),
             child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: isSmallMobile ? 10 : 12,
-                vertical: isSmallMobile ? 6 : 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: isSharing ? Colors.grey : AppTheme.primaryColor,
-                borderRadius: BorderRadius.circular(cardBorderRadius / 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primaryColor.withOpacity(0.3),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (isSharing)
-                    SizedBox(
-                      width: fontSizeMedium,
-                      height: fontSizeMedium,
-                      child: const CircularProgressIndicator(
+                    const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
                       ),
                     )
                   else
-                    Icon(
+                    const Icon(
                       Icons.share,
                       color: Colors.white,
-                      size: fontSizeMedium,
+                      size: 14,
                     ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 4),
                   Text(
                     isSharing ? "Sharing..." : "Share",
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: fontSizeSmall,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
                     ),
                   ),
                 ],
@@ -722,21 +621,18 @@ class _DashboardScreenState extends State<DashboardScreen>
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       child: Container(
-        margin: EdgeInsets.only(bottom: verticalSpacing),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(cardBorderRadius),
-          border: Border.all(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
-              blurRadius: 6,
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
             Container(
@@ -746,12 +642,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                 gradient: LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.8)],
                 ),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(cardBorderRadius)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               ),
-              child: Text(
+              child: const Text(
                 "Download MEETsu Solution App",
                 style: TextStyle(
-                  fontSize: fontSizeLarge,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -759,21 +655,21 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ),
 
+            // Download Buttons
             Padding(
               padding: EdgeInsets.all(cardPadding),
               child: Column(
                 children: [
-                  SizedBox(height: verticalSpacing),
                   _buildDownloadButton(
                     onTap: () => _controller.downloadFromPlayStore(context),
-                    label: "Download from Play Store",
+                    label: "Get it on Google Play",
                     icon: Icons.android,
                     color: Colors.green,
                   ),
-                  SizedBox(height: verticalSpacing),
+                  SizedBox(height: largeSpacing),
                   _buildDownloadButton(
                     onTap: () => _controller.downloadFromAppStore(context),
-                    label: "Download from App Store",
+                    label: "Download on the App Store",
                     icon: Icons.apple,
                     color: Colors.black,
                   ),
@@ -781,11 +677,129 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ),
 
-            _buildAppDownloadInfo(),
-            Divider(height: 1, color: Colors.grey.shade200),
-            _buildAppDownloadDescription(),
-            _buildAppDownloadBenefits(),
-            _buildAppDownloadFeatures(),
+            // App Info
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: cardPadding),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: ValueListenableBuilder<String>(
+                          valueListenable: _controller.date,
+                          builder: (context, date, _) {
+                            return Text(
+                              "Date: $date",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      Text(
+                        "Amount: \$0.00",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: smallSpacing),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Status: ON",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: largeSpacing),
+
+            // Description
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: cardPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Description:",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.share, color: Colors.white, size: 14),
+                            SizedBox(width: 4),
+                            Text(
+                              "Share",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: smallSpacing),
+                  const Text(
+                    "Also, share with your co-worker to do the same • Benefits:",
+                    style: TextStyle(fontSize: 13, height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: largeSpacing),
+
+            // Benefits List
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: cardPadding),
+              child: ValueListenableBuilder<List<String>>(
+                valueListenable: _controller.benefits,
+                builder: (context, benefits, _) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: benefits.map((benefit) {
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: smallSpacing),
+                        child: Text(
+                          "• $benefit",
+                          style: const TextStyle(fontSize: 13, height: 1.4),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+            ),
+
+            SizedBox(height: cardPadding),
           ],
         ),
       ),
@@ -798,356 +812,42 @@ class _DashboardScreenState extends State<DashboardScreen>
     required IconData icon,
     required Color color,
   }) {
-    final buttonHeight = isSmallMobile ? 50.0 : 55.0;
-
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(cardBorderRadius / 2),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
-          height: buttonHeight,
+          height: 50,
           width: double.infinity,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(cardBorderRadius / 2),
+            borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
                 color: color.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white, size: 22),
-              SizedBox(width: verticalSpacing),
-              Flexible(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: fontSizeMedium,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppDownloadInfo() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: cardPadding),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                flex: 3,
-                child: ValueListenableBuilder<String>(
-                  valueListenable: _controller.date,
-                  builder: (context, date, _) {
-                    return Text(
-                      "Date: $date",
-                      style: TextStyle(
-                        fontSize: fontSizeSmall,
-                        color: AppTheme.textPrimaryColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  "Amount: \$0.00",
-                  style: TextStyle(
-                    fontSize: fontSizeSmall,
-                    color: AppTheme.primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.end,
-                ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: verticalSpacing),
-
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  "Place: App Store and Play Store",
-                  style: TextStyle(
-                    fontSize: fontSizeSmall,
-                    color: AppTheme.textPrimaryColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAppDownloadDescription() {
-    return Padding(
-      padding: EdgeInsets.all(cardPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+              Icon(icon, color: Colors.white, size: 20),
+              SizedBox(width: mediumSpacing),
               Text(
-                "Description:",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: fontSizeMedium,
-                  color: AppTheme.textPrimaryColor,
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: isSmallMobile ? 10 : 12,
-                    vertical: isSmallMobile ? 6 : 8
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(cardBorderRadius / 2),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.share,
-                      color: Colors.grey.shade600,
-                      size: fontSizeMedium,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      "Share",
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.bold,
-                        fontSize: fontSizeSmall,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: verticalSpacing / 2),
-
-          Text(
-            "Also, share with your co-worker to do the same",
-            style: TextStyle(
-              fontSize: fontSizeSmall,
-              color: AppTheme.textPrimaryColor,
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAppDownloadBenefits() {
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: cardPadding,
-            vertical: verticalSpacing,
-          ),
-          child: Text(
-            "-: Benefits :-",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: fontSizeMedium,
-              color: AppTheme.primaryColor,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-
-        Padding(
-          padding: EdgeInsets.fromLTRB(
-            cardPadding,
-            0,
-            cardPadding,
-            cardPadding,
-          ),
-          child: ValueListenableBuilder<List<String>>(
-            valueListenable: _controller.benefits,
-            builder: (context, benefits, _) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: benefits.asMap().entries.map((entry) {
-                  final benefit = entry.value;
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: verticalSpacing),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          margin: EdgeInsets.only(top: 8),
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            benefit,
-                            style: TextStyle(
-                              fontSize: fontSizeSmall,
-                              color: AppTheme.textPrimaryColor,
-                              height: 1.5,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAppDownloadFeatures() {
-    return Container(
-      margin: EdgeInsets.all(cardPadding),
-      padding: EdgeInsets.all(verticalSpacing),
-      decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(cardBorderRadius / 2),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2), width: 0.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.stars,
-                size: fontSizeSmall,
-                color: AppTheme.primaryColor,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                "App Features",
-                style: TextStyle(
-                  fontSize: fontSizeSmall,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryColor,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: verticalSpacing / 2),
-          Row(
-            children: [
-              Expanded(
-                child: _buildFeatureItem(Icons.access_time, "Time Tracking"),
-              ),
-              Expanded(
-                child: _buildFeatureItem(Icons.notifications, "Push Alerts"),
-              ),
-            ],
-          ),
-          SizedBox(height: verticalSpacing / 2),
-          Row(
-            children: [
-              Expanded(
-                child: _buildFeatureItem(Icons.payment, "Payroll Info"),
-              ),
-              Expanded(
-                child: _buildFeatureItem(Icons.schedule, "Shift Updates"),
-              ),
-            ],
-          ),
-          SizedBox(height: verticalSpacing),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(
-              horizontal: cardPadding / 2,
-              vertical: verticalSpacing / 2,
-            ),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor,
-              borderRadius: BorderRadius.circular(cardBorderRadius / 3),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.download,
-                  size: fontSizeSmall,
+                label,
+                style: const TextStyle(
                   color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  "Free Download • No Subscription Required",
-                  style: TextStyle(
-                    fontSize: fontSizeSmall - 1,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    );
-  }
-
-  Widget _buildFeatureItem(IconData icon, String title) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: fontSizeSmall - 1,
-          color: AppTheme.primaryColor,
-        ),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: fontSizeSmall - 1,
-              color: AppTheme.textPrimaryColor,
-              fontWeight: FontWeight.w500,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
     );
   }
 }

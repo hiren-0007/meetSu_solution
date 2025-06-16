@@ -3,247 +3,456 @@ import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
 
 class ScheduleData {
-  final String type; // "AM | DM" or "AM | OH"
-  final int available;
-  final int booked;
-  final int pending;
+  final String type;
+  final int totalSlots;    // positionCount
+  final int booked;        // assignCount
+  final int available;     // leftCount
   final List<AppointmentData> appointments;
+  final String? date;
+  final int? jobPositionId;
 
-  ScheduleData({
+  const ScheduleData({
     required this.type,
-    required this.available,
+    required this.totalSlots,
     required this.booked,
-    required this.pending,
+    required this.available,
     required this.appointments,
+    this.date,
+    this.jobPositionId,
   });
+
+  // Factory constructor for API data
+  factory ScheduleData.fromJson(Map<String, dynamic> json) {
+    return ScheduleData(
+      type: json['title']?.toString() ?? '',
+      totalSlots: int.tryParse(json['positionCount']?.toString() ?? '0') ?? 0,
+      booked: int.tryParse(json['assignCount']?.toString() ?? '0') ?? 0,
+      available: int.tryParse(json['leftCount']?.toString() ?? '0') ?? 0,
+      appointments: [], // API doesn't provide detailed appointments
+      date: json['date']?.toString(),
+      jobPositionId: int.tryParse(json['job_position_id']?.toString() ?? '0'),
+    );
+  }
+
+  double get utilizationRate => totalSlots > 0 ? (booked / totalSlots) : 0.0;
+  bool get hasAvailableSlots => available > 0;
+  bool get isFullyBooked => available == 0 && totalSlots > 0;
+
+  @override
+  String toString() {
+    return 'ScheduleData(type: $type, total: $totalSlots, booked: $booked, available: $available, date: $date)';
+  }
 }
 
 class AppointmentData {
   final String personName;
   final String timeSlot;
-  final String status; // "Confirmed", "Pending"
+  final String status;
+  final String? notes;
+  final DateTime? appointmentDate;
 
-  AppointmentData({
+  const AppointmentData({
     required this.personName,
     required this.timeSlot,
     required this.status,
+    this.notes,
+    this.appointmentDate,
   });
+
+  factory AppointmentData.fromJson(Map<String, dynamic> json) {
+    return AppointmentData(
+      personName: json['personName']?.toString() ?? '',
+      timeSlot: json['timeSlot']?.toString() ?? '',
+      status: json['status']?.toString() ?? 'Pending',
+      notes: json['notes']?.toString(),
+      appointmentDate: json['appointmentDate'] != null
+          ? DateTime.tryParse(json['appointmentDate'].toString())
+          : null,
+    );
+  }
+
+  bool get isConfirmed => status.toLowerCase() == 'confirmed';
+  bool get isPending => status.toLowerCase() == 'pending';
+  bool get isCancelled => status.toLowerCase() == 'cancelled';
+
+  @override
+  String toString() {
+    return 'AppointmentData(name: $personName, timeSlot: $timeSlot, status: $status)';
+  }
 }
 
 class ClintSchedulerViewController {
+  // Private fields
   final ApiService _apiService;
+  DateTime _currentWeekStart = DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
+
+  // State notifiers
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
   final ValueNotifier<bool> hasData = ValueNotifier<bool>(false);
-
-  // Current week data
   final ValueNotifier<DateTime> currentWeekStart = ValueNotifier<DateTime>(DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)));
-  final ValueNotifier<Map<String, Map<int, ScheduleData>>> scheduleData = ValueNotifier<Map<String, Map<int, ScheduleData>>>({});
+  final ValueNotifier<List<ScheduleData>> scheduleDataList = ValueNotifier<List<ScheduleData>>([]);
+  final ValueNotifier<Map<String, List<ScheduleData>>> groupedScheduleData = ValueNotifier<Map<String, List<ScheduleData>>>({});
 
   ClintSchedulerViewController({ApiService? apiService})
       : _apiService = apiService ?? ApiService(ApiClient()) {
-    initialize();
+    _initialize();
   }
 
-  void initialize() {
+  void _initialize() {
+    _setupAuthentication();
+    _setInitialWeek();
+    _logInitialization();
+  }
+
+  void _setupAuthentication() {
     final token = SharedPrefsService.instance.getAccessToken();
-    if (token != null && token.isNotEmpty) {
-      _apiService.client.addAuthToken(token);
+    if (token?.isNotEmpty == true) {
+      _apiService.client.addAuthToken(token!);
     }
+  }
 
-    debugPrint("🔄 Initializing Client Scheduler Controller...");
-
-    // Initialize with the current week
-    DateTime monday = DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
+  void _setInitialWeek() {
+    final monday = DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
+    _currentWeekStart = monday;
     currentWeekStart.value = monday;
   }
 
-  // Get formatted week range string (e.g., "May 5 – 11, 2025")
+  void _logInitialization() {
+    debugPrint("🔄 Client Scheduler Controller initialized");
+  }
+
+  // Week navigation methods
   String getFormattedWeekRange() {
     final DateFormat monthDayFormat = DateFormat('MMM d');
     final start = currentWeekStart.value;
     final end = start.add(const Duration(days: 6));
 
-    return '${monthDayFormat.format(start)} – ${monthDayFormat.format(end)}, ${end.year}';
+    if (start.month == end.month) {
+      return '${monthDayFormat.format(start)} – ${end.day}, ${end.year}';
+    } else {
+      return '${monthDayFormat.format(start)} – ${monthDayFormat.format(end)}, ${end.year}';
+    }
   }
 
-  // Navigate to previous week
   void previousWeek() {
-    currentWeekStart.value = currentWeekStart.value.subtract(const Duration(days: 7));
+    final newWeekStart = currentWeekStart.value.subtract(const Duration(days: 7));
+    currentWeekStart.value = newWeekStart;
+    _currentWeekStart = newWeekStart;
     fetchDashboardData();
+    debugPrint("📅 Navigated to previous week: ${getFormattedWeekRange()}");
   }
 
-  // Navigate to next week
   void nextWeek() {
-    currentWeekStart.value = currentWeekStart.value.add(const Duration(days: 7));
+    final newWeekStart = currentWeekStart.value.add(const Duration(days: 7));
+    currentWeekStart.value = newWeekStart;
+    _currentWeekStart = newWeekStart;
     fetchDashboardData();
+    debugPrint("📅 Navigated to next week: ${getFormattedWeekRange()}");
+  }
+
+  // Data fetching from real API
+  Future<void> fetchDashboardData() async {
+    if (isLoading.value) return; // Prevent multiple simultaneous calls
+
+    try {
+      _setLoadingState(true);
+      debugPrint("🔄 Fetching scheduler data for week: ${getFormattedWeekRange()}");
+
+      // Prepare API request body
+      final DateFormat apiDateFormat = DateFormat('yyyy-MM-dd');
+      final startDate = apiDateFormat.format(currentWeekStart.value);
+      final endDate = apiDateFormat.format(currentWeekStart.value.add(const Duration(days: 6)));
+
+      final requestBody = {
+        'start': startDate,
+        'end': endDate,
+      };
+
+      debugPrint("📡 API Request: $requestBody");
+
+      // Make actual API call
+      final response = await _apiService.getClientSchedule(requestBody);
+
+      debugPrint("📡 API Response: $response");
+
+      // Extract data from response - similar to WeeklyAnalyticsController approach
+      List<dynamic> apiData = [];
+
+      // First check if 'body' key exists and contains the data
+      if (response.containsKey('body')) {
+        final bodyData = response['body'];
+        if (bodyData is List) {
+          apiData = bodyData;
+          debugPrint("📊 Found data in 'body' key: ${apiData.length} records");
+        } else if (bodyData is String) {
+          // If body is a string, it might be JSON that needs parsing
+          try {
+            final parsedBody = jsonDecode(bodyData);
+            if (parsedBody is List) {
+              apiData = parsedBody;
+              debugPrint("📊 Parsed JSON from 'body' string: ${apiData.length} records");
+            }
+          } catch (e) {
+            debugPrint("❌ Error parsing body string: $e");
+          }
+        }
+      }
+
+      // Fallback: check other common keys
+      if (apiData.isEmpty) {
+        if (response.containsKey('data') && response['data'] is List) {
+          apiData = response['data'] as List<dynamic>;
+          debugPrint("📊 Found data in 'data' key: ${apiData.length} records");
+        } else if (response['success'] == true || response['status'] == 'success') {
+          final data = response['data'];
+          if (data is List) {
+            apiData = data;
+            debugPrint("📊 Found data in success response: ${apiData.length} records");
+          }
+        }
+      }
+
+      // Final fallback: check if any value in response is a List
+      if (apiData.isEmpty) {
+        for (var value in response.values) {
+          if (value is List) {
+            apiData = value;
+            debugPrint("📊 Found List data in response values: ${apiData.length} records");
+            break;
+          }
+        }
+      }
+
+      debugPrint("📊 Final parsed API Data: Found ${apiData.length} records");
+
+      if (apiData.isNotEmpty) {
+        // Convert API data to ScheduleData objects
+        final List<ScheduleData> scheduleList = apiData
+            .map((item) => ScheduleData.fromJson(item))
+            .toList();
+
+        scheduleDataList.value = scheduleList;
+
+        // Group data by type for easier access
+        final Map<String, List<ScheduleData>> grouped = {};
+        for (var schedule in scheduleList) {
+          if (!grouped.containsKey(schedule.type)) {
+            grouped[schedule.type] = [];
+          }
+          grouped[schedule.type]!.add(schedule);
+        }
+
+        groupedScheduleData.value = grouped;
+        hasData.value = scheduleList.isNotEmpty;
+        errorMessage.value = null;
+
+        debugPrint("✅ Scheduler data processed successfully. Items: ${scheduleList.length}");
+        debugPrint("📊 Grouped data: ${grouped.keys.toList()}");
+
+        // Log sample data for debugging
+        for (var schedule in scheduleList.take(3)) {
+          debugPrint("📋 Sample: ${schedule.toString()}");
+        }
+
+      } else {
+        debugPrint("⚠️ No data found in API response");
+        scheduleDataList.value = [];
+        groupedScheduleData.value = {};
+        hasData.value = false;
+      }
+
+    } catch (e) {
+      _handleError(e);
+    } finally {
+      _setLoadingState(false);
+    }
+  }
+
+  void _setLoadingState(bool loading) {
+    isLoading.value = loading;
+    if (loading) {
+      errorMessage.value = null;
+    }
+  }
+
+  void _handleError(Object error) {
+    final errorMsg = "Failed to load scheduler data: ${error.toString()}";
+    errorMessage.value = errorMsg;
+    hasData.value = false;
+    scheduleDataList.value = [];
+    groupedScheduleData.value = {};
+    debugPrint("❌ Error fetching scheduler data: $error");
   }
 
   // Get schedule data for specific day and type
-  ScheduleData? getScheduleForDayAndType(DateTime date, String scheduleType) {
-    final dayOfWeek = date.weekday; // 1 for Monday, 7 for Sunday
+  List<ScheduleData> getScheduleForDayAndType(DateTime date, String scheduleType) {
+    final DateFormat apiDateFormat = DateFormat('yyyy-MM-dd');
+    final targetDate = apiDateFormat.format(date);
 
-    if (scheduleData.value.containsKey(scheduleType) &&
-        scheduleData.value[scheduleType]!.containsKey(dayOfWeek)) {
-      return scheduleData.value[scheduleType]![dayOfWeek];
-    }
+    final allSchedules = groupedScheduleData.value[scheduleType] ?? [];
 
-    // Return default data if not found
-    if (scheduleType == "AM | DM") {
-      return ScheduleData(
-        type: scheduleType,
-        available: 3,
-        booked: date.weekday <= 5 ? 3 : 0, // 3 on weekdays, 0 on weekends
-        pending: 0,
-        appointments: _generateMockAppointments(date, scheduleType),
-      );
-    } else {
-      return ScheduleData(
-        type: scheduleType,
-        available: 5,
-        booked: date.weekday <= 5 ? 5 : 0, // 5 on weekdays, 0 on weekends
-        pending: 0,
-        appointments: _generateMockAppointments(date, scheduleType),
-      );
-    }
+    return allSchedules.where((schedule) => schedule.date == targetDate).toList();
   }
 
-  // Helper to generate mock appointments for the demo
-  List<AppointmentData> _generateMockAppointments(DateTime date, String scheduleType) {
-    if (date.weekday > 5) {
-      return []; // No appointments on weekends
-    }
+  // Get all schedule data for a specific day
+  List<ScheduleData> getScheduleForDay(DateTime date) {
+    final DateFormat apiDateFormat = DateFormat('yyyy-MM-dd');
+    final targetDate = apiDateFormat.format(date);
 
-    final List<AppointmentData> result = [];
-    final int count = scheduleType == "AM | DM" ? 3 : 5;
-
-    final List<String> names = [
-      "Michelle Montiel",
-      "Norelyn Espiritu",
-      "Shubham Khosla",
-      "John Smith",
-      "Jane Doe",
-      "Alex Johnson",
-      "Sarah Williams"
-    ];
-
-    for (int i = 0; i < count; i++) {
-      final startHour = 9 + i;
-      final endHour = 10 + i;
-      final status = i % 3 == 0 ? "Pending" : "Confirmed";
-
-      result.add(AppointmentData(
-        personName: names[i % names.length],
-        timeSlot: "$startHour:00 AM - $endHour:00 AM",
-        status: status,
-      ));
-    }
-
-    return result;
+    return scheduleDataList.value.where((schedule) => schedule.date == targetDate).toList();
   }
 
-  Future<void> fetchDashboardData() async {
+  // Get unique schedule types
+  List<String> getScheduleTypes() {
+    return groupedScheduleData.value.keys.toList();
+  }
+
+  // Statistics methods
+  int getTotalBookedForWeek() {
+    return scheduleDataList.value.fold(0, (sum, schedule) => sum + schedule.booked);
+  }
+
+  int getTotalAvailableForWeek() {
+    return scheduleDataList.value.fold(0, (sum, schedule) => sum + schedule.available);
+  }
+
+  int getTotalSlotsForWeek() {
+    return scheduleDataList.value.fold(0, (sum, schedule) => sum + schedule.totalSlots);
+  }
+
+  double getWeekUtilizationRate() {
+    final totalSlots = getTotalSlotsForWeek();
+    final bookedSlots = getTotalBookedForWeek();
+
+    return totalSlots > 0 ? (bookedSlots / totalSlots) : 0.0;
+  }
+
+  // Get aggregated data for a specific schedule type across the week
+  Map<String, int> getWeekSummaryForType(String scheduleType) {
+    final typeSchedules = groupedScheduleData.value[scheduleType] ?? [];
+
+    final totalSlots = typeSchedules.fold(0, (sum, schedule) => sum + schedule.totalSlots);
+    final booked = typeSchedules.fold(0, (sum, schedule) => sum + schedule.booked);
+    final available = typeSchedules.fold(0, (sum, schedule) => sum + schedule.available);
+
+    return {
+      'totalSlots': totalSlots,
+      'booked': booked,
+      'available': available,
+    };
+  }
+
+  // Date utility methods
+  bool isCurrentWeek(DateTime date) {
+    final now = DateTime.now();
+    final currentWeekStart = now.subtract(Duration(days: now.weekday - 1));
+    final currentWeekEnd = currentWeekStart.add(const Duration(days: 6));
+
+    return date.isAfter(currentWeekStart.subtract(const Duration(days: 1))) &&
+        date.isBefore(currentWeekEnd.add(const Duration(days: 1)));
+  }
+
+  bool isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
+  }
+
+  bool isPastDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final checkDate = DateTime(date.year, date.month, date.day);
+
+    return checkDate.isBefore(today);
+  }
+
+  bool isWeekend(DateTime date) {
+    return date.weekday > 5; // Saturday = 6, Sunday = 7
+  }
+
+  // Navigation helpers
+  void goToCurrentWeek() {
+    final now = DateTime.now();
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+
+    currentWeekStart.value = monday;
+    _currentWeekStart = monday;
+    fetchDashboardData();
+
+    debugPrint("📅 Navigated to current week: ${getFormattedWeekRange()}");
+  }
+
+  void goToSpecificWeek(DateTime date) {
+    final monday = date.subtract(Duration(days: date.weekday - 1));
+
+    currentWeekStart.value = monday;
+    _currentWeekStart = monday;
+    fetchDashboardData();
+
+    debugPrint("📅 Navigated to specific week: ${getFormattedWeekRange()}");
+  }
+
+  // Fetch job details with assigned applicants
+  Future<Map<String, dynamic>> fetchJobDetails(int jobPositionId) async {
     try {
-      isLoading.value = true;
-      errorMessage.value = null;
+      debugPrint("🔄 Fetching job details for ID: $jobPositionId");
 
-      debugPrint("🔄 Fetching client scheduler data...");
+      // Make API call to get job details and assigned applicants
+      final response = await _apiService.getJobDetails(jobPositionId);
 
-      // Simulating API call delay
-      await Future.delayed(const Duration(seconds: 2));
+      debugPrint("📡 Job Details API Response: $response");
 
-      // Simulate successful data fetch
-      final Map<String, Map<int, ScheduleData>> mockData = {};
+      // Parse the response based on your API structure
+      Map<String, dynamic> result = {
+        'jobDetails': {},
+        'assignedApplicants': [],
+      };
 
-      // Mock data for AM | DM
-      mockData["AM | DM"] = {};
-      for (int day = 1; day <= 7; day++) {
-        final DateTime date = currentWeekStart.value.add(Duration(days: day - 1));
-        mockData["AM | DM"]![day] = ScheduleData(
-          type: "AM | DM",
-          available: 3,
-          booked: day <= 5 ? 3 : 0, // 3 on weekdays, 0 on weekends
-          pending: 0,
-          appointments: _generateMockAppointments(date, "AM | DM"),
-        );
+      // Extract job details
+      if (response.containsKey('jobDetails')) {
+        result['jobDetails'] = response['jobDetails'];
+      } else if (response.containsKey('data')) {
+        result['jobDetails'] = response['data'];
+      } else {
+        // If the response structure is different, adapt accordingly
+        result['jobDetails'] = response;
       }
 
-      // Mock data for AM | OH
-      mockData["AM | OH"] = {};
-      for (int day = 1; day <= 7; day++) {
-        final DateTime date = currentWeekStart.value.add(Duration(days: day - 1));
-        mockData["AM | OH"]![day] = ScheduleData(
-          type: "AM | OH",
-          available: 5,
-          booked: day <= 5 ? 5 : 0, // 5 on weekdays, 0 on weekends
-          pending: 0,
-          appointments: _generateMockAppointments(date, "AM | OH"),
-        );
+      // Extract assigned applicants
+      if (response.containsKey('assignedApplicants')) {
+        result['assignedApplicants'] = response['assignedApplicants'];
+      } else if (response.containsKey('applicants')) {
+        result['assignedApplicants'] = response['applicants'];
+      } else if (response.containsKey('data') && response['data'] is Map) {
+        final data = response['data'] as Map<String, dynamic>;
+        if (data.containsKey('assignedApplicants')) {
+          result['assignedApplicants'] = data['assignedApplicants'];
+        }
       }
 
-      scheduleData.value = mockData;
-      hasData.value = true;
-
-      debugPrint("✅ Client scheduler data fetched. Has data: ${hasData.value}");
-    } catch (e) {
-      errorMessage.value = "Failed to load scheduler data: ${e.toString()}";
-      hasData.value = false;
-      debugPrint("❌ Error fetching client scheduler data: $e");
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  // Update appointment status
-  Future<void> updateAppointmentStatus(DateTime date, String scheduleType, String personName, String newStatus) async {
-    try {
-      // This would typically make an API call
-      debugPrint("Updating appointment status for $personName to $newStatus");
-
-      // For demo, just show a delay
-      isLoading.value = true;
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Refresh data after update
-      await fetchDashboardData();
+      debugPrint("✅ Job details processed successfully");
+      return result;
 
     } catch (e) {
-      errorMessage.value = "Failed to update appointment: ${e.toString()}";
-      debugPrint("❌ Error updating appointment: $e");
-    } finally {
-      isLoading.value = false;
+      debugPrint("❌ Error fetching job details: $e");
+      throw Exception("Failed to load job details: $e");
     }
   }
-
-  // Add a new appointment slot
-  Future<void> addAppointmentSlot(DateTime date, String scheduleType) async {
-    try {
-      // This would typically make an API call
-      debugPrint("Adding new appointment slot for ${DateFormat('yyyy-MM-dd').format(date)}, type: $scheduleType");
-
-      // For demo, just show a delay
-      isLoading.value = true;
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Refresh data after adding
-      await fetchDashboardData();
-
-    } catch (e) {
-      errorMessage.value = "Failed to add appointment slot: ${e.toString()}";
-      debugPrint("❌ Error adding appointment slot: $e");
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
+  // Cleanup
   void dispose() {
     debugPrint("🧹 Disposing ClientSchedulerController resources");
+
+    // Dispose all ValueNotifiers
     isLoading.dispose();
     errorMessage.dispose();
     hasData.dispose();
     currentWeekStart.dispose();
-    scheduleData.dispose();
+    scheduleDataList.dispose();
+    groupedScheduleData.dispose();
   }
 }

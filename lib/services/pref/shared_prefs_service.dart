@@ -12,6 +12,7 @@ class SharedPrefsService {
   static const String _usernameKey = 'username';
   static const String _fcmTokenKey = 'fcm_token';
   static const String _userIdKey = 'user_id';
+  static const String _loginTypeKey = 'login_type';
 
   // Private constructor
   SharedPrefsService._();
@@ -109,6 +110,16 @@ class SharedPrefsService {
   /// Gets the temporary login status
   int? getTempLoginStatus() {
     return _prefs.getInt(_isTempLoginKey);
+  }
+
+  /// Saves the login type (applicant/client)
+  Future<bool> saveLoginType(String loginType) async {
+    return await _prefs.setString(_loginTypeKey, loginType);
+  }
+
+  /// Gets the login type
+  String? getLoginType() {
+    return _prefs.getString(_loginTypeKey);
   }
 
   /// Saves the login response model data

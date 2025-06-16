@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
@@ -16,30 +17,15 @@ class ClintSendJobRequestController {
   final ValueNotifier<int> numberOfPersons = ValueNotifier<int>(0);
   final ValueNotifier<String?> selectedType = ValueNotifier<String?>(null);
 
-  // Options for dropdowns
-  final ValueNotifier<List<String>> shiftOptions = ValueNotifier<List<String>>([
-    '10:00 AM to 18:00 PM',
-    '07:30 AM to 15:30 PM',
-    '15:30 PM to 23:30 PM',
-    '23:30 PM to 07:30 AM',
-    'No shift assigned'
-  ]);
-
-  final ValueNotifier<List<String>> positionOptions = ValueNotifier<List<String>>([
-    'Office Help',
-    'Office Cleaner',
-    'Door Monitor',
-    'Outside Associate',
-  ]);
+  // Options for dropdowns - fetched from API
+  final ValueNotifier<List<Map<String, dynamic>>> shiftOptions = ValueNotifier<List<Map<String, dynamic>>>([]);
+  final ValueNotifier<List<Map<String, dynamic>>> positionOptions = ValueNotifier<List<Map<String, dynamic>>>([]);
 
   final ValueNotifier<List<String>> typeOptions = ValueNotifier<List<String>>([
     'Male',
     'Female',
     'Any',
   ]);
-
-  // List of job requests
-  final ValueNotifier<List<Map<String, dynamic>>> jobRequests = ValueNotifier<List<Map<String, dynamic>>>([]);
 
   ClintSendJobRequestController({ApiService? apiService})
       : _apiService = apiService ?? ApiService(ApiClient()) {
@@ -64,37 +50,11 @@ class ClintSendJobRequestController {
     numberOfPersons.value = number;
   }
 
-  void addMoreRequest() {
-    if (isValidRequest()) {
-      jobRequests.value = [...jobRequests.value, getCurrentRequestData()];
-
-      selectedShift.value = null;
-      selectedPosition.value = null;
-      selectedType.value = null;
-      numberOfPersons.value = 0;
-
-      debugPrint("✅ Added new job request. Total: ${jobRequests.value.length}");
-    } else {
-      errorMessage.value = "Please fill all required fields before adding more";
-      debugPrint("❌ Cannot add incomplete job request");
-    }
-  }
-
   bool isValidRequest() {
     return selectedShift.value != null &&
         selectedPosition.value != null &&
         selectedType.value != null &&
         numberOfPersons.value > 0;
-  }
-
-  Map<String, dynamic> getCurrentRequestData() {
-    return {
-      'shift': selectedShift.value,
-      'date': selectedDate.value,
-      'position': selectedPosition.value,
-      'numberOfPersons': numberOfPersons.value,
-      'type': selectedType.value,
-    };
   }
 
   Future<void> sendJobRequest() async {
@@ -108,26 +68,39 @@ class ClintSendJobRequestController {
       isLoading.value = true;
       errorMessage.value = null;
 
-      if (jobRequests.value.isEmpty) {
-        jobRequests.value = [getCurrentRequestData()];
-      } else if (isValidRequest()) {
-        jobRequests.value = [...jobRequests.value, getCurrentRequestData()];
+      debugPrint("🔄 Sending job request...");
+
+      // Prepare job request data
+      final jobRequestData = {
+        'shift_id': selectedShift.value,
+        'position_id': selectedPosition.value,
+        'no_of_persons': numberOfPersons.value.toString(),
+        'date': DateFormat('yyyy-MM-dd').format(selectedDate.value),
+        'gender': selectedType.value,
+      };
+
+      debugPrint("📤 Job request data: $jobRequestData");
+
+      // Call the API
+      final response = await _apiService.createJobRequest(jobRequestData);
+
+      debugPrint("📥 API Response: $response");
+
+      if (response['success'] == true) {
+        // Reset form after successful submission
+        selectedShift.value = null;
+        selectedPosition.value = null;
+        selectedType.value = null;
+        numberOfPersons.value = 0;
+        selectedDate.value = DateTime.now();
+
+        debugPrint("✅ Job request submitted successfully");
+      } else {
+        // Handle API error response
+        final errorMsg = response['message'] ?? 'Failed to submit job request';
+        errorMessage.value = errorMsg;
+        debugPrint("❌ API Error: $errorMsg");
       }
-
-      debugPrint("🔄 Sending job request(s): ${jobRequests.value.length}");
-
-      // Simulating API call delay
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Reset form after successful submission
-      selectedShift.value = null;
-      selectedPosition.value = null;
-      selectedType.value = null;
-      numberOfPersons.value = 0;
-      jobRequests.value = [];
-
-      debugPrint("✅ Job request(s) submitted successfully");
-
 
     } catch (e) {
       errorMessage.value = "Failed to submit job request: ${e.toString()}";
@@ -142,9 +115,13 @@ class ClintSendJobRequestController {
       isLoading.value = true;
       errorMessage.value = null;
 
-      debugPrint("🔄 Fetching form options data...");
+      debugPrint("🔄 Fetching shifts and positions data...");
 
-      await Future.delayed(const Duration(seconds: 1));
+      // Fetch shifts and positions from API
+      await Future.wait([
+        fetchShifts(),
+        fetchPositions(),
+      ]);
 
       hasData.value = true;
       debugPrint("✅ Form options loaded successfully");
@@ -157,25 +134,89 @@ class ClintSendJobRequestController {
     }
   }
 
+  Future<void> fetchShifts() async {
+    try {
+      debugPrint("🔄 Fetching shifts from API...");
+
+      final response = await _apiService.getClintShift();
+
+      if (response['success'] == true && response['data'] != null) {
+        final Map<String, dynamic> shiftsData = response['data'];
+        List<Map<String, dynamic>> shifts = [];
+
+        shiftsData.forEach((key, value) {
+          shifts.add({
+            'id': key,
+            'name': value,
+            'display': value,
+          });
+        });
+
+        shiftOptions.value = shifts;
+        debugPrint("✅ Shifts loaded: ${shifts.length} shifts");
+      } else {
+        throw Exception("Invalid response format for shifts");
+      }
+    } catch (e) {
+      debugPrint("❌ Error fetching shifts: $e");
+      // Fallback to default shifts if API fails
+      shiftOptions.value = [
+        {'id': '0', 'name': 'AM-10:00 to 18:00', 'display': 'AM-10:00 to 18:00'},
+        {'id': '1', 'name': 'AM-07:30 to 15:30', 'display': 'AM-07:30 to 15:30'},
+        {'id': '2', 'name': 'PM-15:30 to 23:30', 'display': 'PM-15:30 to 23:30'},
+        {'id': '3', 'name': 'NS-23:30 to 07:30', 'display': 'NS-23:30 to 07:30'},
+        {'id': '35', 'name': 'No shift assigned', 'display': 'No shift assigned'},
+      ];
+    }
+  }
+
+  Future<void> fetchPositions() async {
+    try {
+      debugPrint("🔄 Fetching positions from API...");
+
+      final response = await _apiService.getClintPositions();
+
+      if (response['success'] == true && response['data'] != null) {
+        final Map<String, dynamic> positionsData = response['data'];
+        List<Map<String, dynamic>> positions = [];
+
+        positionsData.forEach((key, value) {
+          positions.add({
+            'id': key,
+            'name': value,
+            'display': value,
+          });
+        });
+
+        positionOptions.value = positions;
+        debugPrint("✅ Positions loaded: ${positions.length} positions");
+      } else {
+        throw Exception("Invalid response format for positions");
+      }
+    } catch (e) {
+      debugPrint("❌ Error fetching positions: $e");
+      // Fallback to default positions if API fails
+      positionOptions.value = [
+        {'id': '22', 'name': 'Office Help', 'display': 'Office Help'},
+        {'id': '16', 'name': 'Office Cleaner', 'display': 'Office Cleaner'},
+        {'id': '39', 'name': 'Door Monitor', 'display': 'Door Monitor'},
+        {'id': '43', 'name': 'Outside Associate', 'display': 'Outside Associate'},
+      ];
+    }
+  }
+
   void dispose() {
     debugPrint("🧹 Disposing ClintSendJobRequestController resources");
     isLoading.dispose();
     errorMessage.dispose();
     hasData.dispose();
-
-    // Dispose form field notifiers
     selectedShift.dispose();
     selectedDate.dispose();
     selectedPosition.dispose();
     numberOfPersons.dispose();
     selectedType.dispose();
-
-    // Dispose options notifiers
     shiftOptions.dispose();
     positionOptions.dispose();
     typeOptions.dispose();
-
-    // Dispose job requests notifier
-    jobRequests.dispose();
   }
 }
