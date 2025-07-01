@@ -405,8 +405,8 @@ class MoreController {
 
     try {
       await _initializeWithToken();
-      final response = await _apiService.getUserLogout();
-      debugPrint('👋 Logout response: $response');
+      // final response = await _apiService.getUserLogout();
+      // debugPrint('👋 Logout response: $response');
 
       await SharedPrefsService.instance.clear();
       _resetState();

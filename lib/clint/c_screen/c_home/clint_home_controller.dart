@@ -68,7 +68,7 @@ class ClientHomeController {
         _apiService.client.addAuthToken(token);
       }
 
-      await _apiService.getUserLogout();
+      // await _apiService.getUserLogout();
       debugPrint("✅ Client logout API call successful");
 
       await SharedPrefsService.instance.clear();

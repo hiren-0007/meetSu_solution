@@ -81,10 +81,8 @@ class FirebaseMessagingService {
 
   Future<void> saveAndSendTokenToServer(String? token) async {
     if (token != null) {
-      // Always save token locally
       await SharedPrefsService.saveFcmToken(token);
 
-      // Check if we should send token to server based on login type
       if (!_shouldSendFcmToken()) {
         print('Skipping FCM token API call - user is not an applicant');
         return;

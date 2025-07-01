@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
+import 'package:meetsu_solutions/services/firebase/firebase_messaging_service.dart';
 
 class HomeController {
   final ApiService _apiService;
+  final FirebaseMessagingService _firebaseMessagingService = FirebaseMessagingService();
   final ValueNotifier<int> selectedIndex = ValueNotifier<int>(0);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
@@ -24,7 +26,18 @@ class HomeController {
       _apiService.client.addAuthToken(token);
     }
 
-    debugPrint("🔄 Initializing Home Controller...");
+
+    _sendFcmTokenOnHomeLoad();
+  }
+
+  Future<void> _sendFcmTokenOnHomeLoad() async {
+    try {
+      debugPrint("🔥 Sending FCM token on home page load...");
+      await _firebaseMessagingService.sendTokenToServerAfterLogin();
+      debugPrint("✅ FCM token sent successfully on home load");
+    } catch (e) {
+      debugPrint("❌ Error sending FCM token on home load: $e");
+    }
   }
 
   void changeTab(int index) {
@@ -136,6 +149,10 @@ class HomeController {
     try {
       debugPrint("🔄 Refreshing dashboard data...");
       await Future.delayed(const Duration(seconds: 1));
+
+      // 🔥 Dashboard refresh के समय भी FCM token भेजें
+      await _sendFcmTokenOnHomeLoad();
+
       debugPrint("✅ Dashboard data refreshed");
     } catch (e) {
       errorMessage.value = "Failed to refresh dashboard data: ${e.toString()}";
@@ -170,7 +187,7 @@ class HomeController {
         _apiService.client.addAuthToken(token);
       }
 
-      await _apiService.getUserLogout();
+      // await _apiService.getUserLogout();
       debugPrint("✅ Logout API call successful");
 
       await SharedPrefsService.instance.clear();
