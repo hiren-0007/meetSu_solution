@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "50475543056",
-    "project_id": "meetsusolutions-f2b20",
-    "storage_bucket": "meetsusolutions-f2b20.firebasestorage.app"
+    "project_number": "886703603313",
+    "project_id": "meetsu-ebe21",
+    "storage_bucket": "meetsu-ebe21.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:50475543056:android:c7695c1312babee166b895",
+        "mobilesdk_app_id": "1:886703603313:android:5162e069d9854c391ea5d0",
         "android_client_info": {
           "package_name": "app.meetsusolutions"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDcYOPFZ4czKabvVNqKKJ5saHM3inhnmms"
+          "current_key": "AIzaSyBjYotv-ryiFG1DLEat-WilDfs5C3Cn5UY"
         }
       ],
       "services": {

@@ -27,10 +27,6 @@ class FirebaseMessagingService {
 
   Future<void> initialize() async {
     try {
-      // Firebase core should already be initialized in main.dart
-      print('Setting up Firebase Messaging');
-
-      // Request permissions for notifications based on platform
       await requestNotificationPermissions();
 
       await setupFirebaseMessaging();
@@ -58,8 +54,9 @@ class FirebaseMessagingService {
       PermissionStatus status = await Permission.notification.status;
       if (status.isDenied) {
         await Permission.notification.request();
-        print('Android notification permissions requested');
+        print('🤖 Android notification permissions requested');
       }
+      print('🤖 Android notification status: $status');
     }
   }
 
@@ -109,13 +106,15 @@ class FirebaseMessagingService {
         final response = await apiService.fcmToken(tokenData);
 
         if (response['success'] == true) {
-          print('FCM token sent to server successfully: ${response['message']}');
+          print('✅ FCM token sent to server successfully: ${response['message']}');
         } else {
-          print('Failed to send FCM token to server: ${response['message']}');
+          print('❌ Failed to send FCM token to server: ${response['message']}');
         }
       } catch (e) {
-        print('Error sending FCM token to server: $e');
+        print('❌ Error sending FCM token to server: $e');
       }
+    } else {
+      print('❌ FCM Token is null!');
     }
   }
 
@@ -142,10 +141,12 @@ class FirebaseMessagingService {
       await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(foregroundChannel);
+
     }
   }
 
   void handleNotificationNavigation(Map<String, dynamic> data, BuildContext? context) {
+
     if (data.containsKey('type')) {
       switch(data['type']) {
         case 'training':
@@ -176,7 +177,6 @@ class FirebaseMessagingService {
     }
 
     String? token = await FirebaseMessaging.instance.getToken();
-    print('🔥 FCM Token: $token');
     await saveAndSendTokenToServer(token);
 
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
@@ -206,13 +206,14 @@ class FirebaseMessagingService {
             final data = jsonDecode(details.payload!);
             handleNotificationNavigation(data, navigatorKey.currentContext);
           } catch (e) {
-            print('Error handling notification response: $e');
+            print('❌ Error handling notification response: $e');
           }
         }
       },
     );
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+
       RemoteNotification? notification = message.notification;
 
       if (notification != null) {
@@ -248,6 +249,7 @@ class FirebaseMessagingService {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       handleNotificationNavigation(message.data, navigatorKey.currentContext);
     });
+
   }
 
   Future<void> sendTokenToServerAfterLogin() async {
