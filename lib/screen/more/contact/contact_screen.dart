@@ -106,7 +106,7 @@ class _ContactScreenState extends State<ContactScreen>
             end: Alignment.bottomCenter,
             colors: [
               AppTheme.primaryColor,
-              AppTheme.primaryColor.withOpacity(0.8),
+              AppTheme.primaryColor.withValues(alpha: 0.8),
             ],
           ),
         ),
@@ -146,8 +146,8 @@ class _ContactScreenState extends State<ContactScreen>
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.white.withOpacity(0.2),
-          border: Border.all(color: Colors.white.withOpacity(0.3)),
+          color: Colors.white.withValues(alpha: 0.2),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
         ),
         child: const Icon(
           Icons.arrow_back,
@@ -166,7 +166,7 @@ class _ContactScreenState extends State<ContactScreen>
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             spreadRadius: 1,
             blurRadius: 8,
             offset: const Offset(0, 3),
@@ -178,7 +178,7 @@ class _ContactScreenState extends State<ContactScreen>
         children: [
           CircleAvatar(
             radius: 12,
-            backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
             child: Icon(
               Icons.person,
               size: 14,
@@ -187,7 +187,7 @@ class _ContactScreenState extends State<ContactScreen>
           ),
           const SizedBox(width: 8),
           Text(
-            SharedPrefsService.instance.getUsername() ?? "User",
+            SharedPrefsService.instance.getUsername(),
             style: const TextStyle(
               color: Colors.black87,
               fontSize: 12,
@@ -208,7 +208,7 @@ class _ContactScreenState extends State<ContactScreen>
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 20,
               spreadRadius: 3,
             ),
@@ -234,7 +234,7 @@ class _ContactScreenState extends State<ContactScreen>
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               spreadRadius: 3,
               offset: const Offset(0, 5),
@@ -255,10 +255,9 @@ class _ContactScreenState extends State<ContactScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildSubjectField(),
-                      SizedBox(height: AppTheme.contentSpacing + 8),
+                      SizedBox(height: AppTheme.contentSpacing),
                       _buildQueryField(),
-                      SizedBox(height: AppTheme.contentSpacing + 8),
-                      _buildFormProgress(),
+                      SizedBox(height: AppTheme.contentSpacing),
                       _buildHelpText(),
                       _buildErrorMessage(),
                       _buildSubmitButton(),
@@ -281,8 +280,8 @@ class _ContactScreenState extends State<ContactScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.primaryColor.withOpacity(0.1),
-            AppTheme.primaryColor.withOpacity(0.05),
+            AppTheme.primaryColor.withValues(alpha: 0.1),
+            AppTheme.primaryColor.withValues(alpha: 0.05),
           ],
         ),
         borderRadius: const BorderRadius.only(
@@ -441,9 +440,9 @@ class _ContactScreenState extends State<ContactScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -479,7 +478,7 @@ class _ContactScreenState extends State<ContactScreen>
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(prefixIcon, color: color, size: 20),
@@ -490,7 +489,7 @@ class _ContactScreenState extends State<ContactScreen>
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: color.withOpacity(0.3)),
+        borderSide: BorderSide(color: color.withValues(alpha: 0.3)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -511,64 +510,6 @@ class _ContactScreenState extends State<ContactScreen>
     );
   }
 
-  Widget _buildFormProgress() {
-    return ValueListenableBuilder<bool>(
-      valueListenable: _controller.isFormValid,
-      builder: (context, isValid, _) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.assignment_turned_in,
-                    size: 16,
-                    color: isValid ? Colors.green : Colors.grey,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    "Form Completion",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: isValid ? Colors.green : Colors.grey,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    isValid ? "Ready to submit" : "Fill required fields",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isValid ? Colors.green : Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              LinearProgressIndicator(
-                value: _getFormProgress(),
-                backgroundColor: Colors.grey.shade200,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  isValid ? Colors.green : AppTheme.primaryColor,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  double _getFormProgress() {
-    double progress = 0;
-
-    if (_controller.hasMinimumSubjectLength) progress += 0.5;
-    if (_controller.hasMinimumQueryLength) progress += 0.5;
-
-    return progress;
-  }
 
   Widget _buildHelpText() {
     return Container(
@@ -617,14 +558,14 @@ class _ContactScreenState extends State<ContactScreen>
               gradient: LinearGradient(
                 colors: [
                   Colors.red.shade50,
-                  Colors.red.shade50.withOpacity(0.5),
+                  Colors.red.shade50.withValues(alpha: 0.5),
                 ],
               ),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.red.shade200),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -710,7 +651,7 @@ class _ContactScreenState extends State<ContactScreen>
                       : Colors.grey.shade400,
                   foregroundColor: Colors.white,
                   elevation: isValid ? 6 : 2,
-                  shadowColor: AppTheme.primaryColor.withOpacity(0.3),
+                  shadowColor: AppTheme.primaryColor.withValues(alpha: 0.3),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -733,7 +674,7 @@ class _ContactScreenState extends State<ContactScreen>
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                   ],
@@ -758,7 +699,7 @@ class _ContactScreenState extends State<ContactScreen>
                       Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(

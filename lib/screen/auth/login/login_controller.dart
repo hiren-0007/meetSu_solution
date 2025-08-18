@@ -11,32 +11,31 @@ import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 import 'package:meetsu_solutions/services/firebase/firebase_messaging_service.dart';
 
 class LoginController {
-  // Text controllers
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  // State notifiers
   final ValueNotifier<bool> obscureText = ValueNotifier<bool>(true);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
 
-  // Services - using lazy initialization
   late final ApiService _apiService = ApiService(ApiClient());
   late final LocationService _locationService = LocationService();
   late final FirebaseMessagingService _firebaseMessagingService = FirebaseMessagingService();
 
-  // Constants for error messages
+  bool _isDisposed = false;
+
   static const String _emptyFieldsError = "Please enter both username and password";
   static const String _authFailedError = "Authentication failed. Please check your credentials.";
   static const String _invalidCredentialsError = "Invalid username or password";
 
-  /// Toggles password visibility
   void togglePasswordVisibility() {
+    if (_isDisposed) return;
     obscureText.value = !obscureText.value;
   }
 
-  /// Performs login operation
   Future<bool> login(BuildContext context) async {
+    if (_isDisposed || !context.mounted) return false;
+
     if (!_validateInputs()) return false;
 
     _setLoadingState(true);
@@ -44,6 +43,9 @@ class LoginController {
     try {
       final loginRequest = _createLoginRequest();
       final response = await _apiService.loginUser(loginRequest.toJson());
+
+      if (_isDisposed || !context.mounted) return false;
+
       final loginResponse = LoginResponseModel.fromJson(response);
 
       if (!_isValidLoginResponse(loginResponse)) {
@@ -55,15 +57,20 @@ class LoginController {
       return true;
 
     } catch (e) {
-      _handleLoginError(e);
+      if (!_isDisposed) {
+        _handleLoginError(e);
+      }
       return false;
     } finally {
-      _setLoadingState(false);
+      if (!_isDisposed) {
+        _setLoadingState(false);
+      }
     }
   }
 
-  /// Validates user inputs
   bool _validateInputs() {
+    if (_isDisposed) return false;
+
     final username = emailController.text.trim();
     final password = passwordController.text;
 
@@ -76,7 +83,6 @@ class LoginController {
     return true;
   }
 
-  /// Creates login request model
   LoginRequestModel _createLoginRequest() {
     return LoginRequestModel(
       username: emailController.text.trim(),
@@ -84,53 +90,67 @@ class LoginController {
     );
   }
 
-  /// Validates login response
   bool _isValidLoginResponse(LoginResponseModel response) {
     return response.accessToken != null && response.accessToken!.isNotEmpty;
   }
 
-  /// Handles successful login
   Future<void> _handleSuccessfulLogin(
       LoginResponseModel loginResponse,
       BuildContext context,
       ) async {
+    if (_isDisposed || !context.mounted) return;
 
-    // 🔥 IMPORTANT: Save login type FIRST before other operations
-    if (loginResponse.login != null && loginResponse.login!.isNotEmpty) {
-      await SharedPrefsService.instance.saveLoginType(loginResponse.login!);
-    } else {
-      print("⚠️ Warning: Login type is null or empty in response");
-    }
+    try {
+      if (loginResponse.login != null && loginResponse.login!.isNotEmpty) {
+        await SharedPrefsService.instance.saveLoginType(loginResponse.login!);
+      } else {
+        debugPrint("Warning: Login type is null or empty in response");
+      }
 
-    // Save other login data
-    await Future.wait([
-      SharedPrefsService.instance.saveLoginResponse(loginResponse),
-      SharedPrefsService.instance.saveUsername(emailController.text.trim()),
-    ]);
+      await Future.wait([
+        SharedPrefsService.instance.saveLoginResponse(loginResponse),
+        SharedPrefsService.instance.saveUsername(emailController.text.trim()),
+      ]);
 
-    // Send Firebase token
-    await _firebaseMessagingService.sendTokenToServerAfterLogin();
+      if (_isDisposed || !context.mounted) return;
 
-    // Navigate to appropriate screen based on login type
-    if (context.mounted) {
-      await _requestLocationPermission(context);
-      await _navigateBasedOnLoginType(context, loginResponse.login);
+      try {
+        await _firebaseMessagingService.sendTokenToServerAfterLogin();
+      } catch (e) {
+        debugPrint("Firebase token error: $e");
+      }
+
+      if (!_isDisposed && context.mounted) {
+        await _requestLocationPermission(context);
+        if (!_isDisposed && context.mounted) {
+          await _navigateBasedOnLoginType(context, loginResponse.login);
+        }
+      }
+    } catch (e) {
+      debugPrint("Error in successful login handler: $e");
+      if (!_isDisposed) {
+        _setError("Login successful but navigation failed. Please try again.");
+      }
     }
   }
 
-  /// Handles login errors
   void _handleLoginError(dynamic error) {
+    if (_isDisposed) return;
+
+    debugPrint("Login error: $error");
+
     if (error is HttpException) {
       _setError(error.statusCode == 401
           ? _invalidCredentialsError
           : "Server error: ${error.message}");
     } else {
-      _setError("An error occurred: ${error.toString()}");
+      _setError("An error occurred. Please check your connection and try again.");
     }
   }
 
-  /// Requests location permission
   Future<void> _requestLocationPermission(BuildContext context) async {
+    if (_isDisposed || !context.mounted) return;
+
     try {
       await _locationService.handleLocationPermission(context);
     } catch (e) {
@@ -138,10 +158,10 @@ class LoginController {
     }
   }
 
-  /// Navigates based on login type
   Future<void> _navigateBasedOnLoginType(BuildContext context, String? loginType) async {
-    Widget destinationScreen;
+    if (_isDisposed || !context.mounted) return;
 
+    Widget destinationScreen;
 
     switch (loginType?.toLowerCase()) {
       case 'applicant':
@@ -151,48 +171,84 @@ class LoginController {
         destinationScreen = const ClientHomeScreen();
         break;
       default:
+        debugPrint("Unknown login type: $loginType, defaulting to HomeScreen");
         destinationScreen = const HomeScreen();
         break;
     }
 
-    await Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => destinationScreen),
-    );
+    try {
+      if (!_isDisposed && context.mounted) {
+        await Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => destinationScreen),
+              (route) => false,
+        );
+      }
+    } catch (e) {
+      debugPrint("Navigation error: $e");
+      if (!_isDisposed && context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => destinationScreen),
+        );
+      }
+    }
   }
 
-  /// Navigates to signup screen
   void navigateToSignup(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SignupScreen()),
-    );
+    if (_isDisposed || !context.mounted) return;
+
+    try {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SignupScreen()),
+      );
+    } catch (e) {
+      debugPrint("Navigation to signup error: $e");
+    }
   }
 
-  /// Helper methods for state management
   void _setLoadingState(bool loading) {
-    isLoading.value = loading;
+    if (_isDisposed) return;
+
+    if (isLoading.value != loading) {
+      isLoading.value = loading;
+    }
   }
 
   void _setError(String error) {
-    errorMessage.value = error;
+    if (_isDisposed) return;
+
+    if (errorMessage.value != error) {
+      errorMessage.value = error;
+    }
   }
 
   void _clearError() {
-    errorMessage.value = null;
+    if (_isDisposed) return;
+
+    if (errorMessage.value != null) {
+      errorMessage.value = null;
+    }
   }
 
-  /// Disposes all resources
   void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    obscureText.dispose();
-    isLoading.dispose();
-    errorMessage.dispose();
+    if (_isDisposed) return;
+
+    _isDisposed = true;
+
+    try {
+      emailController.dispose();
+      passwordController.dispose();
+      obscureText.dispose();
+      isLoading.dispose();
+      errorMessage.dispose();
+    } catch (e) {
+      debugPrint("Error disposing LoginController: $e");
+    }
   }
 }
 
-/// Custom exception for HTTP errors
 class HttpException implements Exception {
   final int statusCode;
   final String message;

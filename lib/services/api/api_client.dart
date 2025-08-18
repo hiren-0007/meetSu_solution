@@ -31,17 +31,12 @@ class ApiClient {
   // Handle 401 Unauthorized
   void _handle401(http.Response response) async {
     try {
-      debugPrint('🚫 401 Unauthorized - Logging out user');
 
-      // Clear all data from SharedPreferences
       await SharedPrefsService.instance.clear();
 
-      // Remove auth token from headers
       removeAuthToken();
 
-      // Check if we can navigate
       if (navigatorKey.currentState != null) {
-        // Navigate to login screen and remove all previous routes
         navigatorKey.currentState!.pushNamedAndRemoveUntil(
           '/login',
               (route) => false,
@@ -98,10 +93,8 @@ class ApiClient {
       final uri = Uri.parse(baseUrlNew + endpoint);
 
       if (useFormData) {
-        // Use form-data approach
         final request = http.MultipartRequest('POST', uri);
 
-        // Add headers (excluding Content-Type which will be set automatically)
         Map<String, String> headers = Map.from(_headers);
         headers.remove('Content-Type');
         request.headers.addAll(headers);
@@ -249,19 +242,16 @@ class ApiClient {
       final uri = Uri.parse(baseUrlNew + endpoint);
       final request = http.MultipartRequest('POST', uri);
 
-      // Add headers (except content-type which will be set automatically for multipart)
       Map<String, String> headers = Map.from(_headers);
-      headers.remove('Content-Type'); // Let MultipartRequest set this
+      headers.remove('Content-Type');
       request.headers.addAll(headers);
 
-      // Add text fields
       if (body != null) {
         body.forEach((key, value) {
           request.fields[key] = value.toString();
         });
       }
 
-      // Add file if provided
       if (file != null && fileField != null) {
         final fileStream = http.ByteStream(file.openRead());
         final fileLength = await file.length();

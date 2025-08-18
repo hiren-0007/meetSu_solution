@@ -150,7 +150,6 @@ class HomeController {
       debugPrint("🔄 Refreshing dashboard data...");
       await Future.delayed(const Duration(seconds: 1));
 
-      // 🔥 Dashboard refresh के समय भी FCM token भेजें
       await _sendFcmTokenOnHomeLoad();
 
       debugPrint("✅ Dashboard data refreshed");

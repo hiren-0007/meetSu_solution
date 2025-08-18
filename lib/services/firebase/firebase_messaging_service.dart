@@ -4,23 +4,26 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:meetsu_solutions/screen/home/home_screen.dart';
+import 'package:meetsu_solutions/screen/more/more_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
-
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
-
 import 'package:meetsu_solutions/main.dart' show navigatorKey;
 
 class FirebaseMessagingService {
-  static final FirebaseMessagingService _instance = FirebaseMessagingService._internal();
+  static final FirebaseMessagingService _instance =
+      FirebaseMessagingService._internal();
   factory FirebaseMessagingService() => _instance;
+
   FirebaseMessagingService._internal();
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
-  static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  static Future<void> _firebaseMessagingBackgroundHandler(
+      RemoteMessage message) async {
     await Firebase.initializeApp();
     print('💥 Background Message: ${message.messageId}');
   }
@@ -36,7 +39,6 @@ class FirebaseMessagingService {
   }
 
   Future<void> requestNotificationPermissions() async {
-    // For iOS notification permissions
     if (Platform.isIOS) {
       await FirebaseMessaging.instance.requestPermission(
         alert: true,
@@ -47,10 +49,7 @@ class FirebaseMessagingService {
         announcement: false,
       );
       print('iOS notification permissions requested');
-    }
-    // For Android 13+ (API level 33+)
-    else if (Platform.isAndroid) {
-      // Using permission_handler for Android
+    } else if (Platform.isAndroid) {
       PermissionStatus status = await Permission.notification.status;
       if (status.isDenied) {
         await Permission.notification.request();
@@ -60,11 +59,9 @@ class FirebaseMessagingService {
     }
   }
 
-  /// Check if FCM token should be sent based on login type
   bool _shouldSendFcmToken() {
     final loginType = SharedPrefsService.instance.getLoginType();
 
-    // Only send FCM token for applicant users, not for client users
     if (loginType == null || loginType.isEmpty) {
       print('Login type not found, skipping FCM token');
       return false;
@@ -96,17 +93,19 @@ class FirebaseMessagingService {
         apiClient.addAuthToken(accessToken);
         final apiService = ApiService(apiClient);
 
-        final deviceType = Platform.isAndroid ? '1' : Platform.isIOS ? '2' : '3';
+        final deviceType = Platform.isAndroid
+            ? '1'
+            : Platform.isIOS
+                ? '2'
+                : '3';
 
-        final tokenData = {
-          'token': token,
-          'device_type': deviceType
-        };
+        final tokenData = {'token': token, 'device_type': deviceType};
 
         final response = await apiService.fcmToken(tokenData);
 
         if (response['success'] == true) {
-          print('✅ FCM token sent to server successfully: ${response['message']}');
+          print(
+              '✅ FCM token sent to server successfully: ${response['message']}');
         } else {
           print('❌ Failed to send FCM token to server: ${response['message']}');
         }
@@ -121,47 +120,71 @@ class FirebaseMessagingService {
   Future<void> setupNotificationChannels() async {
     if (Platform.isAndroid) {
       const AndroidNotificationChannel channel = AndroidNotificationChannel(
-        'default_channel', // id
-        'Default Notifications', // title
-        description: 'Used for default notifications', // description
+        'default_channel',
+        'Default Notifications',
+        description: 'Used for default notifications',
         importance: Importance.high,
       );
 
-      const AndroidNotificationChannel foregroundChannel = AndroidNotificationChannel(
-        'foreground_channel', // id
-        'Foreground Service', // title
-        description: 'Used for foreground service notifications', // description
+      const AndroidNotificationChannel foregroundChannel =
+          AndroidNotificationChannel(
+        'foreground_channel',
+        'Foreground Service',
+        description: 'Used for foreground service notifications',
         importance: Importance.low,
       );
 
       await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(channel);
 
       await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(foregroundChannel);
-
     }
   }
 
   void handleNotificationNavigation(Map<String, dynamic> data, BuildContext? context) {
+    debugPrint('notification is_quiz: ${data['is_quiz']}');
 
-    if (data.containsKey('type')) {
-      switch(data['type']) {
-        case 'training':
-          if (context != null) {
-            Navigator.of(context).pushNamed('/trainings');
-          }
-          break;
-        case 'profile':
-          if (context != null) {
-            Navigator.of(context).pushNamed('/profile');
-          }
-          break;
-      }
+    if (context == null) return;
+
+    final isQuiz = data['is_quiz']?.toString() ?? '';
+
+    if (isQuiz == '1') {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            title: const Text(
+              "Quiz",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: Text('Check Your Quiz Option In Dashboard Screen'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const MoreScreen()),
+      );
     }
   }
+
 
   Future<void> setupFirebaseMessaging() async {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -169,7 +192,8 @@ class FirebaseMessagingService {
     await setupNotificationChannels();
 
     if (Platform.isIOS) {
-      await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions(
         alert: true,
         badge: true,
         sound: true,
@@ -184,16 +208,17 @@ class FirebaseMessagingService {
     });
 
     const AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const DarwinInitializationSettings initializationSettingsIOS =
-    DarwinInitializationSettings(
+        DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
       requestSoundPermission: false,
     );
 
-    const InitializationSettings initializationSettings = InitializationSettings(
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsIOS,
     );
@@ -205,6 +230,7 @@ class FirebaseMessagingService {
           try {
             final data = jsonDecode(details.payload!);
             handleNotificationNavigation(data, navigatorKey.currentContext);
+            debugPrint('notification type2 ${data['type']}');
           } catch (e) {
             print('❌ Error handling notification response: $e');
           }
@@ -213,7 +239,6 @@ class FirebaseMessagingService {
     );
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-
       RemoteNotification? notification = message.notification;
 
       if (notification != null) {
@@ -240,20 +265,24 @@ class FirebaseMessagingService {
       }
     });
 
-    FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+    FirebaseMessaging.instance
+        .getInitialMessage()
+        .then((RemoteMessage? message) {
       if (message != null) {
         handleNotificationNavigation(message.data, navigatorKey.currentContext);
+        debugPrint('notification type3 ${message.data['type']}');
       }
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       handleNotificationNavigation(message.data, navigatorKey.currentContext);
+      debugPrint('notification type4 ${message.data['type']}');
     });
-
   }
 
   Future<void> sendTokenToServerAfterLogin() async {
     final token = await SharedPrefsService.getFcmToken();
     await saveAndSendTokenToServer(token);
   }
+
 }

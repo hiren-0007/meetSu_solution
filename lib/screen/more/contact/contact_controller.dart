@@ -30,9 +30,9 @@ class ContactController {
   static const Duration _timeoutDuration = Duration(seconds: 30);
 
   // Validation constants
-  static const int _minSubjectLength = 5;
+  static const int _minSubjectLength = 1;
   static const int _maxSubjectLength = 100;
-  static const int _minQueryLength = 10;
+  static const int _minQueryLength = 1;
   static const int _maxQueryLength = 500;
 
   ContactController({ApiService? apiService})
@@ -54,11 +54,6 @@ class ContactController {
       return 'Subject must not exceed $_maxSubjectLength characters';
     }
 
-    // Check for meaningful content
-    if (value.trim().split(' ').length < 2) {
-      return 'Please provide a more descriptive subject';
-    }
-
     return null;
   }
 
@@ -75,11 +70,6 @@ class ContactController {
     }
     if (trimmedLength > _maxQueryLength) {
       return 'Query must not exceed $_maxQueryLength characters';
-    }
-
-    // Check for meaningful content
-    if (value.trim().split(' ').length < 3) {
-      return 'Please provide more details about your query';
     }
 
     return null;
@@ -101,9 +91,7 @@ class ContactController {
     return subject.length >= _minSubjectLength &&
         subject.length <= _maxSubjectLength &&
         query.length >= _minQueryLength &&
-        query.length <= _maxQueryLength &&
-        subject.split(' ').length >= 2 &&
-        query.split(' ').length >= 3;
+        query.length <= _maxQueryLength;
   }
 
   void _updateCharCounts() {
@@ -221,12 +209,10 @@ class ContactController {
         lastException = e is Exception ? e : Exception(e.toString());
         debugPrint("⚠️ Attempt $attempt failed: $e");
 
-        // Don't retry on authentication errors
         if (_isAuthError(e)) {
           throw const AuthenticationException("Session expired. Please log in again.");
         }
 
-        // Don't retry on validation errors
         if (_isValidationError(e)) {
           throw Exception("Invalid data submitted. Please check your inputs.");
         }
@@ -363,14 +349,12 @@ class ContactController {
     subjectCharCount.value = 0;
     queryCharCount.value = 0;
 
-    // Clear messages after a delay to allow user to read success message
     await Future.delayed(const Duration(seconds: 1));
     if (!_isDisposed) {
       clearMessages();
     }
   }
 
-  // Enhanced validation with real-time feedback
   void initListeners() {
     subjectController.addListener(() {
       validateForm();

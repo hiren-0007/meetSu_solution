@@ -247,31 +247,3 @@ class _LoginButton extends StatelessWidget {
   }
 }
 
-/*
-class _SignupPrompt extends StatelessWidget {
-  const _SignupPrompt({required this.controller});
-
-  final LoginController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            "Don't have an account?",
-            style: AppTheme.smallTextStyle,
-          ),
-          TextButton(
-            onPressed: () => controller.navigateToSignup(context),
-            child: const Text(
-              "Sign Up",
-              style: AppTheme.linkTextStyle,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}*/
