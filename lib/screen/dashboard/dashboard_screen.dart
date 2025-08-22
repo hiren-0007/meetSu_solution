@@ -409,32 +409,27 @@ class _DashboardScreenState extends State<DashboardScreen>
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       child: ad.imageUrl?.isNotEmpty == true
-          ? SizedBox(
+          ? Image.network(
+        ad.imageUrl!,
+        fit: BoxFit.fitWidth, // 👈 Poora image dikhega, width ke hisab se scale hoga
         width: double.infinity,
-        height: 200,
-        child: Image.network(
-          ad.imageUrl!,
-          fit: BoxFit.contain,
-          width: double.infinity,
-          height: 200,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Container(
-              height: 200,
-              alignment: Alignment.center,
-              color: Colors.grey.shade50,
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                    loadingProgress.expectedTotalBytes!
-                    : null,
-                strokeWidth: 2,
-                color: AppTheme.primaryColor,
-              ),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
-        ),
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            alignment: Alignment.center,
+            color: Colors.grey.shade50,
+            height: 200,
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                  loadingProgress.expectedTotalBytes!
+                  : null,
+              strokeWidth: 2,
+              color: AppTheme.primaryColor,
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
       )
           : _buildFallbackImage(),
     );

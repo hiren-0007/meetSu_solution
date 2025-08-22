@@ -281,6 +281,15 @@ class MoreController {
       desiredAccuracy: LocationAccuracy.high,
       timeLimit: const Duration(seconds: 10),
     );
+
+    //return await Geolocator.getCurrentPosition(
+    //       locationSettings: AndroidSettings(
+    //         accuracy: LocationAccuracy.high,
+    //         distanceFilter: 0,
+    //         forceLocationManager: false,
+    //         intervalDuration: const Duration(seconds: 10),
+    //       ),
+    //     );
   }
 
   /// Update check-in state from API response
