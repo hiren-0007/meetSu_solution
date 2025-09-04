@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:intl/intl.dart';
 import 'package:meetsu_solutions/model/job&ads/ads/ads_response_model.dart';
 import 'package:meetsu_solutions/utils/theme/app_theme.dart';
 import 'package:meetsu_solutions/screen/dashboard/dashboard_controller.dart';
 import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -45,6 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         _startAutoScroll();
       }
     }
+    debugPrint('_currentAdIndex : $_currentAdIndex');
   }
 
   void _startAutoScroll() {
@@ -118,14 +120,14 @@ class _DashboardScreenState extends State<DashboardScreen>
       margin: EdgeInsets.all(horizontalPadding),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.8)],
+          colors: [AppTheme.primaryColor, AppTheme.primaryColor.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withOpacity(0.3),
+            color: AppTheme.primaryColor.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -203,18 +205,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                 );
               },
             ),
-
-            SizedBox(height: largeSpacing),
-
-            // Advertisements Title
-            const Text(
-              "Advertisements",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
           ],
         ),
       ),
@@ -263,7 +253,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -303,7 +293,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -389,7 +379,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -411,7 +401,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: ad.imageUrl?.isNotEmpty == true
           ? Image.network(
         ad.imageUrl!,
-        fit: BoxFit.fitWidth, // 👈 Poora image dikhega, width ke hisab se scale hoga
+        fit: BoxFit.fitWidth,
         width: double.infinity,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
@@ -444,8 +434,8 @@ class _DashboardScreenState extends State<DashboardScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.primaryColor.withOpacity(0.1),
-            AppTheme.primaryColor.withOpacity(0.2),
+            AppTheme.primaryColor.withValues(alpha: 0.1),
+            AppTheme.primaryColor.withValues(alpha: 0.2),
           ],
         ),
       ),
@@ -456,13 +446,13 @@ class _DashboardScreenState extends State<DashboardScreen>
             Icon(
               Icons.campaign,
               size: 40,
-              color: AppTheme.primaryColor.withOpacity(0.7),
+              color: AppTheme.primaryColor.withValues(alpha: 0.7),
             ),
             SizedBox(height: mediumSpacing),
             Text(
               "Image not available",
               style: TextStyle(
-                color: AppTheme.primaryColor.withOpacity(0.7),
+                color: AppTheme.primaryColor.withValues(alpha: 0.7),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -507,7 +497,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
               Text(
-                "Salary: ${ad.amount ?? '0.00'}",
+                "Amount: ${ad.amount ?? '0.00'}",
                 style: TextStyle(
                   fontSize: 14,
                   color: AppTheme.primaryColor,
@@ -548,17 +538,110 @@ class _DashboardScreenState extends State<DashboardScreen>
 
           SizedBox(height: smallSpacing),
 
-          // Description Text
-          Text(
-            ad.description ?? "No description available",
-            style: const TextStyle(
-              fontSize: 13,
-              height: 1.4,
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return Container(
+                width: constraints.maxWidth,
+                child: Html(
+                  data: ad.description ?? "<p>No description available</p>",
+                  style: {
+                    "body": Style(
+                      fontSize: FontSize(13),
+                      lineHeight: const LineHeight(1.4),
+                      margin: Margins.zero,
+                      padding: HtmlPaddings.zero,
+                    ),
+                    "p": Style(
+                      fontSize: FontSize(13),
+                      lineHeight: const LineHeight(1.4),
+                      margin: Margins.only(bottom: 8),
+                      textAlign: TextAlign.center,
+                    ),
+                    "strong": Style(fontWeight: FontWeight.bold),
+                    "span": Style(fontSize: FontSize(13)),
+                    "br": Style(fontSize: FontSize(13)),
+                    "ol": Style(
+                      margin: Margins.only(left: 20, bottom: 12, top: 8),
+                      fontSize: FontSize(13),
+                      listStyleType: ListStyleType.decimal,
+                      listStylePosition: ListStylePosition.outside,
+                    ),
+                    "ul": Style(
+                      margin: Margins.only(left: 20, bottom: 12, top: 8),
+                      fontSize: FontSize(13),
+                      listStyleType: ListStyleType.disc,
+                    ),
+                    "li": Style(
+                      fontSize: FontSize(13),
+                      lineHeight: const LineHeight(1.5),
+                      margin: Margins.only(bottom: 8),
+                      padding: HtmlPaddings.only(left: 4),
+                      display: Display.listItem,
+                    ),
+                    "a": Style(
+                      color: Colors.blue,
+                      textDecoration: TextDecoration.underline,
+                      fontSize: FontSize(13),
+                      fontWeight: FontWeight.w500,
+                    ),
+                    "img": Style(
+                      width: Width(constraints.maxWidth - 32),
+                      height: Height.auto(),
+                      margin: Margins.symmetric(vertical: 8),
+                      alignment: Alignment.center,
+                    ),
+                    "table": Style(
+                      width: Width(constraints.maxWidth - 32),
+                      border: Border.all(color: Colors.grey.shade400, width: 1),
+                      margin: Margins.symmetric(vertical: 12),
+                      backgroundColor: Colors.grey.shade50,
+                    ),
+                    "td": Style(
+                      padding: HtmlPaddings.all(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                      fontSize: FontSize(13),
+                      textAlign: TextAlign.center,
+                    ),
+                    "th": Style(
+                      padding: HtmlPaddings.all(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                      fontSize: FontSize(13),
+                      fontWeight: FontWeight.bold,
+                      backgroundColor: Colors.grey.shade200,
+                    ),
+                    "caption": Style(
+                      fontSize: FontSize(14),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                      fontStyle: FontStyle.italic,
+                      margin: Margins.only(bottom: 8),
+                    ),
+                  },
+                  onLinkTap: (url, attributes, element) {
+                    debugPrint("Link tapped: $url");
+                    _launchURL(url);
+                  },
+                ),
+              );
+            },
           ),
         ],
       ),
     );
+  }
+
+
+  void _launchURL(String? url) async {
+    if (url == null || url.isEmpty) return;
+
+    try {
+      final Uri uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      debugPrint("Error opening URL: $e");
+    }
   }
 
   Widget _buildShareButton(Ads ad) {
@@ -621,7 +704,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -635,7 +718,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               padding: EdgeInsets.all(cardPadding),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.8)],
+                  colors: [AppTheme.primaryColor, AppTheme.primaryColor.withValues(alpha: 0.8)],
                 ),
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               ),
@@ -820,7 +903,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.3),
+                color: color.withValues(alpha: 0.3),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),

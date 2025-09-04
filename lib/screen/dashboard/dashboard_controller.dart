@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -21,44 +20,35 @@ class DashboardController {
 
   final ApiService _apiService;
 
-  // Cache management
   String? _cachedToken;
   DateTime? _lastWeatherFetch;
   DateTime? _lastQuoteFetch;
   DateTime? _lastAdsFetch;
   static const Duration _cacheValidityDuration = Duration(minutes: 15);
 
-  // Weather & Date ValueNotifiers
   final ValueNotifier<String> temperature = ValueNotifier<String>("Loading...");
-  final ValueNotifier<String> date = ValueNotifier<String>(
-      DateFormat("MMM dd, yyyy").format(DateTime.now())
-  );
+  final ValueNotifier<String> date =
+      ValueNotifier<String>(DateFormat("MMM dd, yyyy").format(DateTime.now()));
 
-  // Quote ValueNotifiers
   final ValueNotifier<String> quote = ValueNotifier<String>(
-      "Just trust yourself, then you will know how to live."
-  );
+      "Just trust yourself, then you will know how to live.");
   final ValueNotifier<String> quoteAuthor = ValueNotifier<String>("Goethe");
   final ValueNotifier<String> iconLink = ValueNotifier<String>("");
 
-  // Ads ValueNotifiers
   final ValueNotifier<List<Ads>> adItems = ValueNotifier<List<Ads>>([]);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(true);
   final ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
   final ValueNotifier<String?> errorMessage = ValueNotifier<String?>(null);
   final ValueNotifier<bool> isSharing = ValueNotifier<bool>(false);
 
-  // Weather data
   final ValueNotifier<WeatherResponseModel?> getWeatherData =
-  ValueNotifier<WeatherResponseModel?>(null);
+      ValueNotifier<WeatherResponseModel?>(null);
 
-  // Auto-scroll timer and PageController management (similar to JobOpeningController)
   Timer? _autoScrollTimer;
   PageController? _pageController;
   Function(int)? _onIndexChanged;
   int _currentAdIndex = 0;
 
-  // App benefits
   final ValueNotifier<List<String>> benefits = ValueNotifier<List<String>>([
     "You will able to clock in and clock out for your time attendance.",
     "You will get all updates about your shifts and upcoming payrolls.",
@@ -80,15 +70,14 @@ class DashboardController {
     _cachedToken = SharedPrefsService.instance.getAccessToken();
   }
 
-  // Auto-scroll setup similar to JobOpeningController
-  void startAutoScrollWithPageController(PageController pageController, Function(int) onIndexChanged) {
+  void startAutoScrollWithPageController(
+      PageController pageController, Function(int) onIndexChanged) {
     _pageController = pageController;
     _onIndexChanged = onIndexChanged;
     _currentAdIndex = 0; // Start from first item
     _setupAutoScroll();
   }
 
-  // Add method to update current index from manual swipe
   void updateCurrentIndex(int index) {
     _currentAdIndex = index;
   }
@@ -98,11 +87,10 @@ class DashboardController {
 
     if (adItems.value.isEmpty || _pageController == null) return;
 
-    debugPrint("🔄 Starting auto-scroll for ${adItems.value.length} ads");
-
     _autoScrollTimer = Timer.periodic(_autoScrollInterval, (timer) {
-      if (adItems.value.isNotEmpty && _pageController != null && _pageController!.hasClients) {
-
+      if (adItems.value.isNotEmpty &&
+          _pageController != null &&
+          _pageController!.hasClients) {
         // Calculate next index (loop back to 0 after last item)
         _currentAdIndex = (_currentAdIndex + 1) % adItems.value.length;
 
@@ -111,7 +99,8 @@ class DashboardController {
         final currentRealIndex = currentPage % adItems.value.length;
 
         int targetPage;
-        if (_currentAdIndex == 0 && currentRealIndex == adItems.value.length - 1) {
+        if (_currentAdIndex == 0 &&
+            currentRealIndex == adItems.value.length - 1) {
           // Moving from last to first - go to next group
           targetPage = currentPage + 1;
         } else {
@@ -142,27 +131,17 @@ class DashboardController {
         _apiService.client.addAuthToken(token!);
       }
 
-      debugPrint("🔄 Initializing Dashboard...");
-
-      // Initialize date first
       _updateCurrentDate();
-
-      // Run all fetch operations concurrently for better performance
       await Future.wait([
         _fetchWeatherData(),
         _fetchQuoteData(),
         _fetchAdsData(),
       ]);
-
-      debugPrint("✅ Dashboard fully initialized");
-
-      // Setup auto scroll after data is loaded
       if (adItems.value.isNotEmpty) {
         // Don't setup auto scroll here - will be done when PageController is ready
         _currentAdIndex = 0; // Reset to first item
       }
     } catch (error) {
-      debugPrint("❌ Error during initialization: $error");
       _setErrorMessage("Failed to load dashboard data");
     } finally {
       isLoading.value = false;
@@ -174,63 +153,48 @@ class DashboardController {
   }
 
   void setCurrentIndex(int index) {
-    if (index >= 0 && index < adItems.value.length && currentIndex.value != index) {
+    if (index >= 0 &&
+        index < adItems.value.length &&
+        currentIndex.value != index) {
       currentIndex.value = index;
     }
   }
 
   Future<void> _fetchQuoteData() async {
     try {
-      // Check cache validity
       if (_lastQuoteFetch != null &&
-          DateTime.now().difference(_lastQuoteFetch!) < _cacheValidityDuration) {
-        debugPrint("📝 Using cached quote data");
+          DateTime.now().difference(_lastQuoteFetch!) <
+              _cacheValidityDuration) {
         return;
       }
-
-      debugPrint("📝 Fetching quote data...");
-
       final response = await _apiService.getQuote().timeout(_apiTimeout);
-      debugPrint("📥 Quote API Response received");
+      final quoteText = response['quoteText']?.toString().trim();
+      final authorText = response['quoteAuthor']?.toString().trim();
 
-      if (response != null) {
-        final quoteText = response['quoteText']?.toString().trim();
-        final authorText = response['quoteAuthor']?.toString().trim();
+      quote.value = quoteText?.isNotEmpty == true
+          ? quoteText!
+          : "Just trust yourself, then you will know how to live.";
 
-        quote.value = quoteText?.isNotEmpty == true
-            ? quoteText!
-            : "Just trust yourself, then you will know how to live.";
+      quoteAuthor.value =
+          authorText?.isNotEmpty == true ? authorText! : "Goethe";
 
-        quoteAuthor.value = authorText?.isNotEmpty == true
-            ? authorText!
-            : "Goethe";
-
-        _lastQuoteFetch = DateTime.now();
-        debugPrint("✅ Quote Updated: ${quote.value} - ${quoteAuthor.value}");
-      }
+      _lastQuoteFetch = DateTime.now();
     } catch (e) {
       debugPrint("❌ Error fetching quote: $e");
-      // Keep default values on error
     }
   }
 
   Future<void> _fetchAdsData() async {
     try {
-      // Check cache validity
       if (_lastAdsFetch != null &&
           DateTime.now().difference(_lastAdsFetch!) < _cacheValidityDuration) {
-        debugPrint("📢 Using cached ads data");
         return;
       }
-
-      debugPrint("📢 Fetching ads data...");
-
-      final token = _cachedToken ?? SharedPrefsService.instance.getAccessToken();
+      final token =
+          _cachedToken ?? SharedPrefsService.instance.getAccessToken();
       if (token?.isEmpty != false) {
         throw Exception("No authentication token found");
       }
-
-      // Update cached token if needed
       if (_cachedToken != token) {
         _cachedToken = token;
       }
@@ -238,11 +202,8 @@ class DashboardController {
       _apiService.client.addAuthToken(token!);
 
       final response = await _apiService.getAdsOnly().timeout(_apiTimeout);
-      debugPrint("📥 Received response for Ads");
-
       await _processAdsResponse(response);
       _lastAdsFetch = DateTime.now();
-
     } catch (e) {
       debugPrint("❌ Error fetching ads data: $e");
       adItems.value = [];
@@ -255,18 +216,15 @@ class DashboardController {
 
       if (adsResponse.success == true &&
           adsResponse.response?.ads?.isNotEmpty == true) {
-
         final List<Ads> processedAds = adsResponse.response!.ads!.map((ad) {
-          String plainDescription = HtmlParsers.htmlToText(ad.description ?? "");
+          String htmlDescription = ad.description ?? "";
 
           return Ads(
             adsId: ad.adsId ?? 0,
             subjectLine: ad.subjectLine?.isNotEmpty == true
                 ? ad.subjectLine!
                 : "No Subject",
-            description: plainDescription.isNotEmpty
-                ? plainDescription
-                : "No description available",
+            description: htmlDescription,
             shareDescription: ad.shareDescription ?? "",
             date: ad.date?.isNotEmpty == true ? ad.date! : "Unknown Date",
             place: ad.place?.isNotEmpty == true ? ad.place! : "Unknown Place",
@@ -279,9 +237,7 @@ class DashboardController {
 
         adItems.value = processedAds;
         currentIndex.value = 0;
-        _currentAdIndex = 0; // Reset to first item
-        debugPrint("✅ Loaded ${processedAds.length} ads");
-        debugPrint("🔁 Auto-scroll pattern: ${_generateScrollPattern()}");
+        _currentAdIndex = 0;
       } else {
         adItems.value = [];
         debugPrint("⚠️ No ads available or API returned error: ${adsResponse.message}");
@@ -292,19 +248,10 @@ class DashboardController {
     }
   }
 
-  String _generateScrollPattern() {
-    if (adItems.value.isEmpty) return "No ads available";
-
-    final adCount = adItems.value.length;
-    final pattern = List.generate(adCount * 2, (index) => (index % adCount) + 1);
-    return pattern.take(adCount * 2).join(',');
-  }
-
   Future<Position?> _getCurrentLocation() async {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        debugPrint('🌍 Location services are disabled');
         return null;
       }
 
@@ -312,13 +259,11 @@ class DashboardController {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          debugPrint('🌍 Location permissions are denied');
           return null;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        debugPrint('🌍 Location permissions are permanently denied');
         return null;
       }
 
@@ -341,41 +286,35 @@ class DashboardController {
 
   Future<void> _fetchWeatherData() async {
     try {
-      // Check cache validity
       if (_lastWeatherFetch != null &&
-          DateTime.now().difference(_lastWeatherFetch!) < _cacheValidityDuration) {
-        debugPrint("🌤️ Using cached weather data");
+          DateTime.now().difference(_lastWeatherFetch!) <
+              _cacheValidityDuration) {
         return;
       }
 
-      debugPrint("🌤️ Fetching weather data...");
-
       final position = await _getCurrentLocation();
       if (position == null) {
-        debugPrint("❌ Unable to get location. Using default temperature.");
-        temperature.value = "25°C"; // Default temperature
+        temperature.value = "25°C";
         return;
       }
 
       final latitude = position.latitude.toStringAsFixed(6);
       final longitude = position.longitude.toStringAsFixed(6);
 
-      debugPrint("📍 Got location: Lat: $latitude, Long: $longitude");
-
       await _fetchWeatherWithCoordinates(latitude, longitude);
       _lastWeatherFetch = DateTime.now();
-
     } catch (e) {
       debugPrint("❌ Error in weather fetch flow: $e");
-      temperature.value = "25°C"; // Fallback temperature
+      temperature.value = "25°C";
     }
   }
 
-  Future<void> _fetchWeatherWithCoordinates(String latitude, String longitude) async {
+  Future<void> _fetchWeatherWithCoordinates(
+      String latitude, String longitude) async {
     try {
-      final token = _cachedToken ?? SharedPrefsService.instance.getAccessToken();
+      final token =
+          _cachedToken ?? SharedPrefsService.instance.getAccessToken();
       if (token?.isEmpty != false) {
-        debugPrint("❌ No authentication token found for weather API");
         return;
       }
 
@@ -386,14 +325,13 @@ class DashboardController {
         'longitude': longitude,
       };
 
-      final response = await _apiService.getWeather(locationData).timeout(_apiTimeout);
-      debugPrint("📥 Weather API Response received");
+      final response =
+          await _apiService.getWeather(locationData).timeout(_apiTimeout);
 
       await _processWeatherResponse(response);
-
     } catch (e) {
       debugPrint("❌ Error fetching weather: $e");
-      temperature.value = "25°C"; // Fallback
+      temperature.value = "25°C";
     }
   }
 
@@ -411,13 +349,9 @@ class DashboardController {
 
         temperature.value = "${tempString}°C";
 
-        getWeatherData.value = WeatherResponseModel.fromJson({
-          'temperature': tempString
-        });
-
-        debugPrint("✅ Weather Updated: ${temperature.value}");
+        getWeatherData.value =
+            WeatherResponseModel.fromJson({'temperature': tempString});
       } else {
-        debugPrint("⚠️ Weather API response missing temperature");
         temperature.value = "25°C";
       }
     } catch (e) {
@@ -431,12 +365,9 @@ class DashboardController {
       isLoading.value = true;
       errorMessage.value = null;
 
-      // Clear cache to force refresh
       _lastWeatherFetch = null;
       _lastQuoteFetch = null;
       _lastAdsFetch = null;
-
-      debugPrint("🔄 Refreshing dashboard data...");
 
       _updateCurrentDate();
 
@@ -446,11 +377,8 @@ class DashboardController {
         _fetchAdsData(),
       ]);
 
-      // Reset to first item after refresh
       _currentAdIndex = 0;
       currentIndex.value = 0;
-
-      debugPrint("✅ Dashboard data refreshed");
     } catch (e) {
       debugPrint("❌ Error refreshing dashboard data: $e");
       _setErrorMessage("Failed to refresh data");
@@ -459,23 +387,21 @@ class DashboardController {
     }
   }
 
-  // ==============================================================================
-  // ENHANCED SHARING METHODS - Same as JobOpeningController
-  // ==============================================================================
-
-  // Original shareAd method - maintained for backward compatibility
   Future<void> shareAd(BuildContext context, Ads ad) async {
     if (isSharing.value) return;
 
     try {
       isSharing.value = true;
-      debugPrint("🔄 Sharing ad: ${ad.subjectLine} (ID: ${ad.adsId})");
 
       final shareLink = await _getAdShareLink(ad);
       final shareText = _buildAdShareText(ad, shareLink);
 
-      await Share.share(shareText, subject: ad.subjectLine ?? 'Advertisement');
-      debugPrint("✅ Ad shared successfully");
+      await SharePlus.instance.share(
+        ShareParams(
+          text: shareText,
+          subject: ad.subjectLine ?? 'Advertisement',
+        ),
+      );
 
       if (context.mounted) {
         _showShareSuccess(context);
@@ -491,29 +417,22 @@ class DashboardController {
     }
   }
 
-  // Enhanced sharing method with rich content support
   Future<void> shareAdWithRichContent(
-      BuildContext context,
-      Ads ad,
-      String shareText,
-      String? imageUrl,
-      ) async {
+    BuildContext context,
+    Ads ad,
+    String shareText,
+    String? imageUrl,
+  ) async {
     if (isSharing.value) return;
 
     try {
       isSharing.value = true;
-      debugPrint(
-          "🔄 Sharing ad with rich content: ${ad.subjectLine} (ID: ${ad.adsId})");
 
       if (Platform.isIOS) {
-        // iOS के लिए rich sharing
         await _shareForIOS(shareText, imageUrl);
       } else {
-        // Android के लिए rich sharing
         await _shareForAndroid(shareText, imageUrl);
       }
-
-      debugPrint("✅ Ad shared successfully with rich content");
 
       if (context.mounted) {
         _showShareSuccess(context);
@@ -533,73 +452,79 @@ class DashboardController {
   Future<void> _shareForIOS(String text, String? imageUrl) async {
     try {
       if (imageUrl != null && imageUrl.isNotEmpty) {
-        // iOS में enhanced text के साथ share करने के लिए
         final enhancedText = '''
 $text
 
 📸 Ad Image: $imageUrl
 
 📱 Download our app for more opportunities!
-        ''';
+      ''';
 
-        await Share.share(
-          enhancedText,
-          subject: 'Advertisement - MeetSu Solutions',
+        await SharePlus.instance.share(
+          ShareParams(
+            text: enhancedText,
+            subject: 'Advertisement - MeetSu Solutions',
+          ),
         );
       } else {
-        await Share.share(
-          text,
-          subject: 'Advertisement - MeetSu Solutions',
+        await SharePlus.instance.share(
+          ShareParams(
+            text: text,
+            subject: 'Advertisement - MeetSu Solutions',
+          ),
         );
       }
     } catch (e) {
       debugPrint("❌ iOS sharing error: $e");
-      await Share.share(text);
+      await SharePlus.instance.share(
+        ShareParams(text: text),
+      );
     }
   }
 
   Future<void> _shareForAndroid(String text, String? imageUrl) async {
     try {
       if (imageUrl != null && imageUrl.isNotEmpty) {
-        // Android में rich preview के लिए enhanced format
         final enhancedText = '''
 $text
 
 🖼️ View Ad Image: $imageUrl
 
 📲 Get the MeetSu Solutions app for instant updates!
-        ''';
+      ''';
 
-        await Share.share(
-          enhancedText,
-          subject: 'Advertisement - MeetSu Solutions',
+        await SharePlus.instance.share(
+          ShareParams(
+            text: enhancedText,
+            subject: 'Advertisement - MeetSu Solutions',
+          ),
         );
       } else {
-        await Share.share(
-          text,
-          subject: 'Advertisement - MeetSu Solutions',
+        await SharePlus.instance.share(
+          ShareParams(
+            text: text,
+            subject: 'Advertisement - MeetSu Solutions',
+          ),
         );
       }
     } catch (e) {
       debugPrint("❌ Android sharing error: $e");
-      await Share.share(text);
+      await SharePlus.instance.share(
+        ShareParams(text: text),
+      );
     }
   }
 
-  // Custom share dialog method
   Future<void> shareAdWithCustomDialog(
-      BuildContext context,
-      Ads ad,
-      ) async {
+    BuildContext context,
+    Ads ad,
+  ) async {
     if (isSharing.value) return;
 
     try {
       isSharing.value = true;
-      debugPrint("🔄 Opening custom share dialog for: ${ad.subjectLine}");
 
       final String shareContent = _buildUnifiedShareContent(ad);
-
-      // Custom share options के साथ
       await showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -610,14 +535,13 @@ $text
           adTitle: ad.subjectLine ?? 'Advertisement',
           onShare: (platform) async {
             Navigator.pop(context);
-            await _shareOnSpecificPlatform(
-                platform, shareContent, ad.imageUrl);
+            await _shareOnSpecificPlatform(platform, shareContent, ad.imageUrl);
           },
         ),
       );
     } catch (e) {
       debugPrint("❌ Custom sharing error: $e");
-      await shareAd(context, ad); // Fallback
+      await shareAd(context, ad);
     } finally {
       isSharing.value = false;
     }
@@ -639,14 +563,14 @@ ${ad.description ?? "No description available"}
 🔗 View Now: $shareLink
 
 #Advertisement #Opportunity #MeetsuSolutions
-    ''';
+  ''';
   }
 
   Future<void> _shareOnSpecificPlatform(
-      String platform,
-      String content,
-      String? imageUrl,
-      ) async {
+    String platform,
+    String content,
+    String? imageUrl,
+  ) async {
     try {
       switch (platform) {
         case 'whatsapp':
@@ -663,48 +587,71 @@ ${ad.description ?? "No description available"}
           break;
         case 'general':
         default:
-          await Share.share(content);
+          await SharePlus.instance.share(
+            ShareParams(
+              text: content,
+              subject: 'Advertisement - MeetSu Solutions',
+            ),
+          );
           break;
       }
     } catch (e) {
       debugPrint("❌ Platform-specific sharing error: $e");
-      await Share.share(content); // Fallback
+      await SharePlus.instance.share(
+        ShareParams(text: content),
+      );
     }
   }
 
   Future<void> _shareToWhatsApp(String text, String? imageUrl) async {
     try {
+      String whatsappText = text;
+
       if (imageUrl != null && imageUrl.isNotEmpty) {
-        final whatsappText = '''
+        whatsappText = '''
 $text
 
 📸 $imageUrl
-        ''';
-        await Share.share(whatsappText);
-      } else {
-        await Share.share(text);
+      ''';
       }
+
+      await SharePlus.instance.share(
+        ShareParams(
+          text: whatsappText,
+          subject: 'Advertisement - MeetSu Solutions',
+        ),
+      );
     } catch (e) {
       debugPrint("❌ WhatsApp sharing error: $e");
-      await Share.share(text);
+      await SharePlus.instance.share(
+        ShareParams(text: text),
+      );
     }
   }
 
   Future<void> _shareToTelegram(String text, String? imageUrl) async {
     try {
+      String telegramText = text;
+
       if (imageUrl != null && imageUrl.isNotEmpty) {
-        final telegramText = '''
+        telegramText = '''
 $text
 
 🖼️ Image: $imageUrl
-        ''';
-        await Share.share(telegramText);
-      } else {
-        await Share.share(text);
+      ''';
       }
+
+      await SharePlus.instance.share(
+        ShareParams(
+          text: telegramText,
+          subject: 'Advertisement - MeetSu Solutions',
+        ),
+      );
     } catch (e) {
       debugPrint("❌ Telegram sharing error: $e");
-      await Share.share(text);
+      await SharePlus.instance.share(
+        ShareParams(text: text),
+      );
     }
   }
 
@@ -714,13 +661,17 @@ $text
           ? '$text\n\nAd Image: $imageUrl'
           : text;
 
-      await Share.share(
-        emailText,
-        subject: 'Advertisement - MeetSu Solutions',
+      await SharePlus.instance.share(
+        ShareParams(
+          text: emailText,
+          subject: 'Advertisement - MeetSu Solutions',
+        ),
       );
     } catch (e) {
       debugPrint("❌ Email sharing error: $e");
-      await Share.share(text);
+      await SharePlus.instance.share(
+        ShareParams(text: text),
+      );
     }
   }
 
@@ -728,10 +679,17 @@ $text
     try {
       final smsText = text.length > 160 ? '${text.substring(0, 157)}...' : text;
 
-      await Share.share(smsText);
+      await SharePlus.instance.share(
+        ShareParams(
+          text: smsText,
+          subject: 'Advertisement - MeetSu Solutions',
+        ),
+      );
     } catch (e) {
       debugPrint("❌ SMS sharing error: $e");
-      await Share.share(text);
+      await SharePlus.instance.share(
+        ShareParams(text: text),
+      );
     }
   }
 
@@ -747,7 +705,7 @@ $text
 
       final requestData = {
         'id': ad.adsId.toString(),
-        'job_or_ad': '2',  // 2 for ads
+        'job_or_ad': '2', // 2 for ads
         'medium': 'Whatsapp'
       };
 
@@ -811,18 +769,28 @@ $text
     final fallbackLink = _getFallbackAdShareLink(ad);
     final shareText = _buildAdShareText(ad, fallbackLink);
 
-    await Share.share(shareText, subject: ad.subjectLine ?? 'Advertisement');
-
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Shared with fallback link"),
-          backgroundColor: Colors.orange,
-          duration: Duration(seconds: 2),
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          text: shareText,
+          subject: ad.subjectLine ?? 'Advertisement',
         ),
       );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Shared with fallback link"),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("❌ Error in fallback sharing: $e");
     }
   }
+
 
   void _setErrorMessage(String message) {
     errorMessage.value = message;
@@ -841,7 +809,6 @@ $text
         duration: Duration(seconds: 2),
       ),
     );
-    debugPrint("📱 Downloading from Play Store");
   }
 
   void downloadFromAppStore(BuildContext context) {
@@ -852,7 +819,6 @@ $text
         duration: Duration(seconds: 2),
       ),
     );
-    debugPrint("📱 Downloading from App Store");
   }
 
   void pauseAutoScroll() {
@@ -863,12 +829,10 @@ $text
   void resumeAutoScroll() {
     if (_autoScrollTimer?.isActive != true && adItems.value.isNotEmpty) {
       _setupAutoScroll();
-      debugPrint("▶️ Auto-scroll resumed");
     }
   }
 
   Future<void> retryFetch() async {
-    debugPrint("🔄 Retrying dashboard data fetch");
     _cachedToken = null;
     _lastWeatherFetch = null;
     _lastQuoteFetch = null;
@@ -878,7 +842,6 @@ $text
   }
 
   void dispose() {
-    debugPrint("🧹 Disposing DashboardController resources");
     _autoScrollTimer?.cancel();
 
     temperature.dispose();
@@ -965,25 +928,25 @@ class AdShareOptionsBottomSheet extends StatelessWidget {
                       'WhatsApp',
                       Icons.chat,
                       Colors.green,
-                          () => onShare('whatsapp'),
+                      () => onShare('whatsapp'),
                     ),
                     _buildShareOption(
                       'Telegram',
                       Icons.send,
                       Colors.blue,
-                          () => onShare('telegram'),
+                      () => onShare('telegram'),
                     ),
                     _buildShareOption(
                       'Email',
                       Icons.email,
                       Colors.red,
-                          () => onShare('email'),
+                      () => onShare('email'),
                     ),
                     _buildShareOption(
                       'SMS',
                       Icons.sms,
                       Colors.orange,
-                          () => onShare('sms'),
+                      () => onShare('sms'),
                     ),
                   ],
                 ),
@@ -1018,11 +981,11 @@ class AdShareOptionsBottomSheet extends StatelessWidget {
   }
 
   Widget _buildShareOption(
-      String label,
-      IconData icon,
-      Color color,
-      VoidCallback onTap,
-      ) {
+    String label,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -1031,10 +994,10 @@ class AdShareOptionsBottomSheet extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: color.withOpacity(0.3),
+                color: color.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),

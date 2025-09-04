@@ -233,8 +233,6 @@ class _JobOpeningScreenState extends State<JobOpeningScreen>
             isMobile: isMobile,
             isTablet: isTablet,
             isDesktop: isDesktop,
-            currentJobIndex: realIndex + 1,
-            totalJobs: jobOpenings.length,
           );
         },
       ),
@@ -248,8 +246,6 @@ class JobCard extends StatelessWidget {
   final bool isMobile;
   final bool isTablet;
   final bool isDesktop;
-  final int currentJobIndex;
-  final int totalJobs;
 
   const JobCard({
     super.key,
@@ -258,8 +254,6 @@ class JobCard extends StatelessWidget {
     required this.isMobile,
     required this.isTablet,
     required this.isDesktop,
-    required this.currentJobIndex,
-    required this.totalJobs,
   });
 
   double get cardMargin => isMobile ? 16 : isTablet ? 20 : 24;
@@ -276,7 +270,7 @@ class JobCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               spreadRadius: 0,
               blurRadius: 20,
               offset: const Offset(0, 4),
@@ -341,8 +335,8 @@ class JobCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.primaryColor.withOpacity(0.1),
-            AppTheme.primaryColor.withOpacity(0.2),
+            AppTheme.primaryColor.withValues(alpha: 0.1),
+            AppTheme.primaryColor.withValues(alpha: 0.2),
           ],
         ),
       ),
@@ -353,13 +347,13 @@ class JobCard extends StatelessWidget {
             Icon(
               Icons.work_outline,
               size: 48,
-              color: AppTheme.primaryColor.withOpacity(0.6),
+              color: AppTheme.primaryColor.withValues(alpha: 0.6),
             ),
             SizedBox(height: 8),
             Text(
               "Job Image",
               style: TextStyle(
-                color: AppTheme.primaryColor.withOpacity(0.8),
+                color: AppTheme.primaryColor.withValues(alpha: 0.8),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -377,7 +371,6 @@ class JobCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Job Title
           Text(
             job.jobPosition ?? "Unknown Position",
             style: TextStyle(
@@ -392,12 +385,10 @@ class JobCard extends StatelessWidget {
 
           SizedBox(height: 12),
 
-          // Job Details Grid
           _buildJobDetailsGrid(),
 
           SizedBox(height: 16),
 
-          // Description Section
           _buildDescriptionSection(),
         ],
       ),
@@ -411,19 +402,16 @@ class JobCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            // Date
             Expanded(
               child: _buildCompactDetailItem("Date:", job.positionDate ?? "Not specified"),
             ),
             SizedBox(width: 12),
-            // Salary
             Expanded(
               child: _buildCompactDetailItem("Salary:", "${job.salary ?? 'N/A'}"),
             ),
           ],
         ),
         SizedBox(height: 12),
-        // Location
         _buildCompactDetailItem("Location:", job.location ?? "Not specified"),
       ],
     );
@@ -487,10 +475,10 @@ class JobCard extends StatelessWidget {
           Text(
             job.positionDescription ?? "No description available",
             style: TextStyle(
-              fontSize: isMobile ? 14 : 15,
+              fontSize: isMobile ? 13 : 14,
               color: Colors.grey.shade800,
-              height: 1.6,
-              letterSpacing: 0.2,
+              height: 1.5,
+              letterSpacing: 0.1,
             ),
             textAlign: TextAlign.justify,
           ),
@@ -518,7 +506,7 @@ class JobCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: (isSharing ? Colors.grey : AppTheme.primaryColor).withOpacity(0.2),
+                    color: (isSharing ? Colors.grey : AppTheme.primaryColor).withValues(alpha: 0.2),
                     spreadRadius: 0,
                     blurRadius: 4,
                     offset: const Offset(0, 2),

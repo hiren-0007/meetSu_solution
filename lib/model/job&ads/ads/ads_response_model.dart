@@ -1,105 +1,109 @@
 class AdsResponseModel {
-  bool? success;
-  String? message;
-  Response? response;
+  final bool? success;
+  final String? message;
+  final AdsResponseData? response;
 
-  AdsResponseModel({this.success, this.message, this.response});
+  AdsResponseModel({
+    this.success,
+    this.message,
+    this.response,
+  });
 
-  AdsResponseModel.fromJson(Map<String, dynamic> json) {
-    success = json['success'];
-    message = json['message'];
-    response = json['response'] != null
-        ? new Response.fromJson(json['response'])
-        : null;
+  factory AdsResponseModel.fromJson(Map<String, dynamic> json) {
+    return AdsResponseModel(
+      success: json['success'],
+      message: json['message'],
+      response: json['response'] != null
+          ? AdsResponseData.fromJson(json['response'])
+          : null,
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['success'] = this.success;
-    data['message'] = this.message;
-    if (this.response != null) {
-      data['response'] = this.response!.toJson();
-    }
-    return data;
+    return {
+      'success': success,
+      'message': message,
+      if (response != null) 'response': response!.toJson(),
+    };
   }
 }
 
-class Response {
-  List<Ads>? ads;
+class AdsResponseData {
+  final List<Ads>? ads;
 
-  Response({this.ads});
+  AdsResponseData({this.ads});
 
-  Response.fromJson(Map<String, dynamic> json) {
-    if (json['ads'] != null) {
-      ads = <Ads>[];
-      json['ads'].forEach((v) {
-        ads!.add(new Ads.fromJson(v));
-      });
-    }
+  factory AdsResponseData.fromJson(Map<String, dynamic> json) {
+    return AdsResponseData(
+      ads: json['ads'] != null
+          ? List<Ads>.from(json['ads'].map((v) => Ads.fromJson(v)))
+          : [],
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.ads != null) {
-      data['ads'] = this.ads!.map((v) => v.toJson()).toList();
-    }
-    return data;
+    return {
+      if (ads != null) 'ads': ads!.map((v) => v.toJson()).toList(),
+    };
   }
 }
 
 class Ads {
-  int? adsId;
-  String? subjectLine;
-  String? description;
-  String? shareDescription;
-  String? date;
-  String? place;
-  String? amount;
-  String? image;
-  String? imageUrl;
-  String? status;
-  String? onlyImage;
+  final int? adsId;
+  final String? subjectLine;
+  final String? description;
+  final String? shareDescription;
+  final String? date;
+  final String? place;
+  final String? amount;
+  final String? image;
+  final String? imageUrl;
+  final String? status;
+  final String? onlyImage;
 
-  Ads(
-      {this.adsId,
-        this.subjectLine,
-        this.description,
-        this.shareDescription,
-        this.date,
-        this.place,
-        this.amount,
-        this.image,
-        this.imageUrl,
-        this.status,
-        this.onlyImage});
+  Ads({
+    this.adsId,
+    this.subjectLine,
+    this.description,
+    this.shareDescription,
+    this.date,
+    this.place,
+    this.amount,
+    this.image,
+    this.imageUrl,
+    this.status,
+    this.onlyImage,
+  });
 
-  Ads.fromJson(Map<String, dynamic> json) {
-    adsId = json['ads_id'];
-    subjectLine = json['subject_line'];
-    description = json['description'];
-    shareDescription = json['share_description'];
-    date = json['date'];
-    place = json['place'];
-    amount = json['amount'];
-    image = json['image'];
-    imageUrl = json['image_url'];
-    status = json['status'];
-    onlyImage = json['only_image'];
+  factory Ads.fromJson(Map<String, dynamic> json) {
+    return Ads(
+      adsId: json['ads_id'],
+      subjectLine: json['subject_line'],
+      description: json['description'],
+      shareDescription: json['share_description'],
+      date: json['date'],
+      place: json['place'],
+      amount: json['amount'],
+      image: json['image'],
+      imageUrl: json['image_url'],
+      status: json['status'],
+      onlyImage: json['only_image'],
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['ads_id'] = this.adsId;
-    data['subject_line'] = this.subjectLine;
-    data['description'] = this.description;
-    data['share_description'] = this.shareDescription;
-    data['date'] = this.date;
-    data['place'] = this.place;
-    data['amount'] = this.amount;
-    data['image'] = this.image;
-    data['image_url'] = this.imageUrl;
-    data['status'] = this.status;
-    data['only_image'] = this.onlyImage;
-    return data;
+    return {
+      'ads_id': adsId,
+      'subject_line': subjectLine,
+      'description': description,
+      'share_description': shareDescription,
+      'date': date,
+      'place': place,
+      'amount': amount,
+      'image': image,
+      'image_url': imageUrl,
+      'status': status,
+      'only_image': onlyImage,
+    };
   }
 }
