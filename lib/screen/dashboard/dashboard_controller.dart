@@ -7,7 +7,6 @@ import 'dart:async';
 import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
-import 'package:meetsu_solutions/utils/extra/html_parsers.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../model/weather/weather_response_model.dart';
 

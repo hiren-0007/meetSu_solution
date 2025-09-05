@@ -396,32 +396,59 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildAdImage(Ads ad) {
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-      child: ad.imageUrl?.isNotEmpty == true
-          ? Image.network(
-        ad.imageUrl!,
-        fit: BoxFit.fitWidth,
-        width: double.infinity,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            alignment: Alignment.center,
-            color: Colors.grey.shade50,
-            height: 200,
-            child: CircularProgressIndicator(
-              value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded /
-                  loadingProgress.expectedTotalBytes!
-                  : null,
-              strokeWidth: 2,
-              color: AppTheme.primaryColor,
-            ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
-      )
-          : _buildFallbackImage(),
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        child: ad.imageUrl?.isNotEmpty == true
+            ? Image.network(
+          ad.imageUrl!,
+          fit: BoxFit.contain, // cover के बजाय contain use करें
+          width: double.infinity,
+          height: 200,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              alignment: Alignment.center,
+              color: Colors.grey.shade50,
+              height: 200,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                        : null,
+                    strokeWidth: 2,
+                    color: AppTheme.primaryColor,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Loading image...",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
+        )
+            : _buildFallbackImage(),
+      ),
     );
   }
 
@@ -431,8 +458,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
           colors: [
             AppTheme.primaryColor.withValues(alpha: 0.1),
             AppTheme.primaryColor.withValues(alpha: 0.2),
@@ -443,18 +470,37 @@ class _DashboardScreenState extends State<DashboardScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.campaign,
-              size: 40,
-              color: AppTheme.primaryColor.withValues(alpha: 0.7),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                  width: 2,
+                ),
+              ),
+              child: Icon(
+                Icons.image_not_supported_outlined,
+                size: 32,
+                color: AppTheme.primaryColor.withValues(alpha: 0.7),
+              ),
             ),
-            SizedBox(height: mediumSpacing),
+            const SizedBox(height: 12),
             Text(
               "Image not available",
               style: TextStyle(
                 color: AppTheme.primaryColor.withValues(alpha: 0.7),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "Advertisement content below",
+              style: TextStyle(
+                color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                fontSize: 12,
               ),
             ),
           ],
@@ -483,7 +529,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
           SizedBox(height: mediumSpacing),
 
-          // Date and Salary
+          // Date and Amount
           Row(
             children: [
               Expanded(
@@ -538,11 +584,21 @@ class _DashboardScreenState extends State<DashboardScreen>
 
           SizedBox(height: smallSpacing),
 
-          LayoutBuilder(
-            builder: (context, constraints) {
-              return Container(
-                width: constraints.maxWidth,
-                child: Html(
+          // Improved Description Container
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Colors.grey.shade200,
+                width: 1,
+              ),
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Html(
                   data: ad.description ?? "<p>No description available</p>",
                   style: {
                     "body": Style(
@@ -585,13 +641,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                       fontWeight: FontWeight.w500,
                     ),
                     "img": Style(
-                      width: Width(constraints.maxWidth - 32),
+                      width: Width(constraints.maxWidth - 24),
                       height: Height.auto(),
                       margin: Margins.symmetric(vertical: 8),
                       alignment: Alignment.center,
                     ),
                     "table": Style(
-                      width: Width(constraints.maxWidth - 32),
+                      width: Width(constraints.maxWidth - 24),
                       border: Border.all(color: Colors.grey.shade400, width: 1),
                       margin: Margins.symmetric(vertical: 12),
                       backgroundColor: Colors.grey.shade50,
@@ -618,18 +674,16 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                   },
                   onLinkTap: (url, attributes, element) {
-                    debugPrint("Link tapped: $url");
                     _launchURL(url);
                   },
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ],
       ),
     );
   }
-
 
   void _launchURL(String? url) async {
     if (url == null || url.isEmpty) return;
