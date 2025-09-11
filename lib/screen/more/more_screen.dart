@@ -141,7 +141,7 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
           borderRadius: BorderRadius.circular(isSmallScreen ? 16 : 20),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.primaryColor.withOpacity(0.2),
+              color: AppTheme.primaryColor.withValues(alpha: 0.2),
               blurRadius: isSmallScreen ? 12 : 16,
               offset: Offset(0, isSmallScreen ? 4 : 6),
             ),
@@ -159,7 +159,7 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
         decoration: AppTheme.appIconDecoration.copyWith(
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.12),
+              color: Colors.black.withValues(alpha: 0.12),
               blurRadius: isSmallScreen ? 8 : 12,
               spreadRadius: isSmallScreen ? 1 : 2,
               offset: Offset(0, isSmallScreen ? 3 : 4),
@@ -199,7 +199,7 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(isSmallScreen ? 8 : 10),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -220,8 +220,8 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                 Text(
                   "Loading...",
                   style: TextStyle(
-                    fontSize: isSmallScreen ? 12 : 14,
-                    fontWeight: FontWeight.w500,
+                    fontSize: isSmallScreen ? 14 : 16,
+                    fontWeight: FontWeight.w700,
                     color: Colors.black87,
                   ),
                 ),
@@ -295,7 +295,7 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(isSmallScreen ? 16 : 20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: isSmallScreen ? 12 : 16,
             spreadRadius: isSmallScreen ? 2 : 3,
             offset: Offset(0, isSmallScreen ? 4 : 6),
@@ -313,8 +313,8 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.primaryColor.withOpacity(0.08),
-            AppTheme.primaryColor.withOpacity(0.04),
+            AppTheme.primaryColor.withValues(alpha: 0.08),
+            AppTheme.primaryColor.withValues(alpha: 0.04),
           ],
         ),
         borderRadius: BorderRadius.only(
@@ -327,7 +327,7 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
           Container(
             padding: EdgeInsets.all(isSmallScreen ? 8 : 10),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.12),
+              color: AppTheme.primaryColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(isSmallScreen ? 8 : 10),
             ),
             child: Icon(
@@ -395,7 +395,7 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: isSmallScreen ? 4 : 6,
               offset: Offset(0, isSmallScreen ? 1 : 2),
             ),
@@ -419,7 +419,7 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                   Container(
                     padding: EdgeInsets.all(isSmallScreen ? 8 : 10),
                     decoration: BoxDecoration(
-                      color: menuItem.iconColor.withOpacity(0.1),
+                      color: menuItem.iconColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(isSmallScreen ? 8 : 10),
                     ),
                     child: Icon(

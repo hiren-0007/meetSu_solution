@@ -83,10 +83,8 @@ class MoreController {
         _apiService.client.addAuthToken(token!);
         _cachedToken = token;
         _isInitialized = true;
-        debugPrint('✅ Token initialized successfully');
         return true;
       } else {
-        debugPrint('⚠️ No valid token found');
         return false;
       }
     } catch (e) {
@@ -105,7 +103,6 @@ class MoreController {
     try {
       final hasToken = await _initializeWithToken();
       if (!hasToken) {
-        debugPrint('📝 Using default menu items (no token)');
         _initializeMenuItems();
         return;
       }
@@ -128,15 +125,17 @@ class MoreController {
     final shouldShowCheckIn = response['show_checkin'] == true;
     final isAlreadyCheckedIn = response['show_checkout'] == true;
 
-    showCheckInButton.value = shouldShowCheckIn;
-    isCheckedIn.value = isAlreadyCheckedIn;
-
-    if (shouldShowCheckIn) {
+    if (shouldShowCheckIn || isAlreadyCheckedIn) {
+      showCheckInButton.value = true;
+      isCheckedIn.value = isAlreadyCheckedIn;
       _addCheckInMenuItem(isAlreadyCheckedIn);
     } else {
+      showCheckInButton.value = false;
+      isCheckedIn.value = false;
       _removeCheckInMenuItem();
     }
   }
+
 
   /// Add check-in/check-out menu item
   void _addCheckInMenuItem(bool isCheckedIn) {
@@ -163,7 +162,6 @@ class MoreController {
     );
 
     menuItemsNotifier.value = updatedMenuItems;
-    debugPrint('✅ Added $buttonTitle menu item');
   }
 
   /// Remove check-in/check-out menu item
@@ -175,7 +173,6 @@ class MoreController {
         .toList();
 
     menuItemsNotifier.value = updatedMenuItems;
-    debugPrint('🗑️ Removed clock-in menu item');
   }
 
   /// Handle check-in/check-out action
@@ -193,7 +190,6 @@ class MoreController {
       await fetchCheckInButtonStatus();
 
     } catch (e) {
-      debugPrint('❌ Error in check-in/out process: $e');
       _showErrorSnackBar(context, 'Failed to process request: ${e.toString()}');
     }
   }
@@ -221,7 +217,6 @@ class MoreController {
       _showResponseMessage(context, response, 'Clock-in completed');
 
     } catch (e) {
-      debugPrint('❌ Check-in error: $e');
       _showErrorSnackBar(context, 'Check-in failed: ${e.toString()}');
     } finally {
       _setLoading(false);
@@ -251,7 +246,6 @@ class MoreController {
       _showResponseMessage(context, response, 'Clock-out completed');
 
     } catch (e) {
-      debugPrint('❌ Check-out error: $e');
       _showErrorSnackBar(context, 'Check-out failed: ${e.toString()}');
     } finally {
       _setLoading(false);
@@ -330,9 +324,7 @@ class MoreController {
     final errorString = error.toString();
 
     if (errorString.contains('Unauthorized') || errorString.contains('401')) {
-      debugPrint('🔐 Authentication error - using default menu');
       _initializeMenuItems();
-      // Don't show error for auth issues
     } else {
       errorMessage.value = 'Failed to load menu: $errorString';
     }
@@ -421,14 +413,14 @@ class MoreController {
       _resetState();
 
       if (context.mounted) {
-        Navigator.of(context).pop(); // Close dialog
+        Navigator.of(context).pop();
         Navigator.of(context).pushReplacementNamed('/login');
       }
     } catch (e) {
       debugPrint('❌ Logout error: $e');
       if (context.mounted) {
         _showErrorSnackBar(context, 'Logout failed: ${e.toString()}');
-        Navigator.of(context).pop(); // Close dialog
+        Navigator.of(context).pop();
       }
     } finally {
       _setLoading(false);
