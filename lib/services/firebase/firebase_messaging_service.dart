@@ -1333,12 +1333,30 @@ class FirebaseMessagingService {
       onDidReceiveNotificationResponse: (NotificationResponse details) {
         print('🔔 Notification tapped! Payload: ${details.payload}');
 
-        if (details.payload != null) {
+        // if (details.payload != null) {
+        //   try {
+        //     final data = jsonDecode(details.payload!);
+        //     print('📋 Parsed notification data: $data');
+        //
+        //     // Add delay to ensure context is available
+        //     Future.delayed(const Duration(milliseconds: 100), () {
+        //       final context = navigatorKey.currentContext;
+        //       if (context != null) {
+        //         handleNotificationNavigation(data, context);
+        //       } else {
+        //         print('❌ Context still null after delay');
+        //       }
+        //     });
+        //
+        //   } catch (e) {
+        //     print('❌ Error handling notification response: $e');
+        //   }
+        // }
+        if (details.payload != null && details.payload!.isNotEmpty) {
           try {
             final data = jsonDecode(details.payload!);
             print('📋 Parsed notification data: $data');
 
-            // Add delay to ensure context is available
             Future.delayed(const Duration(milliseconds: 100), () {
               final context = navigatorKey.currentContext;
               if (context != null) {
@@ -1347,11 +1365,17 @@ class FirebaseMessagingService {
                 print('❌ Context still null after delay');
               }
             });
-
           } catch (e) {
-            print('❌ Error handling notification response: $e');
+            print('❌ Error parsing notification response: $e');
+          }
+        } else {
+          print('⚠️ Notification tapped but no payload found');
+          final context = navigatorKey.currentContext;
+          if (context != null) {
+            handleNotificationNavigation({}, context);
           }
         }
+
       },
     );
 
@@ -1360,6 +1384,11 @@ class FirebaseMessagingService {
       print('📨 Foreground message received: ${message.notification?.title}');
 
       RemoteNotification? notification = message.notification;
+      final safePayload = {
+        "title": notification?.title ?? "",
+        "body": notification?.body ?? "",
+        ...message.data,
+      };
 
       if (notification != null) {
         flutterLocalNotificationsPlugin.show(
@@ -1380,7 +1409,7 @@ class FirebaseMessagingService {
               presentSound: true,
             ),
           ),
-          payload: jsonEncode(message.data),
+          payload: jsonEncode(safePayload),
         );
       }
     });
