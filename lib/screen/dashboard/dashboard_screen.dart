@@ -16,7 +16,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
-
   late final DashboardController _controller;
   PageController? _pageController;
   int _currentAdIndex = 0;
@@ -86,7 +85,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.dispose();
   }
 
-  // Responsive values - optimized for clean layout
   bool get isSmallMobile => MediaQuery.of(context).size.width < 400;
   bool get isMobile => MediaQuery.of(context).size.width < 600;
 
@@ -120,7 +118,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       margin: EdgeInsets.all(horizontalPadding),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.primaryColor, AppTheme.primaryColor.withValues(alpha: 0.8)],
+          colors: [
+            AppTheme.primaryColor,
+            AppTheme.primaryColor.withValues(alpha: 0.8)
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -137,7 +138,6 @@ class _DashboardScreenState extends State<DashboardScreen>
         padding: EdgeInsets.all(cardPadding),
         child: Column(
           children: [
-            // Weather and Date
             ValueListenableBuilder<String>(
               valueListenable: _controller.temperature,
               builder: (context, temperature, _) {
@@ -156,10 +156,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 );
               },
             ),
-
             SizedBox(height: largeSpacing),
-
-            // Quote Section
             const Text(
               "Quote of the day",
               style: TextStyle(
@@ -168,9 +165,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 fontWeight: FontWeight.bold,
               ),
             ),
-
             SizedBox(height: mediumSpacing),
-
             ValueListenableBuilder<String>(
               valueListenable: _controller.quote,
               builder: (context, quote, _) {
@@ -186,9 +181,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 );
               },
             ),
-
             SizedBox(height: mediumSpacing),
-
             ValueListenableBuilder<String>(
               valueListenable: _controller.quoteAuthor,
               builder: (context, author, _) {
@@ -342,7 +335,8 @@ class _DashboardScreenState extends State<DashboardScreen>
         if (notification is ScrollStartNotification) {
           _controller.pauseAutoScroll();
         } else if (notification is ScrollEndNotification ||
-            notification is UserScrollNotification && notification.direction == ScrollDirection.idle) {
+            notification is UserScrollNotification &&
+                notification.direction == ScrollDirection.idle) {
           _controller.resumeAutoScroll();
         }
         return false;
@@ -412,41 +406,42 @@ class _DashboardScreenState extends State<DashboardScreen>
         borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
         child: ad.imageUrl?.isNotEmpty == true
             ? Image.network(
-          ad.imageUrl!,
-          fit: BoxFit.contain, // cover के बजाय contain use करें
-          width: double.infinity,
-          height: 200,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Container(
-              alignment: Alignment.center,
-              color: Colors.grey.shade50,
-              height: 200,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                        : null,
-                    strokeWidth: 2,
-                    color: AppTheme.primaryColor,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Loading image...",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
+                ad.imageUrl!,
+                fit: BoxFit.contain,
+                width: double.infinity,
+                height: 200,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    alignment: Alignment.center,
+                    color: Colors.grey.shade50,
+                    height: 200,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                          strokeWidth: 2,
+                          color: AppTheme.primaryColor,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          "Loading image...",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
-        )
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildFallbackImage(),
+              )
             : _buildFallbackImage(),
       ),
     );
@@ -515,7 +510,6 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
           Text(
             ad.subjectLine ?? "No Subject",
             style: const TextStyle(
@@ -526,10 +520,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-
           SizedBox(height: mediumSpacing),
-
-          // Date and Amount
           Row(
             children: [
               Expanded(
@@ -552,10 +543,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ],
           ),
-
           SizedBox(height: smallSpacing),
-
-          // Location
           Text(
             "Location: ${ad.place ?? "Unknown"}",
             style: const TextStyle(
@@ -564,10 +552,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
             overflow: TextOverflow.ellipsis,
           ),
-
           SizedBox(height: mediumSpacing),
-
-          // Description Header with Share Button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -581,10 +566,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               _buildShareButton(ad),
             ],
           ),
-
           SizedBox(height: smallSpacing),
-
-          // Improved Description Container
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
@@ -766,15 +748,18 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
         child: Column(
           children: [
-            // Header
             Container(
               width: double.infinity,
               padding: EdgeInsets.all(cardPadding),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.primaryColor.withValues(alpha: 0.8)],
+                  colors: [
+                    AppTheme.primaryColor,
+                    AppTheme.primaryColor.withValues(alpha: 0.8)
+                  ],
                 ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
               ),
               child: const Text(
                 "Download MEETsu Solution App",
@@ -786,8 +771,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                 textAlign: TextAlign.center,
               ),
             ),
-
-            // Download Buttons
             Padding(
               padding: EdgeInsets.all(cardPadding),
               child: Column(
@@ -808,8 +791,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ],
               ),
             ),
-
-            // App Info
             Padding(
               padding: EdgeInsets.symmetric(horizontal: cardPadding),
               child: Column(
@@ -855,10 +836,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ],
               ),
             ),
-
             SizedBox(height: largeSpacing),
-
-            // Description
             Padding(
               padding: EdgeInsets.symmetric(horizontal: cardPadding),
               child: Column(
@@ -875,7 +853,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor,
                           borderRadius: BorderRadius.circular(20),
@@ -906,10 +885,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ],
               ),
             ),
-
             SizedBox(height: largeSpacing),
-
-            // Benefits List
             Padding(
               padding: EdgeInsets.symmetric(horizontal: cardPadding),
               child: ValueListenableBuilder<List<String>>(
@@ -930,7 +906,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                 },
               ),
             ),
-
             SizedBox(height: cardPadding),
           ],
         ),

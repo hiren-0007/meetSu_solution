@@ -239,7 +239,8 @@ class DashboardController {
         _currentAdIndex = 0;
       } else {
         adItems.value = [];
-        debugPrint("⚠️ No ads available or API returned error: ${adsResponse.message}");
+        debugPrint(
+            "⚠️ No ads available or API returned error: ${adsResponse.message}");
       }
     } catch (e) {
       debugPrint("❌ Error processing ads response: $e");
@@ -790,7 +791,6 @@ $text
     }
   }
 
-
   void _setErrorMessage(String message) {
     errorMessage.value = message;
     Future.delayed(const Duration(seconds: 5), () {
@@ -822,7 +822,6 @@ $text
 
   void pauseAutoScroll() {
     _autoScrollTimer?.cancel();
-    debugPrint("⏸️ Auto-scroll paused");
   }
 
   void resumeAutoScroll() {

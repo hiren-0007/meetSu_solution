@@ -9,6 +9,7 @@ import 'package:meetsu_solutions/services/api/api_service.dart';
 import 'package:meetsu_solutions/services/map/LocationService.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 import 'package:meetsu_solutions/services/firebase/firebase_messaging_service.dart';
+import 'dart:convert';
 
 class LoginController {
   final TextEditingController emailController = TextEditingController();
@@ -20,13 +21,15 @@ class LoginController {
 
   late final ApiService _apiService = ApiService(ApiClient());
   late final LocationService _locationService = LocationService();
-  late final FirebaseMessagingService _firebaseMessagingService = FirebaseMessagingService();
+  late final FirebaseMessagingService _firebaseMessagingService =
+      FirebaseMessagingService();
 
   bool _isDisposed = false;
 
-  static const String _emptyFieldsError = "Please enter both username and password";
-  static const String _authFailedError = "Authentication failed. Please check your credentials.";
-  static const String _invalidCredentialsError = "Invalid username or password";
+  static const String _emptyFieldsError =
+      "Please enter both username and password";
+  static const String _authFailedError =
+      "Authentication failed. Please check your credentials.";
 
   void togglePasswordVisibility() {
     if (_isDisposed) return;
@@ -43,19 +46,32 @@ class LoginController {
     try {
       final loginRequest = _createLoginRequest();
       final response = await _apiService.loginUser(loginRequest.toJson());
+      debugPrint('Raw API response: $response');
 
       if (_isDisposed || !context.mounted) return false;
+
+      if (response.containsKey('message') && response.containsKey('code')) {
+        final code = response['code'];
+        final message = response['message'] as String?;
+
+        if (code == 0 || code == null) {
+          debugPrint('Error detected - showing message: $message');
+          _setError(message ?? 'Authentication failed');
+          return false;
+        }
+      }
 
       final loginResponse = LoginResponseModel.fromJson(response);
 
       if (!_isValidLoginResponse(loginResponse)) {
-        _setError(_authFailedError);
+        final errorMsg = response['message'] as String? ?? _authFailedError;
+        debugPrint('Invalid response - showing error: $errorMsg');
+        _setError(errorMsg);
         return false;
       }
 
       await _handleSuccessfulLogin(loginResponse, context);
       return true;
-
     } catch (e) {
       if (!_isDisposed) {
         _handleLoginError(e);
@@ -95,9 +111,9 @@ class LoginController {
   }
 
   Future<void> _handleSuccessfulLogin(
-      LoginResponseModel loginResponse,
-      BuildContext context,
-      ) async {
+    LoginResponseModel loginResponse,
+    BuildContext context,
+  ) async {
     if (_isDisposed || !context.mounted) return;
 
     try {
@@ -139,13 +155,54 @@ class LoginController {
 
     debugPrint("Login error: $error");
 
+    String errorMsg =
+        "An error occurred. Please check your connection and try again.";
+
     if (error is HttpException) {
-      _setError(error.statusCode == 401
-          ? _invalidCredentialsError
-          : "Server error: ${error.message}");
+      debugPrint(
+          "HttpException - StatusCode: ${error.statusCode}, Message: ${error.message}");
+
+      if (error.statusCode == 401) {
+        try {
+          final errorData = jsonDecode(error.message);
+          if (errorData is Map<String, dynamic>) {
+            errorMsg = errorData['message'] ??
+                errorData['error'] ??
+                errorData['detail'] ??
+                "Incorrect username or password";
+          } else {
+            errorMsg = "Incorrect username or password";
+          }
+        } catch (e) {
+          debugPrint("Failed to parse error JSON: $e");
+          if (error.message.contains("Incorrect") ||
+              error.message.contains("Invalid") ||
+              error.message.contains("password") ||
+              error.message.contains("username")) {
+            errorMsg = error.message;
+          } else {
+            errorMsg = "Incorrect username or password";
+          }
+        }
+      } else {
+        try {
+          final errorData = jsonDecode(error.message);
+          if (errorData is Map<String, dynamic> &&
+              errorData.containsKey('message')) {
+            errorMsg = errorData['message'];
+          } else {
+            errorMsg = "Server error (${error.statusCode})";
+          }
+        } catch (e) {
+          errorMsg = "Server error: ${error.message}";
+        }
+      }
     } else {
-      _setError("An error occurred. Please check your connection and try again.");
+      errorMsg = "Network error. Please check your connection.";
     }
+
+    debugPrint("Setting error message: $errorMsg");
+    _setError(errorMsg);
   }
 
   Future<void> _requestLocationPermission(BuildContext context) async {
@@ -158,7 +215,8 @@ class LoginController {
     }
   }
 
-  Future<void> _navigateBasedOnLoginType(BuildContext context, String? loginType) async {
+  Future<void> _navigateBasedOnLoginType(
+      BuildContext context, String? loginType) async {
     if (_isDisposed || !context.mounted) return;
 
     Widget destinationScreen;
@@ -171,7 +229,6 @@ class LoginController {
         destinationScreen = const ClientHomeScreen();
         break;
       default:
-        debugPrint("Unknown login type: $loginType, defaulting to HomeScreen");
         destinationScreen = const HomeScreen();
         break;
     }
@@ -181,7 +238,7 @@ class LoginController {
         await Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => destinationScreen),
-              (route) => false,
+          (route) => false,
         );
       }
     } catch (e) {
@@ -219,17 +276,14 @@ class LoginController {
   void _setError(String error) {
     if (_isDisposed) return;
 
-    if (errorMessage.value != error) {
-      errorMessage.value = error;
-    }
+    debugPrint('Setting error: $error');
+    errorMessage.value = error;
+    debugPrint('Error set successfully: ${errorMessage.value}');
   }
 
   void _clearError() {
     if (_isDisposed) return;
-
-    if (errorMessage.value != null) {
-      errorMessage.value = null;
-    }
+    errorMessage.value = null;
   }
 
   void dispose() {

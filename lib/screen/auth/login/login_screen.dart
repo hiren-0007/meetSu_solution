@@ -198,16 +198,43 @@ class _ErrorMessage extends StatelessWidget {
     return ValueListenableBuilder<String?>(
       valueListenable: controller.errorMessage,
       builder: (context, errorMessage, _) {
-        if (errorMessage == null) return const SizedBox.shrink();
+        // Add debug print to check if error message is being set
+        debugPrint('Error message in UI: $errorMessage');
 
-        return Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: Text(
-            errorMessage,
-            style: const TextStyle(
-              color: Colors.red,
-              fontSize: 14,
-            ),
+        if (errorMessage == null || errorMessage.isEmpty) {
+          return const SizedBox(
+              height: 50); // Reserve space to prevent layout shifts
+        }
+
+        return Container(
+          margin: const EdgeInsets.only(top: 10),
+          padding: const EdgeInsets.all(12),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.red.shade50,
+            border: Border.all(color: Colors.red.shade200),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.error_outline,
+                color: Colors.red.shade600,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  errorMessage,
+                  style: TextStyle(
+                    color: Colors.red.shade700,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -226,24 +253,34 @@ class _LoginButton extends StatelessWidget {
       valueListenable: controller.isLoading,
       builder: (context, isLoading, _) {
         return ElevatedButton(
-          onPressed: isLoading ? null : () => controller.login(context),
+          onPressed: isLoading
+              ? null
+              : () async {
+                  // Clear any previous errors before starting login
+                  controller.errorMessage.value = null;
+
+                  // Add small delay to ensure UI updates
+                  await Future.delayed(const Duration(milliseconds: 100));
+
+                  final success = await controller.login(context);
+                  debugPrint('Login result: $success');
+                },
           style: AppTheme.primaryButtonStyle,
           child: isLoading
               ? const SizedBox(
-            height: 20,
-            width: 20,
-            child: CircularProgressIndicator(
-              color: Colors.white,
-              strokeWidth: 2,
-            ),
-          )
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
               : const Text(
-            "LOGIN",
-            style: AppTheme.buttonTextStyle,
-          ),
+                  "LOGIN",
+                  style: AppTheme.buttonTextStyle,
+                ),
         );
       },
     );
   }
 }
-

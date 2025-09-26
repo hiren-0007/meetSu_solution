@@ -83,6 +83,52 @@ import FirebaseMessaging
 
     completionHandler(.newData)
   }
+
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    let bundleID = Bundle.main.bundleIdentifier
+    print("Current Bundle ID: \(bundleID ?? "unknown")")
+
+    if let filePath = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") {
+      print("Found GoogleService-Info.plist at path: \(filePath)")
+      FirebaseApp.configure()
+      print("Firebase configured successfully")
+
+      Messaging.messaging().delegate = self
+
+      // यहाँ से notification configuration शुरू होती है
+      if #available(iOS 10.0, *) {
+        UNUserNotificationCenter.current().delegate = self
+
+        // यहाँ मैंने criticalAlert add करने का सुझाव दिया था
+        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound, .criticalAlert]
+        UNUserNotificationCenter.current().requestAuthorization(
+          options: authOptions,
+          completionHandler: { granted, error in
+            print("Notification permission granted: \(granted)")
+            if let error = error {
+              print("Notification permission error: \(error)")
+            }
+          }
+        )
+      } else {
+        let settings: UIUserNotificationSettings =
+        UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil)
+        application.registerUserNotificationSettings(settings)
+      }
+
+      application.registerForRemoteNotifications()
+
+    } else {
+      // Your existing plist search code...
+      print("Error: GoogleService-Info.plist not found in bundle")
+    }
+
+    GeneratedPluginRegistrant.register(with: self)
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
 }
 
 @available(iOS 10, *)

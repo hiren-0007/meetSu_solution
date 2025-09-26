@@ -14,9 +14,10 @@ class ApiClient {
   final Duration _receiveTimeout = const Duration(seconds: 30);
 
   ApiClient({Map<String, String>? headers})
-      : _headers = headers ?? {
-    'Accept': 'application/json',
-  };
+      : _headers = headers ??
+            {
+              'Accept': 'application/json',
+            };
 
   // Add auth token
   void addAuthToken(String token) {
@@ -28,18 +29,21 @@ class ApiClient {
     _headers.remove('Authorization');
   }
 
-  // Handle 401 Unauthorized
-  void _handle401(http.Response response) async {
+  // Handle 401 Unauthorized - with option to skip for login
+  void _handle401(http.Response response, {bool skipRedirect = false}) async {
+    if (skipRedirect) {
+      debugPrint('401 detected but skipping redirect for login endpoint');
+      return;
+    }
+
     try {
-
       await SharedPrefsService.instance.clear();
-
       removeAuthToken();
 
       if (navigatorKey.currentState != null) {
         navigatorKey.currentState!.pushNamedAndRemoveUntil(
           '/login',
-              (route) => false,
+          (route) => false,
         );
       }
     } catch (e) {
@@ -48,30 +52,23 @@ class ApiClient {
   }
 
   // Generic GET request
-  Future<Map<String, dynamic>> get(String endpoint, {Map<String, dynamic>? queryParams}) async {
+  Future<Map<String, dynamic>> get(String endpoint,
+      {Map<String, dynamic>? queryParams}) async {
     try {
       debugPrint('Making GET request to: ${baseUrlNew + endpoint}');
-      final uri = Uri.parse(baseUrlNew + endpoint).replace(queryParameters: queryParams);
+      final uri = Uri.parse(baseUrlNew + endpoint)
+          .replace(queryParameters: queryParams);
 
       final client = http.Client();
       try {
         final request = http.Request('GET', uri);
         request.headers.addAll(_headers);
 
-        final streamedResponse = await client.send(request)
-            .timeout(_connectionTimeout);
+        final streamedResponse =
+            await client.send(request).timeout(_connectionTimeout);
 
         final response = await http.Response.fromStream(streamedResponse)
             .timeout(_receiveTimeout);
-
-        // Check for 401 status
-        if (response.statusCode == 401) {
-          _handle401(response);
-          throw HttpException(
-            statusCode: 401,
-            message: 'Unauthorized',
-          );
-        }
 
         return _handleResponse(response);
       } finally {
@@ -83,12 +80,16 @@ class ApiClient {
     }
   }
 
-  // Generic POST request - now with option for form data
-  Future<Map<String, dynamic>> post(String endpoint, {dynamic body, bool useFormData = false}) async {
+  // Generic POST request - now with option for form data and login context
+  Future<Map<String, dynamic>> post(String endpoint,
+      {dynamic body,
+      bool useFormData = false,
+      bool isLoginRequest = false}) async {
     try {
       debugPrint('Making POST request to: ${baseUrlNew + endpoint}');
       debugPrint('Request body: $body');
       debugPrint('Using form-data: $useFormData');
+      debugPrint('Is login request: $isLoginRequest');
 
       final uri = Uri.parse(baseUrlNew + endpoint);
 
@@ -108,22 +109,13 @@ class ApiClient {
 
         final client = http.Client();
         try {
-          final streamedResponse = await client.send(request)
-              .timeout(_connectionTimeout);
+          final streamedResponse =
+              await client.send(request).timeout(_connectionTimeout);
 
           final response = await http.Response.fromStream(streamedResponse)
               .timeout(_receiveTimeout);
 
-          // Check for 401 status
-          if (response.statusCode == 401) {
-            _handle401(response);
-            throw HttpException(
-              statusCode: 401,
-              message: 'Unauthorized',
-            );
-          }
-
-          return _handleResponse(response);
+          return _handleResponse(response, isLoginRequest: isLoginRequest);
         } finally {
           client.close();
         }
@@ -132,25 +124,17 @@ class ApiClient {
         final client = http.Client();
         try {
           final request = http.Request('POST', uri);
-          request.headers.addAll({..._headers, 'Content-Type': 'application/json'});
+          request.headers
+              .addAll({..._headers, 'Content-Type': 'application/json'});
           request.body = jsonEncode(body);
 
-          final streamedResponse = await client.send(request)
-              .timeout(_connectionTimeout);
+          final streamedResponse =
+              await client.send(request).timeout(_connectionTimeout);
 
           final response = await http.Response.fromStream(streamedResponse)
               .timeout(_receiveTimeout);
 
-          // Check for 401 status
-          if (response.statusCode == 401) {
-            _handle401(response);
-            throw HttpException(
-              statusCode: 401,
-              message: 'Unauthorized',
-            );
-          }
-
-          return _handleResponse(response);
+          return _handleResponse(response, isLoginRequest: isLoginRequest);
         } finally {
           client.close();
         }
@@ -169,23 +153,15 @@ class ApiClient {
       final client = http.Client();
       try {
         final request = http.Request('PUT', uri);
-        request.headers.addAll({..._headers, 'Content-Type': 'application/json'});
+        request.headers
+            .addAll({..._headers, 'Content-Type': 'application/json'});
         request.body = jsonEncode(body);
 
-        final streamedResponse = await client.send(request)
-            .timeout(_connectionTimeout);
+        final streamedResponse =
+            await client.send(request).timeout(_connectionTimeout);
 
         final response = await http.Response.fromStream(streamedResponse)
             .timeout(_receiveTimeout);
-
-        // Check for 401 status
-        if (response.statusCode == 401) {
-          _handle401(response);
-          throw HttpException(
-            statusCode: 401,
-            message: 'Unauthorized',
-          );
-        }
 
         return _handleResponse(response);
       } finally {
@@ -206,20 +182,11 @@ class ApiClient {
         final request = http.Request('DELETE', uri);
         request.headers.addAll(_headers);
 
-        final streamedResponse = await client.send(request)
-            .timeout(_connectionTimeout);
+        final streamedResponse =
+            await client.send(request).timeout(_connectionTimeout);
 
         final response = await http.Response.fromStream(streamedResponse)
             .timeout(_receiveTimeout);
-
-        // Check for 401 status
-        if (response.statusCode == 401) {
-          _handle401(response);
-          throw HttpException(
-            statusCode: 401,
-            message: 'Unauthorized',
-          );
-        }
 
         return _handleResponse(response);
       } finally {
@@ -231,7 +198,8 @@ class ApiClient {
   }
 
   // Add this method to your ApiClient class
-  Future<Map<String, dynamic>> postMultipart(String endpoint, {
+  Future<Map<String, dynamic>> postMultipart(
+    String endpoint, {
     Map<String, dynamic>? body,
     File? file,
     String? fileField,
@@ -269,20 +237,11 @@ class ApiClient {
       // Send the request
       final client = http.Client();
       try {
-        final streamedResponse = await client.send(request)
-            .timeout(_connectionTimeout);
+        final streamedResponse =
+            await client.send(request).timeout(_connectionTimeout);
 
         final response = await http.Response.fromStream(streamedResponse)
             .timeout(_receiveTimeout);
-
-        // Check for 401 status
-        if (response.statusCode == 401) {
-          _handle401(response);
-          throw HttpException(
-            statusCode: 401,
-            message: 'Unauthorized',
-          );
-        }
 
         return _handleResponse(response);
       } finally {
@@ -296,12 +255,12 @@ class ApiClient {
 
   Future<Map<String, dynamic>> fetchQuote() async {
     try {
-      final url = Uri.parse('https://api.forismatic.com/api/1.0/?method=getQuote&lang=en&format=json');
+      final url = Uri.parse(
+          'https://api.forismatic.com/api/1.0/?method=getQuote&lang=en&format=json');
 
       final client = http.Client();
       try {
-        final response = await client.get(url)
-            .timeout(_connectionTimeout);
+        final response = await client.get(url).timeout(_connectionTimeout);
 
         if (response.statusCode == 200) {
           return json.decode(response.body);
@@ -320,26 +279,55 @@ class ApiClient {
     }
   }
 
-  Map<String, dynamic> _handleResponse(http.Response response) {
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      Map<String, dynamic> responseData;
-      if (response.body.isEmpty) {
-        responseData = {};
-      } else {
-        try {
-          responseData = json.decode(response.body);
-        } catch (e) {
-          debugPrint('Error decoding JSON: $e');
-          responseData = {'body': response.body};
-        }
-      }
+  // Updated _handleResponse method with login context
+  Map<String, dynamic> _handleResponse(http.Response response,
+      {bool isLoginRequest = false}) {
+    debugPrint('=== API RESPONSE ===');
+    debugPrint('Status Code: ${response.statusCode}');
+    debugPrint('Response Body: ${response.body}');
+    debugPrint('Is Login Request: $isLoginRequest');
+    debugPrint('==================');
 
-      responseData['statusCode'] = response.statusCode;
-      return responseData;
+    // Parse response data
+    Map<String, dynamic> responseData;
+    if (response.body.isEmpty) {
+      responseData = {};
     } else {
+      try {
+        responseData = json.decode(response.body);
+      } catch (e) {
+        debugPrint('Error decoding JSON: $e');
+        responseData = {'body': response.body};
+      }
+    }
+
+    responseData['statusCode'] = response.statusCode;
+
+    // Handle different response codes
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      // Success response
+      return responseData;
+    } else if (response.statusCode == 401) {
+      // Handle 401 - don't auto-redirect if it's a login request
+      _handle401(response, skipRedirect: isLoginRequest);
+
+      if (isLoginRequest) {
+        // For login requests, return the error response instead of throwing
+        return responseData;
+      } else {
+        // For authenticated endpoints, throw exception
+        throw HttpException(
+          statusCode: response.statusCode,
+          message: response.body,
+        );
+      }
+    } else {
+      // Other error codes - throw exception
       throw HttpException(
         statusCode: response.statusCode,
-        message: response.body,
+        message: response.body.isNotEmpty
+            ? response.body
+            : 'HTTP ${response.statusCode}',
       );
     }
   }

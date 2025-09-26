@@ -5,8 +5,10 @@ import 'package:meetsu_solutions/clint/c_screen/c_more/analytics/daily/daily_ana
 import 'package:meetsu_solutions/clint/c_screen/c_more/analytics/weekly/weekly_analytics_screen.dart';
 import 'package:meetsu_solutions/clint/c_screen/c_more/c_profile/clint_profile_screen.dart';
 import 'package:meetsu_solutions/screen/auth/login/login_screen.dart';
+import 'package:meetsu_solutions/screen/dashboard/dashboard_screen.dart';
 import 'package:meetsu_solutions/screen/home/home_screen.dart';
 import 'package:meetsu_solutions/screen/more/contact/contact_screen.dart';
+import 'package:meetsu_solutions/screen/more/more_screen.dart';
 import 'package:meetsu_solutions/screen/more/profile/profile_screen.dart';
 import 'package:meetsu_solutions/screen/more/quiz/quiz_result_screen.dart';
 import 'package:meetsu_solutions/screen/more/request/send_request_screen.dart';
@@ -41,7 +43,6 @@ void main() async {
 
     // 🔔 Request notification permission here
     await requestNotificationPermission();
-
   } catch (e) {
     print('Firebase initialization error: $e');
   }
@@ -84,10 +85,12 @@ class JobPortalApp extends StatelessWidget {
 
           // Applicant Routes
           '/home': (context) => const HomeScreen(),
+          '/dash_board': (context) => const DashboardScreen(),
           '/profile': (context) => const ProfileScreen(),
           '/contact': (context) => const ContactScreen(),
           '/trainings': (context) => const TrainingScreen(),
           '/send-request': (context) => const SendRequestScreen(),
+          '/more': (context) => const MoreScreen(),
           '/quiz-result': (context) => const QuizResultScreen(),
           '/quiz': (context) => const QuizScreen(),
 

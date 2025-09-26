@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_endpoints.dart';
 
@@ -11,9 +10,10 @@ class ApiService {
   // Getter to access the ApiClient
   ApiClient get client => _client;
 
-  // Auth related APIs
+  // Auth related APIs - MARK AS LOGIN REQUEST
   Future<Map<String, dynamic>> loginUser(Map<String, dynamic> userData) async {
-    return await _client.post(ApiEndpoints.login, body: userData);
+    return await _client.post(ApiEndpoints.login,
+        body: userData, isLoginRequest: true);
   }
 
   // Profile related APIs
@@ -38,7 +38,8 @@ class ApiService {
 
   //Job Share related APIs
   Future<Map<String, dynamic>> getJobShare(Map<String, dynamic> body) async {
-    return await _client.post(ApiEndpoints.jobShare, body: body, useFormData: true);
+    return await _client.post(ApiEndpoints.jobShare,
+        body: body, useFormData: true);
   }
 
   // Compliance related APIs
@@ -57,7 +58,8 @@ class ApiService {
   }
 
   // Contact related APIs
-  Future<Map<String, dynamic>> submitContactForm(Map<String, String> data) async {
+  Future<Map<String, dynamic>> submitContactForm(
+      Map<String, String> data) async {
     return await client.post(ApiEndpoints.contactUs, body: data);
   }
 
@@ -65,14 +67,9 @@ class ApiService {
   Future<Map<String, dynamic>> addDeductionWithSignature(
       Map<String, dynamic> deductionData,
       File signatureFile,
-      String fileFieldName
-      ) async {
-    return await _client.postMultipart(
-        ApiEndpoints.addDeduction,
-        body: deductionData,
-        file: signatureFile,
-        fileField: fileFieldName
-    );
+      String fileFieldName) async {
+    return await _client.postMultipart(ApiEndpoints.addDeduction,
+        body: deductionData, file: signatureFile, fileField: fileFieldName);
   }
 
   // Show request records related APIs
@@ -86,17 +83,20 @@ class ApiService {
   }
 
   // Weather related APIs
-  Future<Map<String, dynamic>> getWeather(Map<String, dynamic> locationData) async {
+  Future<Map<String, dynamic>> getWeather(
+      Map<String, dynamic> locationData) async {
     return await _client.post(ApiEndpoints.getWeather, body: locationData);
   }
 
   //Training Doc related APIs
-  Future<Map<String, dynamic>> trainingDoc(Map<String, dynamic> userData) async {
+  Future<Map<String, dynamic>> trainingDoc(
+      Map<String, dynamic> userData) async {
     return await _client.post(ApiEndpoints.trainingDoc, body: userData);
   }
 
   //Training Doc View related APIs
-  Future<Map<String, dynamic>> trainingDocView(Map<String, dynamic> userData) async {
+  Future<Map<String, dynamic>> trainingDocView(
+      Map<String, dynamic> userData) async {
     return await _client.post(ApiEndpoints.trainingView, body: userData);
   }
 
@@ -111,7 +111,8 @@ class ApiService {
   }
 
   //Compliance Download related APIs
-  Future<Map<String, dynamic>> complianceDownload(Map<String, dynamic> userData) async {
+  Future<Map<String, dynamic>> complianceDownload(
+      Map<String, dynamic> userData) async {
     return await _client.post(ApiEndpoints.complianceDownload, body: userData);
   }
 
@@ -127,18 +128,16 @@ class ApiService {
 
   //FCM Token related APIs
   Future<Map<String, dynamic>> fcmToken(Map<String, dynamic> userData) async {
-    return await _client.post(ApiEndpoints.fcmToken, body: userData, useFormData: true);
+    return await _client.post(ApiEndpoints.fcmToken,
+        body: userData, useFormData: true);
   }
 
   //Submit Test related APIs
-  Future<Map<String, dynamic>> submitTest(Map<String, dynamic> userData, {File? signatureFile}) async {
+  Future<Map<String, dynamic>> submitTest(Map<String, dynamic> userData,
+      {File? signatureFile}) async {
     if (signatureFile != null) {
-      return await _client.postMultipart(
-          ApiEndpoints.submitTest,
-          body: userData,
-          file: signatureFile,
-          fileField: 'signature'
-      );
+      return await _client.postMultipart(ApiEndpoints.submitTest,
+          body: userData, file: signatureFile, fileField: 'signature');
     } else {
       return await _client.post(ApiEndpoints.submitTest, body: userData);
     }
@@ -160,7 +159,8 @@ class ApiService {
   }
 
   // Quiz answer submission API
-  Future<Map<String, dynamic>> submitQuizAnswer(Map<String, dynamic> answerData) async {
+  Future<Map<String, dynamic>> submitQuizAnswer(
+      Map<String, dynamic> answerData) async {
     return await _client.post(ApiEndpoints.quizAnswer, body: answerData);
   }
 
@@ -182,23 +182,30 @@ class ApiService {
     return await _client.get(ApiEndpoints.getClintPositions);
   }
 
-  Future<Map<String, dynamic>> createJobRequest(Map<String, dynamic> jobRequestData) async {
-    return await _client.post(ApiEndpoints.createJobRequest, body: jobRequestData, useFormData: true);
+  Future<Map<String, dynamic>> createJobRequest(
+      Map<String, dynamic> jobRequestData) async {
+    return await _client.post(ApiEndpoints.createJobRequest,
+        body: jobRequestData, useFormData: true);
   }
 
-  Future<Map<String, dynamic>> getWeeklyReport(String startDate, String endDate) async {
-    return await _client.get('${ApiEndpoints.weeklyReport}?start_date=$startDate&end_date=$endDate');
+  Future<Map<String, dynamic>> getWeeklyReport(
+      String startDate, String endDate) async {
+    return await _client.get(
+        '${ApiEndpoints.weeklyReport}?start_date=$startDate&end_date=$endDate');
   }
 
-  Future<Map<String, dynamic>> getClientSchedule(Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> getClientSchedule(
+      Map<String, dynamic> body) async {
     return await _client.post(ApiEndpoints.clintSchedule, body: body);
   }
 
-  Future<Map<String, dynamic>> showClientWeather(Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> showClientWeather(
+      Map<String, dynamic> body) async {
     return await _client.post(ApiEndpoints.showClientWeather, body: body);
   }
 
   Future<Map<String, dynamic>> getJobDetails(int jobPositionId) async {
-    return await _client.post('${ApiEndpoints.showAssignedApplicants}?id=$jobPositionId');
+    return await _client
+        .post('${ApiEndpoints.showAssignedApplicants}?id=$jobPositionId');
   }
 }

@@ -10,7 +10,6 @@ import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
 import 'package:meetsu_solutions/utils/extra/html_parsers.dart';
 import 'package:share_plus/share_plus.dart';
 
-
 class ClientDashboardController {
   static const Duration _autoScrollInterval = Duration(seconds: 5);
   static const Duration _apiTimeout = Duration(seconds: 30);
@@ -29,15 +28,14 @@ class ClientDashboardController {
 
   // Weather & Date ValueNotifiers
   final ValueNotifier<String> temperature = ValueNotifier<String>("Loading...");
-  final ValueNotifier<String> date = ValueNotifier<String>(
-      DateFormat("MMM dd, yyyy").format(DateTime.now())
-  );
+  final ValueNotifier<String> date =
+      ValueNotifier<String>(DateFormat("MMM dd, yyyy").format(DateTime.now()));
 
   // Quote ValueNotifiers
   final ValueNotifier<String> quote = ValueNotifier<String>(
-      "Success is not the key to happiness. Happiness is the key to success."
-  );
-  final ValueNotifier<String> quoteAuthor = ValueNotifier<String>("Albert Schweitzer");
+      "Success is not the key to happiness. Happiness is the key to success.");
+  final ValueNotifier<String> quoteAuthor =
+      ValueNotifier<String>("Albert Schweitzer");
   final ValueNotifier<String> iconLink = ValueNotifier<String>("");
 
   // Ads ValueNotifiers
@@ -50,7 +48,7 @@ class ClientDashboardController {
 
   // Weather data
   final ValueNotifier<WeatherResponseModel?> getWeatherData =
-  ValueNotifier<WeatherResponseModel?>(null);
+      ValueNotifier<WeatherResponseModel?>(null);
 
   // Auto-scroll timer and PageController management
   Timer? _autoScrollTimer;
@@ -81,7 +79,8 @@ class ClientDashboardController {
   }
 
   // Auto-scroll setup
-  void startAutoScrollWithPageController(PageController pageController, Function(int) onIndexChanged) {
+  void startAutoScrollWithPageController(
+      PageController pageController, Function(int) onIndexChanged) {
     _pageController = pageController;
     _onIndexChanged = onIndexChanged;
     _currentAdIndex = 0;
@@ -100,15 +99,17 @@ class ClientDashboardController {
     debugPrint("🔄 Starting auto-scroll for ${adItems.value.length} ads");
 
     _autoScrollTimer = Timer.periodic(_autoScrollInterval, (timer) {
-      if (adItems.value.isNotEmpty && _pageController != null && _pageController!.hasClients) {
-
+      if (adItems.value.isNotEmpty &&
+          _pageController != null &&
+          _pageController!.hasClients) {
         _currentAdIndex = (_currentAdIndex + 1) % adItems.value.length;
 
         final currentPage = _pageController!.page?.round() ?? 0;
         final currentRealIndex = currentPage % adItems.value.length;
 
         int targetPage;
-        if (_currentAdIndex == 0 && currentRealIndex == adItems.value.length - 1) {
+        if (_currentAdIndex == 0 &&
+            currentRealIndex == adItems.value.length - 1) {
           targetPage = currentPage + 1;
         } else {
           targetPage = currentPage + 1;
@@ -167,7 +168,9 @@ class ClientDashboardController {
   }
 
   void setCurrentIndex(int index) {
-    if (index >= 0 && index < adItems.value.length && currentIndex.value != index) {
+    if (index >= 0 &&
+        index < adItems.value.length &&
+        currentIndex.value != index) {
       currentIndex.value = index;
     }
   }
@@ -175,7 +178,8 @@ class ClientDashboardController {
   Future<void> _fetchQuoteData() async {
     try {
       if (_lastQuoteFetch != null &&
-          DateTime.now().difference(_lastQuoteFetch!) < _cacheValidityDuration) {
+          DateTime.now().difference(_lastQuoteFetch!) <
+              _cacheValidityDuration) {
         debugPrint("📝 Using cached quote data");
         return;
       }
@@ -192,13 +196,12 @@ class ClientDashboardController {
           ? quoteText!
           : "Success is not the key to happiness. Happiness is the key to success.";
 
-      quoteAuthor.value = authorText?.isNotEmpty == true
-          ? authorText!
-          : "Albert Schweitzer";
+      quoteAuthor.value =
+          authorText?.isNotEmpty == true ? authorText! : "Albert Schweitzer";
 
       _lastQuoteFetch = DateTime.now();
       debugPrint("✅ Quote Updated: ${quote.value} - ${quoteAuthor.value}");
-        } catch (e) {
+    } catch (e) {
       debugPrint("❌ Error fetching quote: $e");
     }
   }
@@ -213,7 +216,8 @@ class ClientDashboardController {
 
       debugPrint("📢 Fetching ads data for client...");
 
-      final token = _cachedToken ?? SharedPrefsService.instance.getAccessToken();
+      final token =
+          _cachedToken ?? SharedPrefsService.instance.getAccessToken();
       if (token?.isEmpty != false) {
         throw Exception("No authentication token found");
       }
@@ -229,7 +233,6 @@ class ClientDashboardController {
 
       await _processAdsResponse(response);
       _lastAdsFetch = DateTime.now();
-
     } catch (e) {
       debugPrint("❌ Error fetching ads data: $e");
       adItems.value = [];
@@ -243,9 +246,9 @@ class ClientDashboardController {
 
       if (adsResponse.success == true &&
           adsResponse.response?.ads?.isNotEmpty == true) {
-
         final List<Ads> processedAds = adsResponse.response!.ads!.map((ad) {
-          String plainDescription = HtmlParsers.htmlToText(ad.description ?? "");
+          String plainDescription =
+              HtmlParsers.htmlToText(ad.description ?? "");
 
           return Ads(
             adsId: ad.adsId ?? 0,
@@ -273,7 +276,8 @@ class ClientDashboardController {
       } else {
         adItems.value = [];
         hasData.value = false;
-        debugPrint("⚠️ No client ads available or API returned error: ${adsResponse.message}");
+        debugPrint(
+            "⚠️ No client ads available or API returned error: ${adsResponse.message}");
       }
     } catch (e) {
       debugPrint("❌ Error processing client ads response: $e");
@@ -324,7 +328,8 @@ class ClientDashboardController {
   Future<void> _fetchWeatherData() async {
     try {
       if (_lastWeatherFetch != null &&
-          DateTime.now().difference(_lastWeatherFetch!) < _cacheValidityDuration) {
+          DateTime.now().difference(_lastWeatherFetch!) <
+              _cacheValidityDuration) {
         debugPrint("🌤️ Using cached weather data");
         return;
       }
@@ -345,16 +350,17 @@ class ClientDashboardController {
 
       await _fetchWeatherWithCoordinates(latitude, longitude);
       _lastWeatherFetch = DateTime.now();
-
     } catch (e) {
       debugPrint("❌ Error in weather fetch flow: $e");
       temperature.value = "25°C";
     }
   }
 
-  Future<void> _fetchWeatherWithCoordinates(String latitude, String longitude) async {
+  Future<void> _fetchWeatherWithCoordinates(
+      String latitude, String longitude) async {
     try {
-      final token = _cachedToken ?? SharedPrefsService.instance.getAccessToken();
+      final token =
+          _cachedToken ?? SharedPrefsService.instance.getAccessToken();
       if (token?.isEmpty != false) {
         debugPrint("❌ No authentication token found for weather API");
         return;
@@ -367,11 +373,12 @@ class ClientDashboardController {
         'longitude': longitude,
       };
 
-      final response = await _apiService.showClientWeather(locationData).timeout(_apiTimeout);
+      final response = await _apiService
+          .showClientWeather(locationData)
+          .timeout(_apiTimeout);
       debugPrint("📥 Weather API Response received");
 
       await _processWeatherResponse(response);
-
     } catch (e) {
       debugPrint("❌ Error fetching weather: $e");
       temperature.value = "25°C";
@@ -392,9 +399,8 @@ class ClientDashboardController {
 
         temperature.value = "${tempString}°C";
 
-        getWeatherData.value = WeatherResponseModel.fromJson({
-          'temperature': tempString
-        });
+        getWeatherData.value =
+            WeatherResponseModel.fromJson({'temperature': tempString});
 
         debugPrint("✅ Weather Updated: ${temperature.value}");
       } else {
@@ -449,7 +455,8 @@ class ClientDashboardController {
       final shareLink = await _getAdShareLink(ad);
       final shareText = _buildAdShareText(ad, shareLink);
 
-      await Share.share(shareText, subject: ad.subjectLine ?? 'Client Advertisement');
+      await Share.share(shareText,
+          subject: ad.subjectLine ?? 'Client Advertisement');
       debugPrint("✅ Client ad shared successfully");
 
       if (context.mounted) {
@@ -468,7 +475,8 @@ class ClientDashboardController {
 
   Future<String> _getAdShareLink(Ads ad) async {
     try {
-      final token = _cachedToken ?? SharedPrefsService.instance.getAccessToken();
+      final token =
+          _cachedToken ?? SharedPrefsService.instance.getAccessToken();
       if (token == null || token.isEmpty) {
         throw Exception("No authentication token found");
       }
@@ -541,7 +549,8 @@ class ClientDashboardController {
     final fallbackLink = _getFallbackAdShareLink(ad);
     final shareText = _buildAdShareText(ad, fallbackLink);
 
-    await Share.share(shareText, subject: ad.subjectLine ?? 'Client Advertisement');
+    await Share.share(shareText,
+        subject: ad.subjectLine ?? 'Client Advertisement');
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -587,7 +596,6 @@ class ClientDashboardController {
 
   void pauseAutoScroll() {
     _autoScrollTimer?.cancel();
-    debugPrint("⏸️ Client auto-scroll paused");
   }
 
   void resumeAutoScroll() {
