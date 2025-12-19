@@ -1,15 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:meetsu_solutions/clint/c_screen/c_home/clint_home_screen.dart';
 import 'package:meetsu_solutions/model/auth/login/login_request_model.dart';
 import 'package:meetsu_solutions/model/auth/login/login_response_model.dart';
 import 'package:meetsu_solutions/screen/auth/signup/signup_screen.dart';
 import 'package:meetsu_solutions/screen/home/home_screen.dart';
 import 'package:meetsu_solutions/services/api/api_client.dart';
 import 'package:meetsu_solutions/services/api/api_service.dart';
+import 'package:meetsu_solutions/services/firebase/firebase_messaging_service.dart';
 import 'package:meetsu_solutions/services/map/LocationService.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
-import 'package:meetsu_solutions/services/firebase/firebase_messaging_service.dart';
-import 'dart:convert';
 
 class LoginController {
   final TextEditingController emailController = TextEditingController();
@@ -117,36 +117,45 @@ class LoginController {
     if (_isDisposed || !context.mounted) return;
 
     try {
+      // Save login type
       if (loginResponse.login != null && loginResponse.login!.isNotEmpty) {
         await SharedPrefsService.instance.saveLoginType(loginResponse.login!);
-      } else {
-        debugPrint("Warning: Login type is null or empty in response");
       }
 
+      // Save login response
       await Future.wait([
         SharedPrefsService.instance.saveLoginResponse(loginResponse),
         SharedPrefsService.instance.saveUsername(emailController.text.trim()),
       ]);
 
-      if (_isDisposed || !context.mounted) return;
+      // ❗ ADD THIS CHECK HERE ------------------------------------
+      if (loginResponse.login?.toLowerCase() == "client") {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  "This login is only for applicants. Please login again."),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
 
-      try {
-        await _firebaseMessagingService.sendTokenToServerAfterLogin();
-      } catch (e) {
-        debugPrint("Firebase token error: $e");
+        return; // Stop login flow
       }
+      // ------------------------------------------------------------
+
+      // Firebase token send
+      await _firebaseMessagingService.sendTokenToServerAfterLogin();
+
+      // Request permission + navigate
+      await _requestLocationPermission(context);
 
       if (!_isDisposed && context.mounted) {
-        await _requestLocationPermission(context);
-        if (!_isDisposed && context.mounted) {
-          await _navigateBasedOnLoginType(context, loginResponse.login);
-        }
+        await _navigateBasedOnLoginType(context, loginResponse.login);
       }
     } catch (e) {
       debugPrint("Error in successful login handler: $e");
-      if (!_isDisposed) {
-        _setError("Login successful but navigation failed. Please try again.");
-      }
+      _setError("Login successful but navigation failed. Please try again.");
     }
   }
 
@@ -225,9 +234,9 @@ class LoginController {
       case 'applicant':
         destinationScreen = const HomeScreen();
         break;
-      case 'client':
-        destinationScreen = const ClientHomeScreen();
-        break;
+      // case 'client':
+      //   destinationScreen = const ClientHomeScreen();
+      //   break;
       default:
         destinationScreen = const HomeScreen();
         break;

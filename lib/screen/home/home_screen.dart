@@ -1,13 +1,14 @@
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:flutter/material.dart';
 import 'package:meetsu_solutions/screen/compliance/compliance_screen.dart';
 import 'package:meetsu_solutions/screen/dashboard/dashboard_screen.dart';
+import 'package:meetsu_solutions/screen/home/home_controller.dart';
 import 'package:meetsu_solutions/screen/job/job_opening_screen.dart';
 import 'package:meetsu_solutions/screen/more/more_screen.dart';
 import 'package:meetsu_solutions/screen/schedule/schedule_screen.dart';
-import 'package:meetsu_solutions/utils/theme/app_theme.dart';
-import 'package:meetsu_solutions/screen/home/home_controller.dart';
-import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 import 'package:meetsu_solutions/services/pref/shared_prefs_service.dart';
+import 'package:meetsu_solutions/utils/theme/app_theme.dart';
+import 'package:meetsu_solutions/utils/widgets/connectivity_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -36,6 +37,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _handleInitialNotification();
     });
+
+    _requestATTIfNeeded();
   }
 
   @override
@@ -59,6 +62,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       case AppLifecycleState.hidden:
         debugPrint("📱 App hidden");
         break;
+    }
+  }
+
+  Future<void> _requestATTIfNeeded() async {
+    try {
+      final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+
+      debugPrint("📌 ATT status: $status");
+
+      if (status == TrackingStatus.notDetermined) {
+        // Apple requires visible UI before popup
+        await Future.delayed(const Duration(milliseconds: 600));
+
+        await AppTrackingTransparency.requestTrackingAuthorization();
+
+        debugPrint("✅ ATT popup displayed");
+      }
+    } catch (e) {
+      debugPrint("❌ ATT error: $e");
     }
   }
 

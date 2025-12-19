@@ -33,44 +33,27 @@
        <key>NSAllowsArbitraryLoads</key>
        <true/>
     </dict>
-
-    <!-- Background modes for notifications -->
     <key>UIBackgroundModes</key>
     <array>
         <string>fetch</string>
         <string>remote-notification</string>
-        <string>background-fetch</string>
     </array>
-
-    <!-- Notification permissions -->
+    <key>NSUserNotificationAlertStyle</key>
+    <string>alert</string>
     <key>NSUserNotificationUsageDescription</key>
-    <string>This app needs to send you important notifications about your work schedule, clock-in reminders, and quiz updates.</string>
-
-    <!-- Critical alerts (optional but recommended for important notifications) -->
-    <key>NSCriticalAlertUsage</key>
-    <string>This app may need to send critical alerts for urgent work-related notifications.</string>
-
-    <!-- Firebase configuration -->
+    <string>We need to send you important updates and notifications</string>
     <key>FirebaseAppDelegateProxyEnabled</key>
     <true/>
-
-    <!-- Location permissions -->
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>This app needs access to location for clock-in functionality and location-based services.</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>This app needs access to location for clock-in functionality and location-based services.</string>
-
-    <!-- Photo library permissions -->
-    <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>This app needs access to photo library to save downloaded documents and attachments.</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>This app needs access to photo library to save downloaded documents and attachments.</string>
-
-    <!-- User tracking (for analytics) -->
     <key>NSUserTrackingUsageDescription</key>
-    <string>This identifier will be used to deliver personalized content and improve app experience.</string>
-
-    <!-- UI Configuration -->
+    <string>This data is used to deliver personalized content and improve the app experience.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app needs access to location to show weather information for your current location.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app needs access to location to show weather information for your current location.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>This app needs access to photo library to save downloaded documents.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app needs access to photo library to save downloaded documents.</string>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
     <key>UIFileSharingEnabled</key>
@@ -79,8 +62,6 @@
     <string>LaunchScreen</string>
     <key>UIMainStoryboardFile</key>
     <string>Main</string>
-
-    <!-- Supported orientations -->
     <key>UISupportedInterfaceOrientations</key>
     <array>
        <string>UIInterfaceOrientationPortrait</string>
@@ -94,7 +75,6 @@
        <string>UIInterfaceOrientationLandscapeLeft</string>
        <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
-
     <key>UISupportsDocumentBrowser</key>
     <true/>
 </dict>
